@@ -18,6 +18,7 @@ model User {
   name          String?
   avatar        String?
   lastLogin     DateTime?
+  expoPushToken String?        // Expo push notification token
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   
@@ -56,6 +57,7 @@ model Task {
   priority       String    @default("medium") // low, medium, high, urgent
   dueDate        DateTime?
   notificationId String?
+  reminderTimes  Int[]     @default([60, 1440]) // Minutes before due date: [1 hour, 1 day]
   userId         Int
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
