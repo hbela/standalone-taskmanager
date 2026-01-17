@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Contacts from 'expo-contacts';
 import React, { useEffect, useState } from 'react';
 import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import OpenMapButton from './OpenMapButton';
 
 interface ContactDisplayProps {
   contactId: string;
@@ -13,6 +14,7 @@ interface ContactInfo {
   name: string;
   phoneNumbers?: { number?: string; label?: string }[];
   emails?: { email?: string; label?: string }[];
+  addresses?: { street?: string; city?: string; region?: string; postalCode?: string; country?: string; label?: string }[];
 }
 
 export default function ContactDisplay({ contactId, showActions = true }: ContactDisplayProps) {
@@ -40,6 +42,7 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
         Contacts.Fields.Name,
         Contacts.Fields.PhoneNumbers,
         Contacts.Fields.Emails,
+        Contacts.Fields.Addresses,
       ]);
 
       if (contactData) {
@@ -166,6 +169,43 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
                 <Ionicons name="mail-outline" size={20} color="#007AFF" />
               </TouchableOpacity>
             )}
+        </View>
+        )}
+
+        {/* Address Section with Map Button */}
+        {contact.addresses && contact.addresses.length > 0 && contact.addresses[0] && (
+          <View style={styles.addressSection}>
+            <View style={styles.contactDetail}>
+              <View style={styles.contactDetailInfo}>
+                <Ionicons name="location" size={16} color="#007AFF" />
+                <View style={styles.addressTextContainer}>
+                  <Text style={styles.contactDetailText}>
+                    {[
+                      contact.addresses[0].street,
+                      contact.addresses[0].city,
+                      contact.addresses[0].region,
+                      contact.addresses[0].postalCode,
+                      contact.addresses[0].country
+                    ].filter(Boolean).join(', ')}
+                  </Text>
+                  {contact.addresses[0].label && (
+                    <Text style={styles.addressLabel}>{contact.addresses[0].label}</Text>
+                  )}
+                </View>
+              </View>
+            </View>
+            {showActions && (
+              <OpenMapButton 
+                address={[
+                  contact.addresses[0].street,
+                  contact.addresses[0].city,
+                  contact.addresses[0].region,
+                  contact.addresses[0].postalCode,
+                  contact.addresses[0].country
+                ].filter(Boolean).join(', ')}
+                style={styles.mapButton}
+              />
+            )}
           </View>
         )}
 
@@ -180,6 +220,13 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
           <Text style={styles.moreInfo}>
             +{contact.emails.length - 1} more email
             {contact.emails.length - 1 > 1 ? 's' : ''}
+          </Text>
+        )}
+
+        {contact.addresses && contact.addresses.length > 1 && (
+          <Text style={styles.moreInfo}>
+            +{contact.addresses.length - 1} more address
+            {contact.addresses.length - 1 > 1 ? 'es' : ''}
           </Text>
         )}
       </View>
@@ -289,6 +336,23 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     padding: 8,
+  },
+  addressSection: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  addressTextContainer: {
+    flex: 1,
+  },
+  addressLabel: {
+    fontSize: 11,
+    color: '#8E8E93',
+    marginTop: 2,
+  },
+  mapButton: {
+    marginTop: 8,
   },
   moreInfo: {
     fontSize: 12,
