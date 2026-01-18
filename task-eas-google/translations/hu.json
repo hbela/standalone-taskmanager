@@ -108,10 +108,20 @@
     "auth": {
         "login": "Bejelentkezés",
         "logout": "Kijelentkezés",
-        "logoutConfirm": "Biztosan ki szeretne jelentkezni?",
-        "loginWithGoogle": "Bejelentkezés Google-lal",
+        "logoutConfirm": "Biztosan kijelentkezik?",
+        "loginWithGoogle": "Bejelentkezés Google-lel",
+        "continueWithGoogle": "Folytatás Google-lel",
         "welcome": "Üdvözöljük újra!",
-        "loginRequired": "Kérjük, jelentkezzen be a folytatáshoz"
+        "loginRequired": "Kérjük, jelentkezzen be a folytatáshoz",
+        "signingIn": "Bejelentkezés...",
+        "signInFailed": "Bejelentkezés sikertelen",
+        "signInError": "Nem sikerült bejelentkezni Google-lel. Kérjük, próbálja újra.",
+        "appTitle": "Feladatkezelő",
+        "appSubtitle": "Szervezze meg feladatait hatékonyan",
+        "featureManage": "Feladatok létrehozása és kezelése",
+        "featureSync": "Értesítések kezelése",
+        "featureSecure": "Biztonságos Google-lel",
+        "disclaimer": "A folytatással elfogadja a Szolgáltatási feltételeinket és az Adatvédelmi irányelveinket"
     },
     "date": {
         "today": "Ma",

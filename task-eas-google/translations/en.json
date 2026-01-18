@@ -110,8 +110,18 @@
         "logout": "Sign Out",
         "logoutConfirm": "Are you sure you want to logout?",
         "loginWithGoogle": "Sign in with Google",
+        "continueWithGoogle": "Continue with Google",
         "welcome": "Welcome back!",
-        "loginRequired": "Please sign in to continue"
+        "loginRequired": "Please sign in to continue",
+        "signingIn": "Signing in...",
+        "signInFailed": "Sign In Failed",
+        "signInError": "Failed to sign in with Google. Please try again.",
+        "appTitle": "Task Manager",
+        "appSubtitle": "Organize your tasks efficiently",
+        "featureManage": "Create and manage tasks",
+        "featureSync": "Manage notifications",
+        "featureSecure": "Secure with Google",
+        "disclaimer": "By continuing, you agree to our Terms of Service and Privacy Policy"
     },
     "date": {
         "today": "Today",

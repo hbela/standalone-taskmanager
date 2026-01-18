@@ -1,18 +1,20 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useAuth } from '@/lib/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 export default function LoginScreen() {
   const { login, isLoading, user } = useAuth();
+  const { t } = useTranslation();
   const [signingIn, setSigningIn] = useState(false);
   const router = useRouter();
 
@@ -34,16 +36,16 @@ export default function LoginScreen() {
     } catch (error: any) {
       console.error('Sign-in error:', error);
       Alert.alert(
-        'Sign In Failed',
-        error.message || 'Failed to sign in with Google. Please try again.',
-        [{ text: 'OK' }]
+        t('auth.signInFailed'),
+        error.message || t('auth.signInError'),
+        [{ text: t('common.done') }]
       );
       setSigningIn(false); // Only reset on error
     }
   };
 
   if (isLoading || signingIn || user) {
-    return <LoadingSpinner message="Signing in..." />;
+    return <LoadingSpinner message={t('auth.signingIn')} />;
   }
 
   return (
@@ -55,24 +57,24 @@ export default function LoginScreen() {
         </View>
 
         {/* App Title */}
-        <Text style={styles.title}>Task Manager</Text>
+        <Text style={styles.title}>{t('auth.appTitle')}</Text>
         <Text style={styles.subtitle}>
-          Organize your tasks efficiently
+          {t('auth.appSubtitle')}
         </Text>
 
         {/* Features List */}
         <View style={styles.features}>
           <View style={styles.feature}>
             <Ionicons name="checkmark-circle" size={24} color="#34C759" />
-            <Text style={styles.featureText}>Create and manage tasks</Text>
+            <Text style={styles.featureText}>{t('auth.featureManage')}</Text>
           </View>
           <View style={styles.feature}>
             <Ionicons name="sync" size={24} color="#34C759" />
-            <Text style={styles.featureText}>Sync across devices</Text>
+            <Text style={styles.featureText}>{t('auth.featureSync')}</Text>
           </View>
           <View style={styles.feature}>
             <Ionicons name="shield-checkmark" size={24} color="#34C759" />
-            <Text style={styles.featureText}>Secure with Google</Text>
+            <Text style={styles.featureText}>{t('auth.featureSecure')}</Text>
           </View>
         </View>
       </View>
@@ -85,11 +87,11 @@ export default function LoginScreen() {
           disabled={signingIn}
         >
           <Ionicons name="logo-google" size={24} color="white" />
-          <Text style={styles.googleButtonText}>Continue with Google</Text>
+          <Text style={styles.googleButtonText}>{t('auth.continueWithGoogle')}</Text>
         </TouchableOpacity>
 
         <Text style={styles.disclaimer}>
-          By continuing, you agree to our Terms of Service and Privacy Policy
+          {t('auth.disclaimer')}
         </Text>
       </View>
     </View>

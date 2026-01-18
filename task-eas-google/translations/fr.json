@@ -110,8 +110,18 @@
         "logout": "Se déconnecter",
         "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter?",
         "loginWithGoogle": "Se connecter avec Google",
+        "continueWithGoogle": "Continuer avec Google",
         "welcome": "Bon retour!",
-        "loginRequired": "Veuillez vous connecter pour continuer"
+        "loginRequired": "Veuillez vous connecter pour continuer",
+        "signingIn": "Connexion en cours...",
+        "signInFailed": "Connexion échouée",
+        "signInError": "Échec de la connexion avec Google. Veuillez réessayer.",
+        "appTitle": "Gestionnaire de tâches",
+        "appSubtitle": "Organisez vos tâches efficacement",
+        "featureManage": "Créer et gérer des tâches",
+        "featureSync": "Gérer les notifications",
+        "featureSecure": "Sécurisé avec Google",
+        "disclaimer": "En continuant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité"
     },
     "date": {
         "today": "Aujourd'hui",

@@ -110,8 +110,18 @@
         "logout": "Abmelden",
         "logoutConfirm": "Möchten Sie sich wirklich abmelden?",
         "loginWithGoogle": "Mit Google anmelden",
+        "continueWithGoogle": "Mit Google fortfahren",
         "welcome": "Willkommen zurück!",
-        "loginRequired": "Bitte melden Sie sich an, um fortzufahren"
+        "loginRequired": "Bitte melden Sie sich an, um fortzufahren",
+        "signingIn": "Anmeldung läuft...",
+        "signInFailed": "Anmeldung fehlgeschlagen",
+        "signInError": "Anmeldung mit Google fehlgeschlagen. Bitte versuchen Sie es erneut.",
+        "appTitle": "Aufgabenverwaltung",
+        "appSubtitle": "Organisieren Sie Ihre Aufgaben effizient",
+        "featureManage": "Aufgaben erstellen und verwalten",
+        "featureSync": "Benachrichtigungen verwalten",
+        "featureSecure": "Sicher mit Google",
+        "disclaimer": "Durch Fortfahren stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu"
     },
     "date": {
         "today": "Heute",
