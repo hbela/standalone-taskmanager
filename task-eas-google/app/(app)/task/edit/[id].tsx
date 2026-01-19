@@ -5,13 +5,20 @@ import { useTask, useUpdateTask } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
 import { UpdateTaskInput } from '@/types/task';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 
 export default function EditTaskScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, _key } = useTranslation();
+  
+  // Force re-render when language changes
+  const [, forceUpdate] = useState(0);
+  
+  useEffect(() => {
+    forceUpdate(prev => prev + 1);
+  }, [_key]);
   
   // Fetch task data
   const { data: task, isLoading, error } = useTask(Number(id));
@@ -64,6 +71,7 @@ export default function EditTaskScreen() {
   return (
     <View style={styles.container}>
       <TaskForm
+        key={`edit-form-${_key}`}
         initialValues={{
           title: task.title,
           description: task.description || undefined,

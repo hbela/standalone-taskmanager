@@ -129,6 +129,8 @@
         "yesterday": "Yesterday"
     },
     "common": {
+        "locale": "en-US",
+        "languageCode": "en",
         "save": "Save",
         "cancel": "Cancel",
         "delete": "Delete",

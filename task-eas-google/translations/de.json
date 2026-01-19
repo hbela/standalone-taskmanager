@@ -129,6 +129,8 @@
         "yesterday": "Gestern"
     },
     "common": {
+        "locale": "de-DE",
+        "languageCode": "de",
         "save": "Speichern",
         "cancel": "Abbrechen",
         "delete": "Löschen",

@@ -136,6 +136,12 @@ export default function TaskForm({
     }
   };
 
+
+  // Memoize button text to ensure it updates when submitLabel changes
+  const buttonText = React.useMemo(() => {
+    return loading ? t('common.saving') : (submitLabel || t('common.save'));
+  }, [loading, submitLabel, t]);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -286,6 +292,7 @@ export default function TaskForm({
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               onChange={handleDateChange}
               minimumDate={new Date()}
+              locale={t('common.languageCode')}
             />
           )}
 
@@ -295,6 +302,7 @@ export default function TaskForm({
               mode="time"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               onChange={handleTimeChange}
+              locale={t('common.languageCode')}
             />
           )}
         </View>
@@ -370,7 +378,7 @@ export default function TaskForm({
             disabled={loading}
           >
             <Text style={styles.submitButtonText}>
-              {loading ? t('common.saving') : (submitLabel || t('common.save'))}
+              {buttonText}
             </Text>
           </TouchableOpacity>
 

@@ -129,6 +129,8 @@
         "yesterday": "Hier"
     },
     "common": {
+        "locale": "fr-FR",
+        "languageCode": "fr",
         "save": "Enregistrer",
         "cancel": "Annuler",
         "delete": "Supprimer",

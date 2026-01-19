@@ -129,6 +129,8 @@
         "yesterday": "Tegnap"
     },
     "common": {
+        "locale": "hu-HU",
+        "languageCode": "hu",
         "save": "Mentés",
         "cancel": "Mégse",
         "delete": "Törlés",
