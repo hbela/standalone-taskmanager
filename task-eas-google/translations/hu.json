@@ -79,7 +79,7 @@
         "search": "Kapcsolat keresése",
         "change": "Kapcsolat módosítása",
         "searchTitle": "Kapcsolat keresése",
-        "searchPlaceholder": "Keresés név, telefon vagy e-mail alapján",
+        "searchPlaceholder": "Név, telefon vagy e-mail",
         "searching": "Keresés...",
         "noContacts": "Nem található kapcsolat",
         "noContactsHint": "Próbáljon meg másik keresési kifejezést, vagy hozzon létre új kapcsolatot",
@@ -175,5 +175,14 @@
         "updateTask": "Nem sikerült frissíteni a feladatot",
         "deleteTask": "Nem sikerült törölni a feladatot",
         "logoutFailed": "Nem sikerült kijelentkezni. Kérjük, próbálja újra."
+    },
+    "dictation": {
+        "holdToTalk": "Tartsa nyomva a beszédhez",
+        "listening": "Hallgat...",
+        "preview": "Előnézet",
+        "micDisabled": "Mikrofonhozzáférés szükséges",
+        "permissionRequired": "Mikrofonengedély",
+        "permissionExplanation": "A diktálás használatához kérjük, engedélyezze a mikrofonhozzáférést az eszköz beállításaiban.",
+        "startError": "Nem sikerült elindítani a mikrofont. Kérjük, próbálja újra."
     }
 }

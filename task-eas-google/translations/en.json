@@ -79,7 +79,7 @@
         "search": "Search Contact",
         "change": "Change Contact",
         "searchTitle": "Search Contact",
-        "searchPlaceholder": "Search by name, phone, or email",
+        "searchPlaceholder": "Name, phone or email",
         "searching": "Searching...",
         "noContacts": "No contacts found",
         "noContactsHint": "Try a different search term or create a new contact",
@@ -175,5 +175,14 @@
         "updateTask": "Failed to update task",
         "deleteTask": "Failed to delete task",
         "logoutFailed": "Failed to logout. Please try again."
+    },
+    "dictation": {
+        "holdToTalk": "Hold to Talk",
+        "listening": "Listening...",
+        "preview": "Preview",
+        "micDisabled": "Microphone Access Required",
+        "permissionRequired": "Microphone Permission",
+        "permissionExplanation": "To use dictation, please enable microphone access in your device settings.",
+        "startError": "Could not start the microphone. Please try again."
     }
 }

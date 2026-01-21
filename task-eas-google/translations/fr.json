@@ -79,7 +79,7 @@
         "search": "Rechercher un contact",
         "change": "Changer de contact",
         "searchTitle": "Rechercher un contact",
-        "searchPlaceholder": "Rechercher par nom, téléphone ou e-mail",
+        "searchPlaceholder": "Nom, téléphone ou e-mail",
         "searching": "Recherche en cours...",
         "noContacts": "Aucun contact trouvé",
         "noContactsHint": "Essayez un autre terme de recherche ou créez un nouveau contact",
@@ -175,5 +175,14 @@
         "updateTask": "Échec de la mise à jour de la tâche",
         "deleteTask": "Échec de la suppression de la tâche",
         "logoutFailed": "Échec de la déconnexion. Veuillez réessayer."
+    },
+    "dictation": {
+        "holdToTalk": "Maintenir pour parler",
+        "listening": "Écoute en cours...",
+        "preview": "Aperçu",
+        "micDisabled": "Accès au microphone requis",
+        "permissionRequired": "Permission du microphone",
+        "permissionExplanation": "Pour utiliser la dictée, veuillez activer l'accès au microphone dans les paramètres de votre appareil.",
+        "startError": "Impossible de démarrer le microphone. Veuillez réessayer."
     }
 }

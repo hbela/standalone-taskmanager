@@ -201,16 +201,19 @@ export default function ContactSearchButton({
           </View>
 
           <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color="#8E8E93" />
+            <Ionicons name="search" size={20} color="#8E8E93" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder={t('contacts.searchPlaceholder')}
+              placeholderTextColor="#8E8E93"
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);
                 searchContacts(text);
               }}
               autoFocus
+              multiline={false}
+              numberOfLines={1}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => {
@@ -310,21 +313,27 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
     backgroundColor: 'white',
     marginHorizontal: 16,
     marginVertical: 12,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#E5E5EA',
+    minHeight: 56,
+  },
+  searchIcon: {
+    marginTop: 2,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: '#1C1C1E',
+    paddingVertical: 0,
+    lineHeight: 22,
   },
   loadingContainer: {
     flex: 1,

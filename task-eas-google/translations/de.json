@@ -79,7 +79,7 @@
         "search": "Kontakt suchen",
         "change": "Kontakt ändern",
         "searchTitle": "Kontakt suchen",
-        "searchPlaceholder": "Nach Name, Telefon oder E-Mail suchen",
+        "searchPlaceholder": "Name, Telefon oder E-Mail",
         "searching": "Suche läuft...",
         "noContacts": "Keine Kontakte gefunden",
         "noContactsHint": "Versuchen Sie einen anderen Suchbegriff oder erstellen Sie einen neuen Kontakt",
@@ -175,5 +175,14 @@
         "updateTask": "Aufgabe konnte nicht aktualisiert werden",
         "deleteTask": "Aufgabe konnte nicht gelöscht werden",
         "logoutFailed": "Abmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    },
+    "dictation": {
+        "holdToTalk": "Halten zum Sprechen",
+        "listening": "Hört zu...",
+        "preview": "Vorschau",
+        "micDisabled": "Mikrofonzugriff erforderlich",
+        "permissionRequired": "Mikrofonberechtigung",
+        "permissionExplanation": "Um die Diktierfunktion zu verwenden, aktivieren Sie bitte den Mikrofonzugriff in Ihren Geräteeinstellungen.",
+        "startError": "Mikrofon konnte nicht gestartet werden. Bitte versuchen Sie es erneut."
     }
 }

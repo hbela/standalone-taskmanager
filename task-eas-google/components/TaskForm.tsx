@@ -4,20 +4,21 @@ import { CreateTaskInput, TaskPriority, UpdateTaskInput } from '@/types/task';
 import { formatDate, formatTime } from '@/utils/dateFormatter';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import ContactDisplay from './ContactDisplay';
 import ContactSearchButton from './ContactSearchButton';
+import DictationButton from './DictationButton';
 
 
 interface TaskFormProps {
@@ -60,6 +61,10 @@ export default function TaskForm({
     initialValues?.contactId || null
   );
   const [errors, setErrors] = useState<{ title?: string }>({});
+
+  // Refs for focus management
+  const titleInputRef = useRef<any>(null);
+  const descriptionInputRef = useRef<any>(null);
 
   const priorities: TaskPriority[] = ['low', 'medium', 'high', 'urgent'];
 
@@ -116,6 +121,32 @@ export default function TaskForm({
     }
   };
 
+  // Handle dictation completion - append dictated text to description
+  const handleDictationComplete = (dictatedText: string) => {
+    // Append the new dictated text to the existing description
+    setDescription((prevText) => {
+      // Add a space if there's already some text
+      const separator = prevText && !prevText.endsWith(' ') ? ' ' : '';
+      return prevText + separator + dictatedText;
+    });
+  };
+
+  // Handle title dictation - replace the title (titles are short and concise)
+  const handleTitleDictation = (dictatedText: string) => {
+    console.log('[TaskForm] Title dictation complete:', dictatedText);
+    if (dictatedText.trim()) {
+      setTitle(dictatedText.trim());
+      // Clear any title errors
+      if (errors.title) {
+        setErrors({ ...errors, title: undefined });
+      }
+      // Auto-focus the description field for seamless flow
+      setTimeout(() => {
+        descriptionInputRef.current?.focus();
+      }, 100);
+    }
+  };
+
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
@@ -158,6 +189,7 @@ export default function TaskForm({
             {t('form.title')} <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
+            ref={titleInputRef}
             style={[styles.input, errors.title && styles.inputError]}
             placeholder={t('form.placeholders.title')}
             value={title}
@@ -167,7 +199,17 @@ export default function TaskForm({
             }}
             maxLength={255}
             editable={!loading}
+            returnKeyType="next"
+            onSubmitEditing={() => descriptionInputRef.current?.focus()}
           />
+          
+          {/* Dictation Button for Title */}
+          <DictationButton 
+            id="title-dictation"
+            onDictationComplete={handleTitleDictation}
+            disabled={loading}
+          />
+          
           {errors.title && (
             <Text style={styles.errorText}>{errors.title}</Text>
           )}
@@ -178,15 +220,32 @@ export default function TaskForm({
         <View style={styles.inputGroup}>
           <Text style={styles.label}>{t('tasks.description')}</Text>
           <TextInput
+            ref={descriptionInputRef}
             style={[styles.input, styles.textArea]}
-            placeholder={t('form.placeholders.description')}
+            placeholder={t('form.placeholders.description') + '\n\nTip: Use voice dictation or type multiple lines...'}
+            placeholderTextColor="#999"
             value={description}
             onChangeText={setDescription}
             multiline
-            numberOfLines={4}
+            scrollEnabled={true}
             textAlignVertical="top"
             editable={!loading}
+            maxLength={2000}
+            // Auto-grow with content
+            onContentSizeChange={(e) => {
+              // Optional: You can track height here if needed
+            }}
           />
+          
+          {/* Dictation Button for Description */}
+          <DictationButton 
+            id="description-dictation"
+            onDictationComplete={handleDictationComplete}
+            disabled={loading}
+          />
+          
+          {/* Character counter */}
+          <Text style={styles.charCount}>{description.length}/2000</Text>
         </View>
 
         {/* Contact Selector */}
@@ -292,7 +351,6 @@ export default function TaskForm({
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               onChange={handleDateChange}
               minimumDate={new Date()}
-              locale={t('common.languageCode')}
             />
           )}
 
@@ -302,7 +360,6 @@ export default function TaskForm({
               mode="time"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               onChange={handleTimeChange}
-              locale={t('common.languageCode')}
             />
           )}
         </View>
