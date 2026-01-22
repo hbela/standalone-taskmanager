@@ -72,17 +72,27 @@ export default function DictationButton({ id, onDictationComplete, disabled }: D
     activeButtonId = null; // Clear the active button
   });
 
-  // Listen for errors - only process if this is the active button
+  // Listen for errors - only process if this button was listening
   useSpeechRecognitionEvent('error', (event: any) => {
-    if (activeButtonId !== id) {
+    // Check if this button was the one listening (either still active or just stopped)
+    const wasActive = activeButtonId === id || isListening;
+    
+    if (!wasActive) {
       console.log(`[DictationButton:${id}] Ignoring error event - not active`);
       return;
     }
     
-    console.error(`[DictationButton:${id}] Error event:`, event);
+    console.error(`[DictationButton:${id}] Error event:`, JSON.stringify(event, null, 2));
+    console.error(`[DictationButton:${id}] Error type:`, event.error);
+    console.error(`[DictationButton:${id}] Error message:`, event.message);
+    
     setIsListening(false);
     setCurrentText('');
-    activeButtonId = null; // Clear the active button
+    
+    // Only clear activeButtonId if this was the active button
+    if (activeButtonId === id) {
+      activeButtonId = null;
+    }
     
     // Don't show an alert for "no-speech" - it's normal when user doesn't speak
     if (event.error === 'no-speech') {
@@ -90,8 +100,17 @@ export default function DictationButton({ id, onDictationComplete, disabled }: D
       return;
     }
     
+    // Don't show alert for "aborted" - happens when user stops manually
+    if (event.error === 'aborted') {
+      console.log(`[DictationButton:${id}] Recognition aborted - user stopped`);
+      return;
+    }
+    
     // Show alert for actual errors
-    Alert.alert(t('common.error'), t('dictation.startError'));
+    Alert.alert(
+      t('common.error'), 
+      `${t('dictation.startError')}\n\nError: ${event.error || 'Unknown'}`
+    );
   });
 
   // Check microphone permission on component mount

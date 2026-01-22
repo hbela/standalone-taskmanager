@@ -1,4 +1,3 @@
-import AuthGuard from '@/components/AuthGuard';
 import TaskForm from '@/components/TaskForm';
 import { useCreateTask } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -54,16 +53,14 @@ export default function CreateTaskScreen() {
   };
 
   return (
-    <AuthGuard>
-      <View style={styles.container} key={`create-screen-${renderKey}`}>
-        <TaskForm
-          key={`create-form-${renderKey}`}
-          onSubmit={handleSubmit}
-          submitLabel={submitLabel}
-          loading={createTaskMutation.isPending}
-        />
-      </View>
-    </AuthGuard>
+    <View style={styles.container} key={`create-screen-${renderKey}`}>
+      <TaskForm
+        key={`create-form-${renderKey}`}
+        onSubmit={handleSubmit}
+        submitLabel={submitLabel}
+        loading={createTaskMutation.isPending}
+      />
+    </View>
   );
 }
 

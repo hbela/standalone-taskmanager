@@ -3,7 +3,6 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import TaskCard from '@/components/TaskCard';
 import { useDeleteTask, useTasks, useToggleTaskComplete } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useAuth } from '@/lib/auth';
 import { isTaskOverdue } from '@/lib/taskUtils';
 import { Task } from '@/types/task';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +22,6 @@ import {
 export default function TasksScreen() {
   const { t, _key } = useTranslation();
   const router = useRouter();
-  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'overdue' | 'completed'>('pending');
   const [forceRender, setForceRender] = useState(0);
@@ -63,27 +61,6 @@ export default function TasksScreen() {
   const toggleCompleteMutation = useToggleTaskComplete();
 
   const tasks = data?.tasks || [];
-
-  const handleLogout = async () => {
-    Alert.alert(
-      t('auth.logout'),
-      t('auth.logoutConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('auth.logout'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-            } catch (error) {
-              Alert.alert(t('common.error'), t('errors.logoutFailed'));
-            }
-          }
-        }
-      ]
-    );
-  };
 
   const handleDelete = (task: Task) => {
     Alert.alert(
@@ -193,19 +170,6 @@ export default function TasksScreen() {
       <View style={styles.container} key={`container-${_key}`}>
         {/* Custom Header */}
         <View style={styles.customHeader} key={`header-${_key}`}>
-          {/* Top Row: User Info and Logout */}
-          <View style={styles.topRow}>
-            <View style={{ flex: 1 }} />
-            <View style={styles.userSection}>
-              <Text style={styles.welcomeText}>
-                Hi, {user?.name?.split(' ')[0] || 'User'}
-              </Text>
-              <TouchableOpacity onPress={handleLogout} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="log-out-outline" size={24} color="#007AFF" />
-              </TouchableOpacity>
-            </View>
-          </View>
-          
           {/* Title Row: Centered */}
           <View style={styles.titleRow}>
             <Text style={styles.pageTitle} key={`title-${_key}-${forceRender}`}>

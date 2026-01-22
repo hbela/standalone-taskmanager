@@ -1,16 +1,9 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { LanguageProvider } from '@/context/LanguageContext';
-import { AuthProvider, useAuth } from '@/lib/auth';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { initializeDatabase } from '@/lib/database';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect } from 'react';
-
-// Configure Google Sign-In
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
-  offlineAccess: true,
-});
+import { Stack, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -24,9 +17,25 @@ const queryClient = new QueryClient({
 });
 
 function RootLayoutNav() {
-  const { user, isLoading, initialized } = useAuth();
-  const segments = useSegments();
+  const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
+
+  // Initialize database
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await initializeDatabase();
+        console.log('✅ Database initialized');
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('❌ Database initialization failed:', error);
+        // Still set initialized to true to allow app to load
+        setIsInitialized(true);
+      }
+    };
+
+    init();
+  }, []);
 
   // Initialize notifications
   useEffect(() => {
@@ -38,14 +47,16 @@ function RootLayoutNav() {
         // Schedule daily summary at 9 AM
         await notificationService.scheduleDailySummary(9);
         
-        console.log('Notifications initialized successfully');
+        console.log('✅ Notifications initialized successfully');
       } catch (error) {
-        console.error('Failed to initialize notifications:', error);
+        console.error('❌ Failed to initialize notifications:', error);
       }
     };
 
-    initNotifications();
-  }, []);
+    if (isInitialized) {
+      initNotifications();
+    }
+  }, [isInitialized]);
 
   // Handle notification taps
   useEffect(() => {
@@ -67,31 +78,17 @@ function RootLayoutNav() {
       }
     };
 
-    setupNotificationHandler();
-  }, [router]);
-
-  useEffect(() => {
-    if (!initialized) return;
-
-    const inAuthGroup = segments[0] === '(auth)';
-    const inAppGroup = segments[0] === '(app)';
-
-    if (!user && !inAuthGroup) {
-      // Redirect to login if not authenticated
-      router.replace('/(auth)/login');
-    } else if (user && !inAppGroup) {
-      // Redirect to app if authenticated
-      router.replace('/(app)');
+    if (isInitialized) {
+      setupNotificationHandler();
     }
-  }, [user, segments, initialized]);
+  }, [router, isInitialized]);
 
-  if (isLoading || !initialized) {
-    return <LoadingSpinner message="Loading..." />;
+  if (!isInitialized) {
+    return <LoadingSpinner message="Initializing app..." />;
   }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(app)" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
@@ -102,9 +99,7 @@ export default function RootLayout() {
   return (
     <LanguageProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <RootLayoutNav />
-        </AuthProvider>
+        <RootLayoutNav />
       </QueryClientProvider>
     </LanguageProvider>
   );

@@ -1,7 +1,6 @@
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
-import { GoogleSignInButton } from '@/components/google-sign-in-button';
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
@@ -21,15 +20,6 @@ export default function HomeScreen() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
-      </ThemedView>
-      
-      {/* Google Sign-In Section */}
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Google Sign-In Demo</ThemedText>
-        <ThemedText>
-          Test the Google authentication integration below:
-        </ThemedText>
-        <GoogleSignInButton />
       </ThemedView>
 
       <ThemedView style={styles.stepContainer}>

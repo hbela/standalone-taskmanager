@@ -46,7 +46,6 @@
           }
         }
       ],
-      "@react-native-google-signin/google-signin",
       "expo-secure-store",
       "expo-notifications",
       "@react-native-community/datetimepicker",
@@ -63,7 +62,9 @@
           "speechRecognitionPermission": "Allow $(PRODUCT_NAME) to use speech recognition for voice dictation."
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-sqlite",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,12 +1,9 @@
 import { useTranslation } from '@/hooks/useTranslation';
-import { useAuth } from '@/lib/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 export default function AppLayout() {
-  const { user, logout } = useAuth();
   const { t, _key } = useTranslation();
   
   // State for tab titles to force updates
@@ -32,27 +29,6 @@ export default function AppLayout() {
       settings: t('settings.title'),
     });
   }, [_key, t]);
-
-  const handleLogout = async () => {
-    Alert.alert(
-      t('auth.logout'),
-      t('auth.logoutConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('auth.logout'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-            } catch (error) {
-              Alert.alert(t('common.error'), t('errors.logoutFailed'));
-            }
-          }
-        }
-      ]
-    );
-  };
 
   // Memoize options to ensure they update when language changes
   const indexOptions = useMemo(() => ({
@@ -93,17 +69,7 @@ export default function AppLayout() {
     headerTitleStyle: {
       fontWeight: '600' as const,
     },
-    headerRight: () => (
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginRight: 15 }}>
-        <Text style={{ fontSize: 14, color: '#666' }}>
-          Hi, {user?.name?.split(' ')[0] || 'User'}
-        </Text>
-        <TouchableOpacity onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#007AFF" />
-        </TouchableOpacity>
-      </View>
-    ),
-  }), [user, handleLogout]);
+  }), []);
 
   return (
     <Tabs screenOptions={screenOptions}>

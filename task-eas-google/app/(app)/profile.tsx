@@ -1,123 +1,130 @@
-import { useAuth } from '@/lib/auth';
+import { getTaskStats } from '@/lib/db/tasksDb';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    Image,
+    RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
-export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+interface TaskStats {
+  total: number;
+  completed: number;
+  pending: number;
+  byPriority: Record<string, number>;
+}
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to logout. Please try again.');
-            }
-          }
-        }
-      ]
-    );
+export default function ProfileScreen() {
+  const [stats, setStats] = useState<TaskStats>({
+    total: 0,
+    completed: 0,
+    pending: 0,
+    byPriority: {},
+  });
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadStats = async () => {
+    try {
+      const taskStats = await getTaskStats();
+      setStats(taskStats);
+    } catch (error) {
+      console.error('Failed to load task stats:', error);
+    }
   };
 
-  if (!user) {
-    return null;
-  }
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadStats();
+    setRefreshing(false);
+  };
+
+  const completionRate = stats.total > 0 
+    ? Math.round((stats.completed / stats.total) * 100) 
+    : 0;
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Profile Header */}
+    <ScrollView 
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      {/* App Header */}
       <View style={styles.header}>
-        {user.avatar ? (
-          <Image
-            source={{ uri: user.avatar }}
-            style={styles.avatar}
-          />
-        ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <Ionicons name="person" size={50} color="#8E8E93" />
-          </View>
-        )}
+        <View style={styles.appIconContainer}>
+          <Ionicons name="checkmark-done" size={50} color="#007AFF" />
+        </View>
         
-        <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.email}>{user.email}</Text>
+        <Text style={styles.appName}>Task Manager</Text>
+        <Text style={styles.appTagline}>Your Personal Productivity App</Text>
       </View>
 
-      {/* Account Info */}
+      {/* Task Statistics */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account Information</Text>
+        <Text style={styles.sectionTitle}>Task Statistics</Text>
         
-        <View style={styles.infoItem}>
-          <View style={styles.infoIcon}>
-            <Ionicons name="mail-outline" size={24} color="#007AFF" />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{user.email}</Text>
-          </View>
-        </View>
-
-        <View style={styles.infoItem}>
-          <View style={styles.infoIcon}>
-            <Ionicons name="person-outline" size={24} color="#007AFF" />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Name</Text>
-            <Text style={styles.infoValue}>{user.name}</Text>
-          </View>
-        </View>
-
-        <View style={styles.infoItem}>
-          <View style={styles.infoIcon}>
-            <Ionicons name="calendar-outline" size={24} color="#007AFF" />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Member Since</Text>
-            <Text style={styles.infoValue}>
-              {new Date(user.createdAt).toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-              })}
-            </Text>
-          </View>
-        </View>
-
-        {user.lastLogin && (
-          <View style={styles.infoItem}>
-            <View style={styles.infoIcon}>
-              <Ionicons name="time-outline" size={24} color="#007AFF" />
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: '#007AFF15' }]}>
+              <Ionicons name="list" size={24} color="#007AFF" />
             </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Last Login</Text>
-              <Text style={styles.infoValue}>
-                {new Date(user.lastLogin).toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </Text>
-            </View>
+            <Text style={styles.statValue}>{stats.total}</Text>
+            <Text style={styles.statLabel}>Total Tasks</Text>
           </View>
-        )}
+
+          <View style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: '#34C75915' }]}>
+              <Ionicons name="checkmark-circle" size={24} color="#34C759" />
+            </View>
+            <Text style={styles.statValue}>{stats.completed}</Text>
+            <Text style={styles.statLabel}>Completed</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: '#FF9F0A15' }]}>
+              <Ionicons name="time" size={24} color="#FF9F0A" />
+            </View>
+            <Text style={styles.statValue}>{stats.pending}</Text>
+            <Text style={styles.statLabel}>Pending</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: '#AF52DE15' }]}>
+              <Ionicons name="trending-up" size={24} color="#AF52DE" />
+            </View>
+            <Text style={styles.statValue}>{completionRate}%</Text>
+            <Text style={styles.statLabel}>Completion</Text>
+          </View>
+        </View>
       </View>
+
+      {/* Priority Breakdown */}
+      {Object.keys(stats.byPriority).length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Tasks by Priority</Text>
+          
+          {Object.entries(stats.byPriority).map(([priority, count]) => (
+            <View key={priority} style={styles.priorityItem}>
+              <View style={styles.priorityInfo}>
+                <View style={[
+                  styles.priorityDot,
+                  { backgroundColor: getPriorityColor(priority) }
+                ]} />
+                <Text style={styles.priorityLabel}>
+                  {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                </Text>
+              </View>
+              <Text style={styles.priorityCount}>{count}</Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       {/* App Info */}
       <View style={styles.section}>
@@ -132,17 +139,16 @@ export default function ProfileScreen() {
             <Text style={styles.infoValue}>1.0.0</Text>
           </View>
         </View>
-      </View>
 
-      {/* Logout Button */}
-      <View style={styles.section}>
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-        >
-          <Ionicons name="log-out-outline" size={24} color="white" />
-          <Text style={styles.logoutButtonText}>Logout</Text>
-        </TouchableOpacity>
+        <View style={styles.infoItem}>
+          <View style={styles.infoIcon}>
+            <Ionicons name="phone-portrait-outline" size={24} color="#8E8E93" />
+          </View>
+          <View style={styles.infoContent}>
+            <Text style={styles.infoLabel}>Storage</Text>
+            <Text style={styles.infoValue}>Local SQLite Database</Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.footer}>
@@ -152,6 +158,21 @@ export default function ProfileScreen() {
       </View>
     </ScrollView>
   );
+}
+
+function getPriorityColor(priority: string): string {
+  switch (priority.toLowerCase()) {
+    case 'urgent':
+      return '#FF3B30';
+    case 'high':
+      return '#FF9F0A';
+    case 'medium':
+      return '#007AFF';
+    case 'low':
+      return '#34C759';
+    default:
+      return '#8E8E93';
+  }
 }
 
 const styles = StyleSheet.create({
@@ -166,24 +187,22 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
   },
-  avatar: {
+  appIconContainer: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginBottom: 16,
-  },
-  avatarPlaceholder: {
     backgroundColor: '#F0F0F0',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 16,
   },
-  name: {
+  appName: {
     fontSize: 24,
     fontWeight: '700',
     color: '#1C1C1E',
     marginBottom: 4,
   },
-  email: {
+  appTagline: {
     fontSize: 16,
     color: '#8E8E93',
   },
@@ -197,6 +216,64 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1C1C1E',
     marginBottom: 16,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: '#F9F9F9',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  statIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#8E8E93',
+  },
+  priorityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  priorityInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  priorityDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  priorityLabel: {
+    fontSize: 16,
+    color: '#1C1C1E',
+  },
+  priorityCount: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#8E8E93',
   },
   infoItem: {
     flexDirection: 'row',
@@ -222,20 +299,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1C1C1E',
   },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FF3B30',
-    padding: 16,
-    borderRadius: 12,
-    gap: 12,
-  },
-  logoutButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-  },
   footer: {
     padding: 20,
     alignItems: 'center',
@@ -245,3 +308,4 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
   },
 });
+

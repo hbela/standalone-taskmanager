@@ -1,63 +1,69 @@
-import { PaginationParams } from '@/types/api';
-import { CreateTaskInput, Task, TaskResponse, TasksResponse, UpdateTaskInput } from '@/types/task';
-import { api } from './index';
+import { CreateTaskInput, Task, TasksResponse, UpdateTaskInput } from '@/types/task';
+import * as tasksDb from '../db/tasksDb';
 
 /**
- * Task API methods
+ * Task API methods - now using local SQLite database
  */
 export const tasksApi = {
   /**
-   * Get all tasks with optional pagination and filtering
+   * Get all tasks with optional filtering
    */
-  getAll: async (params?: PaginationParams): Promise<TasksResponse> => {
-    const query = new URLSearchParams();
+  getAll: async (params?: { status?: string }): Promise<TasksResponse> => {
+    let completed: boolean | undefined;
     
-    if (params?.page) query.append('page', params.page.toString());
-    if (params?.limit) query.append('limit', params.limit.toString());
-    if (params?.status) query.append('status', params.status);
+    if (params?.status === 'completed') {
+      completed = true;
+    } else if (params?.status === 'pending') {
+      completed = false;
+    }
     
-    const queryString = query.toString();
-    const endpoint = `/tasks${queryString ? `?${queryString}` : ''}`;
+    const tasks = await tasksDb.getAllTasks({ completed });
     
-    return api.get<TasksResponse>(endpoint);
+    return {
+      tasks,
+      total: tasks.length,
+      page: 1,
+      limit: tasks.length,
+    };
   },
 
   /**
    * Get single task by ID
    */
   getById: async (id: number): Promise<Task> => {
-    const response = await api.get<TaskResponse>(`/tasks/${id}`);
-    return response.task;
+    const task = await tasksDb.getTaskById(id);
+    if (!task) {
+      throw new Error('Task not found');
+    }
+    return task;
   },
 
   /**
    * Create a new task
    */
   create: async (data: CreateTaskInput): Promise<Task> => {
-    const response = await api.post<TaskResponse>('/tasks', data);
-    return response.task;
+    return tasksDb.createTask(data);
   },
 
   /**
    * Update an existing task
    */
   update: async (id: number, data: UpdateTaskInput): Promise<Task> => {
-    const response = await api.patch<TaskResponse>(`/tasks/${id}`, data);
-    return response.task;
+    return tasksDb.updateTask(id, data);
   },
 
   /**
    * Delete a task
    */
   delete: async (id: number): Promise<void> => {
-    await api.delete(`/tasks/${id}`);
+    await tasksDb.deleteTask(id);
   },
 
   /**
    * Toggle task completion status
    */
   toggleComplete: async (id: number, completed: boolean): Promise<Task> => {
-    const response = await api.patch<TaskResponse>(`/tasks/${id}`, { completed });
-    return response.task;
+    return tasksDb.updateTask(id, { completed });
   }
 };
+
