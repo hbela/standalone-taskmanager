@@ -9,6 +9,7 @@ export default function AppLayout() {
   // State for tab titles to force updates
   const [tabTitles, setTabTitles] = useState({
     tasks: t('tasks.title'),
+    calendar: t('calendar.title'),
     create: t('tasks.create'),
     profile: t('settings.profile'),
     settings: t('settings.title'),
@@ -18,12 +19,14 @@ export default function AppLayout() {
   useEffect(() => {
     setTabTitles({
       tasks: t('tasks.title'),
+      calendar: t('calendar.title'),
       create: t('tasks.create'),
       profile: t('settings.profile'),
       settings: t('settings.title'),
     });
     console.log('[AppLayout] Updated tab titles:', {
       tasks: t('tasks.title'),
+      calendar: t('calendar.title'),
       create: t('tasks.create'),
       profile: t('settings.profile'),
       settings: t('settings.title'),
@@ -38,6 +41,14 @@ export default function AppLayout() {
       <Ionicons name="list" size={size} color={color} />
     ),
   }), [tabTitles.tasks]);
+
+  const calendarOptions = useMemo(() => ({
+    title: tabTitles.calendar,
+    headerShown: false,
+    tabBarIcon: ({ color, size }: any) => (
+      <Ionicons name="calendar" size={size} color={color} />
+    ),
+  }), [tabTitles.calendar]);
 
   const createOptions = useMemo(() => ({
     title: tabTitles.create,
@@ -74,6 +85,7 @@ export default function AppLayout() {
   return (
     <Tabs screenOptions={screenOptions}>
       <Tabs.Screen name="index" options={indexOptions} />
+      <Tabs.Screen name="calendar" options={calendarOptions} />
       <Tabs.Screen name="create" options={createOptions} />
       <Tabs.Screen name="profile" options={profileOptions} />
       <Tabs.Screen name="settings" options={settingsOptions} />

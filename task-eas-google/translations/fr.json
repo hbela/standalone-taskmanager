@@ -176,6 +176,26 @@
         "deleteTask": "Échec de la suppression de la tâche",
         "logoutFailed": "Échec de la déconnexion. Veuillez réessayer."
     },
+    "calendar": {
+        "title": "Calendrier",
+        "noTasks": "Aucune tâche à cette date"
+    },
+    "export": {
+        "title": "Exporter vers Google Drive",
+        "button": "Exporter",
+        "buttonShort": "Exporter",
+        "confirm": "Exporter %{count} tâches vers Google Drive?",
+        "confirmSingle": "Exporter 1 tâche vers Google Drive?",
+        "success": "Tâches exportées avec succès!",
+        "successWithLink": "Fichier téléchargé sur Google Drive!",
+        "error": "Échec de l'exportation des tâches",
+        "authError": "Échec de l'authentification Google Drive",
+        "uploading": "Téléchargement vers Google Drive...",
+        "generating": "Génération du fichier Excel...",
+        "processing": "Traitement...",
+        "noTasks": "Aucune tâche à exporter",
+        "viewInDrive": "Voir dans Drive"
+    },
     "dictation": {
         "holdToTalk": "Maintenir pour parler",
         "listening": "Écoute en cours...",

@@ -1,9 +1,13 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { initializeDatabase } from '@/lib/database';
+import { configureErrorHandling } from '@/utils/errorHandler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+
+// Configure error handling (disables console logs in production)
+configureErrorHandling();
 
 // Create a client
 const queryClient = new QueryClient({

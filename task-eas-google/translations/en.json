@@ -176,6 +176,26 @@
         "deleteTask": "Failed to delete task",
         "logoutFailed": "Failed to logout. Please try again."
     },
+    "calendar": {
+        "title": "Calendar",
+        "noTasks": "No tasks on this date"
+    },
+    "export": {
+        "title": "Export to Google Drive",
+        "button": "Export",
+        "buttonShort": "Export",
+        "confirm": "Export %{count} tasks to Google Drive?",
+        "confirmSingle": "Export 1 task to Google Drive?",
+        "success": "Tasks exported successfully!",
+        "successWithLink": "File uploaded to Google Drive!",
+        "error": "Failed to export tasks",
+        "authError": "Google Drive authentication failed",
+        "uploading": "Uploading to Google Drive...",
+        "generating": "Generating Excel file...",
+        "processing": "Processing...",
+        "noTasks": "No tasks to export",
+        "viewInDrive": "View in Drive"
+    },
     "dictation": {
         "holdToTalk": "Hold to Talk",
         "listening": "Listening...",

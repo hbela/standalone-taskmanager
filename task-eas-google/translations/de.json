@@ -176,6 +176,26 @@
         "deleteTask": "Aufgabe konnte nicht gelöscht werden",
         "logoutFailed": "Abmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
     },
+    "calendar": {
+        "title": "Kalender",
+        "noTasks": "Keine Aufgaben an diesem Datum"
+    },
+    "export": {
+        "title": "Nach Google Drive exportieren",
+        "button": "Exportieren",
+        "buttonShort": "Exportieren",
+        "confirm": "%{count} Aufgaben nach Google Drive exportieren?",
+        "confirmSingle": "1 Aufgabe nach Google Drive exportieren?",
+        "success": "Aufgaben erfolgreich exportiert!",
+        "successWithLink": "Datei auf Google Drive hochgeladen!",
+        "error": "Fehler beim Exportieren der Aufgaben",
+        "authError": "Google Drive-Authentifizierung fehlgeschlagen",
+        "uploading": "Wird auf Google Drive hochgeladen...",
+        "generating": "Excel-Datei wird erstellt...",
+        "processing": "Wird verarbeitet...",
+        "noTasks": "Keine Aufgaben zum Exportieren",
+        "viewInDrive": "In Drive anzeigen"
+    },
     "dictation": {
         "holdToTalk": "Halten zum Sprechen",
         "listening": "Hört zu...",

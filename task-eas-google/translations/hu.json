@@ -176,6 +176,26 @@
         "deleteTask": "Nem sikerült törölni a feladatot",
         "logoutFailed": "Nem sikerült kijelentkezni. Kérjük, próbálja újra."
     },
+    "calendar": {
+        "title": "Naptár",
+        "noTasks": "Nincs feladat ezen a napon"
+    },
+    "export": {
+        "title": "Exportálás Google Drive-ra",
+        "button": "Exportálás",
+        "buttonShort": "Exportálás",
+        "confirm": "%{count} feladat exportálása Google Drive-ra?",
+        "confirmSingle": "1 feladat exportálása Google Drive-ra?",
+        "success": "Feladatok sikeresen exportálva!",
+        "successWithLink": "Fájl feltöltve a Google Drive-ra!",
+        "error": "Nem sikerült exportálni a feladatokat",
+        "authError": "Google Drive hitelesítés sikertelen",
+        "uploading": "Feltöltés Google Drive-ra...",
+        "generating": "Excel fájl generálása...",
+        "processing": "Feldolgozás...",
+        "noTasks": "Nincs exportálandó feladat",
+        "viewInDrive": "Megtekintés a Drive-ban"
+    },
     "dictation": {
         "holdToTalk": "Tartsa nyomva a beszédhez",
         "listening": "Hallgat...",

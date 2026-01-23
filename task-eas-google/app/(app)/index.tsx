@@ -1,16 +1,22 @@
 import ErrorMessage from '@/components/ErrorMessage';
+import ExportButton from '@/components/ExportButton';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import TaskCard from '@/components/TaskCard';
 import { useDeleteTask, useTasks, useToggleTaskComplete } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
+import { exportTasksToExcel, getFileNameFromUri } from '@/lib/export/excelExporter';
+import { uploadToGoogleDrive } from '@/lib/export/googleDriveService';
 import { isTaskOverdue } from '@/lib/taskUtils';
 import { Task } from '@/types/task';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    ActivityIndicator,
     Alert,
     FlatList,
+    Linking,
+    Modal,
     RefreshControl,
     StyleSheet,
     Text,
@@ -25,6 +31,7 @@ export default function TasksScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'overdue' | 'completed'>('pending');
   const [forceRender, setForceRender] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
   
   // State for translated text to force updates
   const [pageTitle, setPageTitle] = useState(t('tasks.title'));
@@ -92,6 +99,62 @@ export default function TasksScreen() {
     } catch (err) {
       Alert.alert(t('common.error'), t('errors.updateTask'));
     }
+  };
+
+  const handleExport = async () => {
+    if (filteredTasks.length === 0) {
+      Alert.alert(t('export.title'), t('export.noTasks'));
+      return;
+    }
+
+    Alert.alert(
+      t('export.title'),
+      filteredTasks.length === 1 
+        ? t('export.confirmSingle')
+        : t('export.confirm', { count: filteredTasks.length }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('export.button'),
+          onPress: async () => {
+            setIsExporting(true);
+            try {
+              // Generate Excel file
+              console.log('📊 Generating Excel file...');
+              const fileUri = await exportTasksToExcel(filteredTasks);
+              const fileName = getFileNameFromUri(fileUri);
+              
+              // Upload to Google Drive
+              console.log('☁️ Uploading to Google Drive...');
+              const result = await uploadToGoogleDrive(fileUri, fileName);
+              
+              // Show success with option to view in Drive
+              Alert.alert(
+                t('common.success'),
+                t('export.successWithLink'),
+                [
+                  { text: t('common.done'), style: 'default' },
+                  {
+                    text: t('export.viewInDrive'),
+                    onPress: () => {
+                      if (result.webViewLink) {
+                        Linking.openURL(result.webViewLink);
+                      }
+                    }
+                  }
+                ]
+              );
+            } catch (error) {
+              console.error('Export error:', error);
+              const errorMessage = error instanceof Error ? error.message : t('export.error');
+              Alert.alert(t('common.error'), errorMessage);
+            } finally {
+              setIsExporting(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const filteredTasks = tasks.filter(task => {
@@ -170,11 +233,18 @@ export default function TasksScreen() {
       <View style={styles.container} key={`container-${_key}`}>
         {/* Custom Header */}
         <View style={styles.customHeader} key={`header-${_key}`}>
-          {/* Title Row: Centered */}
+          {/* Title Row: Centered with Export Button */}
           <View style={styles.titleRow}>
             <Text style={styles.pageTitle} key={`title-${_key}-${forceRender}`}>
               {pageTitle}
             </Text>
+            <View style={styles.headerActions}>
+              <ExportButton
+                onPress={handleExport}
+                isExporting={isExporting}
+                taskCount={filteredTasks.length}
+              />
+            </View>
           </View>
         </View>
 
@@ -245,6 +315,20 @@ export default function TasksScreen() {
           </View>
         )}
       </View>
+
+      {/* Export Loading Overlay */}
+      <Modal
+        visible={isExporting}
+        transparent
+        animationType="fade"
+      >
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#007AFF" />
+            <Text style={styles.loadingText}>{t('export.uploading')}</Text>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -279,6 +363,11 @@ const styles = StyleSheet.create({
   titleRow: {
     alignItems: 'center',
     paddingHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  headerActions: {
+    marginLeft: 12,
   },
   pageTitle: {
     fontSize: 28,
@@ -368,5 +457,24 @@ const styles = StyleSheet.create({
     flex: 1,
     color: 'white',
     marginRight: 12,
+  },
+  loadingOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingCard: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    minWidth: 200,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#1C1C1E',
+    fontWeight: '500',
   },
 });
