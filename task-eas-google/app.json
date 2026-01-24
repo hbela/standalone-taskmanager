@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true
     },
-    "owner": "hajzerbela",
+    "owner": "elyscom",
     "android": {
       "package": "com.taskmanager.app",
       "adaptiveIcon": {
@@ -26,6 +26,21 @@
         "READ_CONTACTS",
         "WRITE_CONTACTS",
         "RECORD_AUDIO"
+      ],
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "com.googleusercontent.apps.903850631580-889buo98b75cknun3gn14ghsobe8s7ap"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
       ]
     },
     "web": {

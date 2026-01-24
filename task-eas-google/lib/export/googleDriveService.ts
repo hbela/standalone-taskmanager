@@ -35,8 +35,8 @@ function getOAuthConfig() {
   
   return {
     clientId,
-    // Hardcoded redirect URI to bypass makeRedirectUri issues
-    redirectUri: 'https://auth.expo.io/@hajzerbela/new-taskmanager',
+    // Hardcoded redirect URI to match the new owner 'elyscom'
+    redirectUri: 'https://auth.expo.io/@elyscom/new-taskmanager',
   };
 }
 
