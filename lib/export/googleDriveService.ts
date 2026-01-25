@@ -3,156 +3,124 @@
  * Handles Google Drive authentication and file upload
  */
 
-import * as AuthSession from 'expo-auth-session';
-import Constants from 'expo-constants';
+import auth from '@react-native-firebase/auth';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import * as FileSystem from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
-import * as WebBrowser from 'expo-web-browser';
-
-WebBrowser.maybeCompleteAuthSession();
 
 const GOOGLE_DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 const TOKEN_KEY = 'google_drive_token';
+
+// Configure Google Sign-In
+GoogleSignin.configure({
+  scopes: [GOOGLE_DRIVE_SCOPE],
+  webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
+  offlineAccess: true, // Needed to get access_token and refresh_token
+  forceCodeForRefreshToken: true,
+});
 
 interface GoogleDriveToken {
   access_token: string;
   refresh_token?: string;
   expires_in: number;
-  expires_at?: number;
-  token_type: string;
+  expires_at?: number; // timestamp
 }
 
 /**
- * Get OAuth configuration from environment
- */
-function getOAuthConfig() {
-  const clientId = Constants.expoConfig?.extra?.googleDriveClientId || 
-                   process.env.EXPO_PUBLIC_GOOGLE_DRIVE_CLIENT_ID;
-  
-  if (!clientId) {
-    throw new Error('Google Drive Client ID not configured. Please add EXPO_PUBLIC_GOOGLE_DRIVE_CLIENT_ID to .env');
-  }
-  
-  return {
-    clientId,
-    // Hardcoded redirect URI to match the new owner 'elyscom'
-    redirectUri: 'https://auth.expo.io/@elyscom/new-taskmanager',
-  };
-}
-
-/**
- * Authenticate with Google Drive using OAuth 2.0
+ * Authenticate with Google Drive using Native Google Sign-In
  */
 export async function authenticateGoogleDrive(): Promise<GoogleDriveToken> {
   try {
-    const { clientId, redirectUri } = getOAuthConfig();
+    console.log('🔐 Starting Google Drive authentication via Native Module...');
     
-    console.log('🔐 Starting Google Drive authentication...');
-    console.log('📍 Client ID:', clientId);
-    console.log('📍 Redirect URI:', redirectUri);
-    console.log('📍 Expo Owner:', Constants.expoConfig?.owner);
-    console.log('📍 Expo Slug:', Constants.expoConfig?.slug);
+    // Check for Play Services
+    await GoogleSignin.hasPlayServices();
     
-    const discovery = {
-      authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-      tokenEndpoint: 'https://oauth2.googleapis.com/token',
-    };
-    
-    // Create and execute auth request
-    const authRequest = new AuthSession.AuthRequest({
-      clientId,
-      scopes: [GOOGLE_DRIVE_SCOPE],
-      redirectUri,
-      responseType: AuthSession.ResponseType.Code,
-      usePKCE: true,
-      extraParams: {
-        access_type: 'offline', // Get refresh token
-        prompt: 'consent', // Force consent screen to get refresh token
-      }
-    });
-    
-    // Log the redirect URI from multiple sources
-    console.log('🔗 Redirect URI (from variable):', redirectUri);
-    console.log('🔗 Redirect URI (from authRequest):', authRequest.redirectUri);
-    console.log('🔗 Redirect URI length:', redirectUri.length);
-    console.log('🔗 Redirect URI charCodes:', Array.from(redirectUri).map(c => c.charCodeAt(0)).join(','));
-    
-    const result = await authRequest.promptAsync(discovery);
-    
-    console.log('📋 Auth result type:', result.type);
-    console.log('📋 Full auth result:', JSON.stringify(result, null, 2));
-    
-    if (result.type !== 'success') {
-      console.error('❌ Authentication failed with type:', result.type);
-      if (result.type === 'error') {
-        console.error('Error details:', result.error);
-        console.error('Error params:', result.params);
-        console.error('Full error object:', JSON.stringify(result, null, 2));
-      }
-      throw new Error(`Authentication ${result.type}: ${result.type === 'error' ? result.error?.message || 'Unknown error' : 'User cancelled or dismissed'}`);
+    // Sign In
+    const response = await GoogleSignin.signIn();
+    // Check if response has data (v13+)
+    if (response.type === 'success' && response.data) {
+      console.log('✅ User Info obtained:', response.data.user.email);
+    } else {
+       // If cancelled or no data, it might be an issue, but usually we throw on cancel.
+       // Continue to get Tokens if we think we are signed in, or maybe response IS the user object in some versions?
+       // Let's assume v13 structure where response.data holds the info.
     }
     
-    console.log('✅ Auth code received, exchanging for token...');
-    
-    // Exchange code for token
-    const tokenResponse = await AuthSession.exchangeCodeAsync(
-      {
-        clientId,
-        code: result.params.code,
-        redirectUri,
-        extraParams: {
-          code_verifier: authRequest.codeVerifier || '',
-        },
-      },
-      discovery
-    );
-    
-    const token: GoogleDriveToken = {
-      access_token: tokenResponse.accessToken,
-      refresh_token: tokenResponse.refreshToken,
-      expires_in: tokenResponse.expiresIn || 3600,
-      expires_at: Date.now() + (tokenResponse.expiresIn || 3600) * 1000,
-      token_type: tokenResponse.tokenType || 'Bearer',
+    // Get Tokens
+    const tokens = await GoogleSignin.getTokens();
+    console.log('✅ Tokens obtained');
+
+    // Sign in to Firebase (optional, but requested)
+    if (tokens.idToken) {
+      try {
+        console.log('🔥 Signing in to Firebase...');
+        const googleCredential = auth.GoogleAuthProvider.credential(tokens.idToken);
+        await auth().signInWithCredential(googleCredential);
+        console.log('✅ Firebase Signed In');
+      } catch (firebaseError) {
+        console.warn('⚠️ Firebase Sign-In failed (continuing with Drive token):', firebaseError);
+      }
+    }
+
+    const tokenData: GoogleDriveToken = {
+      access_token: tokens.accessToken,
+      // GoogleSignin might not return refresh token on subsequent logins unless forceCodeForRefreshToken is used or cache cleared
+      // But for Drive API calls we mainly need accessToken.
+      // We can also retrieve idToken if we wanted to auth with Firebase: tokens.idToken
+      refresh_token: undefined, // Native SDK handles refresh mostly internally? No, we get a new access token by calling getTokens() or signInSilently()
+      expires_in: 3600, // Default assumption, or we might not get this explicitly
+      expires_at: Date.now() + 3600 * 1000, 
     };
-    
+
     // Store token securely
-    await SecureStore.setItemAsync(TOKEN_KEY, JSON.stringify(token));
+    await SecureStore.setItemAsync(TOKEN_KEY, JSON.stringify(tokenData));
     
-    console.log('✅ Google Drive authentication successful');
-    return token;
-  } catch (error) {
-    console.error('❌ Google Drive Authentication Error:', error);
-    if (error instanceof Error) {
-      throw error; // Re-throw with original message
+    return tokenData;
+  } catch (error: any) {
+    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+      console.log('User cancelled the login flow');
+      throw new Error('User cancelled the login flow');
+    } else if (error.code === statusCodes.IN_PROGRESS) {
+      console.log('Operation (e.g. sign in) is in progress already');
+      throw new Error('Sign in in progress');
+    } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+      console.log('Play services not available or outdated');
+      throw new Error('Play services not available');
+    } else {
+      console.error('❌ Native Google Sign-In Error:', error);
+      throw error;
     }
-    throw new Error('Failed to authenticate with Google Drive');
   }
 }
 
 /**
- * Get stored token or authenticate if needed
+ * Get stored token or authenticate if needed/silent sign in
  */
 export async function getGoogleDriveToken(): Promise<GoogleDriveToken> {
   try {
-    const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
-    
-    if (storedToken) {
-      const token: GoogleDriveToken = JSON.parse(storedToken);
-      
-      // Check if token is expired
-      if (token.expires_at && token.expires_at > Date.now()) {
-        console.log('✅ Using stored Google Drive token');
-        return token;
+    // try silent sign in to get fresh tokens
+    const hasPreviousSignIn = await GoogleSignin.hasPreviousSignIn();
+    if (hasPreviousSignIn) {
+      try {
+        await GoogleSignin.signInSilently(); // Ensure we have a valid session
+        const tokens = await GoogleSignin.getTokens();
+        return {
+           access_token: tokens.accessToken,
+           expires_in: 3600,
+           expires_at: Date.now() + 3600 * 1000
+        };
+      } catch (e) {
+        console.log('Silent sign-in failed, falling back to interactive', e);
       }
-      
-      console.log('⚠️ Token expired, re-authenticating...');
     }
-    
-    // No token stored or expired, authenticate
+
+    // Not signed in, force full auth
     return await authenticateGoogleDrive();
   } catch (error) {
     console.error('Error getting token:', error);
-    throw error;
+    // Fallback to manual auth if silent fails
+    return await authenticateGoogleDrive();
   }
 }
 

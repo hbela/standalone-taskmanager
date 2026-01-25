@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "903850631580",
+    "project_id": "new-taskmanager-standalone",
+    "storage_bucket": "new-taskmanager-standalone.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903850631580:android:426673d7febdeacee9a859",
+        "android_client_info": {
+          "package_name": "com.standalonetaskmanager.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6-zyf70OOPED4i2lBK8RhqwieyaFBi0I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
