@@ -1,19 +1,23 @@
 {
   "expo": {
-    "name": "new-taskmanager",
-    "slug": "new-taskmanager",
+    "name": "standalone-taskmanager",
+    "slug": "standalone-taskmanager",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/myimages/icon.png",
-    "scheme": "new-taskmanager",
+    "scheme": "standalone-taskmanager",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition for voice dictation.",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone for voice dictation."
+      }
     },
-    "owner": "elyscom",
+    "owner": "hajzerbela",
     "android": {
-      "package": "com.taskmanager.app",
+      "package": "com.standalonetaskmanager.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/myimages/adaptive-icon.png"
@@ -25,7 +29,10 @@
         "SCHEDULE_EXACT_ALARM",
         "READ_CONTACTS",
         "WRITE_CONTACTS",
-        "RECORD_AUDIO"
+        "RECORD_AUDIO",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.RECORD_AUDIO"
       ],
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
@@ -88,7 +95,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "71a867f1-3d88-4e0b-b910-b6946c579ae5"
+        "projectId": "a3b2021f-b56f-4d8f-895b-079c14265e32"
       }
     }
   }
