@@ -5,6 +5,7 @@ import { configureErrorHandling } from '@/utils/errorHandler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { PaperProvider } from 'react-native-paper';
 
 // Configure error handling (disables console logs in production)
 configureErrorHandling();
@@ -101,10 +102,12 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <LanguageProvider>
-      <QueryClientProvider client={queryClient}>
-        <RootLayoutNav />
-      </QueryClientProvider>
-    </LanguageProvider>
+    <PaperProvider>
+      <LanguageProvider>
+        <QueryClientProvider client={queryClient}>
+          <RootLayoutNav />
+        </QueryClientProvider>
+      </LanguageProvider>
+    </PaperProvider>
   );
 }

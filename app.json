@@ -15,7 +15,7 @@
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone for voice dictation."
       }
     },
-    "owner": "hajzerbela",
+    "owner": "elyscom",
     "android": {
       "package": "com.standalonetaskmanager.app",
       "adaptiveIcon": {
@@ -75,7 +75,13 @@
       "expo-font",
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
-      "@react-native-google-signin/google-signin",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "webClientId": "13205155505-h8notg3rkd4bgr1151s4re3fn4s6u6f1.apps.googleusercontent.com",
+          "iosUrlScheme": "com.googleusercontent.apps.13205155505-h8notg3rkd4bgr1151s4re3fn4s6u6f1"
+        }
+      ],
       "expo-build-properties"
     ],
     "experiments": {

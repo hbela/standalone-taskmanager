@@ -74,7 +74,7 @@ export async function exportTasksToExcel(tasks: Task[]): Promise<string> {
     const timeStr = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
     const fileName = `Tasks_Export_${timestamp}_${timeStr}.xlsx`;
     
-    // Save file using expo-file-system
+    // Save using new File API (SDK 54+)
     const file = new File(Paths.cache, fileName);
     await file.write(excelBuffer, { encoding: 'base64' });
     
