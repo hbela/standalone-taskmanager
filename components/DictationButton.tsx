@@ -3,12 +3,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  PermissionsAndroid,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // Safely import the module
@@ -81,7 +83,25 @@ export default function DictationButton({ id, onDictationComplete, disabled }: D
       console.log(`[DictationButton:${id}] Ignoring error event - not active`);
       return;
     }
+
+    // Handle benign errors (no-speech, aborted) without showing scary logs
+    if (event.error === 'no-speech') {
+      console.log(`[DictationButton:${id}] No speech detected - user did not speak`);
+      setIsListening(false);
+      setCurrentText('');
+      if (activeButtonId === id) activeButtonId = null;
+      return;
+    }
     
+    if (event.error === 'aborted') {
+      console.log(`[DictationButton:${id}] Recognition aborted - user stopped`);
+      setIsListening(false);
+      setCurrentText('');
+      if (activeButtonId === id) activeButtonId = null;
+      return;
+    }
+    
+    // Log genuine errors
     console.error(`[DictationButton:${id}] Error event:`, JSON.stringify(event, null, 2));
     console.error(`[DictationButton:${id}] Error type:`, event.error);
     console.error(`[DictationButton:${id}] Error message:`, event.message);
@@ -92,18 +112,6 @@ export default function DictationButton({ id, onDictationComplete, disabled }: D
     // Only clear activeButtonId if this was the active button
     if (activeButtonId === id) {
       activeButtonId = null;
-    }
-    
-    // Don't show an alert for "no-speech" - it's normal when user doesn't speak
-    if (event.error === 'no-speech') {
-      console.log(`[DictationButton:${id}] No speech detected - user did not speak`);
-      return;
-    }
-    
-    // Don't show alert for "aborted" - happens when user stops manually
-    if (event.error === 'aborted') {
-      console.log(`[DictationButton:${id}] Recognition aborted - user stopped`);
-      return;
     }
     
     // Show alert for actual errors
@@ -122,6 +130,19 @@ export default function DictationButton({ id, onDictationComplete, disabled }: D
 
     (async () => {
       try {
+        if (Platform.OS === 'android') {
+          await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+            {
+              title: t('dictation.permissionRequired') || 'Microphone Permission',
+              message: t('dictation.permissionExplanation') || 'App needs access to your microphone to recognize speech.',
+              buttonNeutral: t('common.askLater') || 'Ask Me Later',
+              buttonNegative: t('common.cancel') || 'Cancel',
+              buttonPositive: 'OK',
+            }
+          );
+        }
+
         const { status } = await Speech.requestSpeechRecognizerPermissionsAsync();
         setPermissionGranted(status === 'granted');
         if (status !== 'granted') {
