@@ -4,12 +4,8 @@ import { Task } from '@/types/task';
 import { formatDateTime } from '@/utils/dateFormatter';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Card, Checkbox, Chip, Text, useTheme } from 'react-native-paper';
 
 interface TaskCardProps {
   task: Task;
@@ -38,76 +34,86 @@ export default function TaskCard({
   onToggleComplete
 }: TaskCardProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const isOverdue = isTaskOverdue(task);
-  
+  const priorityColor = getPriorityColor(task.priority);
+
   return (
-    <TouchableOpacity
+    <Card
       style={[
-        styles.card, 
+        styles.card,
         task.completed && styles.completedCard,
-        isOverdue && styles.overdueCard
+        isOverdue && !task.completed && styles.overdueCard
       ]}
       onPress={onPress}
-      activeOpacity={0.7}
+      mode="elevated"
     >
-      <View style={styles.content}>
-        {/* Completion Checkbox */}
-        <TouchableOpacity
-          onPress={onToggleComplete}
-          style={styles.checkbox}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons
-            name={task.completed ? 'checkmark-circle' : (isOverdue ? 'alert-circle' : 'ellipse-outline')}
-            size={28}
-            color={task.completed ? '#34C759' : (isOverdue ? '#FF3B30' : '#C7C7CC')}
+      <Card.Content style={styles.cardContent}>
+        <View style={styles.leftColumn}>
+          <Checkbox
+            status={task.completed ? 'checked' : 'unchecked'}
+            onPress={onToggleComplete}
+            color={task.completed ? '#34C759' : theme.colors.primary}
+            uncheckedColor={isOverdue ? '#FF3B30' : '#C7C7CC'}
           />
-        </TouchableOpacity>
+        </View>
 
-        {/* Task Info */}
-        <View style={styles.info}>
-          <View style={styles.titleRow}>
+        <View style={styles.mainContent}>
+          <View style={styles.headerRow}>
             <Text
-              style={[styles.title, task.completed && styles.completedTitle]}
+              variant="titleMedium"
+              style={[
+                styles.title,
+                task.completed && styles.completedText
+              ]}
               numberOfLines={2}
             >
               {task.title}
             </Text>
-            <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(task.priority) + '20' }]}>
-              <Text style={[styles.priorityText, { color: getPriorityColor(task.priority) }]}>
-                {task.priority.toUpperCase()}
-              </Text>
-            </View>
+            <Chip
+              textStyle={{ color: priorityColor, fontSize: 10, lineHeight: 10, marginVertical: 0, marginHorizontal: 0 }}
+              style={[styles.priorityChip, { backgroundColor: priorityColor + '20', borderColor: priorityColor }]}
+              compact
+            >
+              {task.priority.toUpperCase()}
+            </Chip>
           </View>
-          
-          {task.description && (
+
+          {task.description ? (
             <Text
-              style={[styles.description, task.completed && styles.completedDescription]}
+              variant="bodyMedium"
+              style={[
+                styles.description,
+                task.completed && styles.completedText
+              ]}
               numberOfLines={2}
             >
               {task.description}
             </Text>
-          )}
+          ) : null}
 
-          <View style={styles.dateContainer}>
+          <View style={styles.footer}>
             <View style={styles.dateRow}>
-              <Ionicons name="calendar-outline" size={12} color="#8E8E93" />
-              <Text style={styles.dateLabel}>{t('common.created')}:</Text>
-              <Text style={styles.date}>{formatDateTime(task.createdAt)}</Text>
+              <Ionicons name="calendar-outline" size={14} color="#8E8E93" />
+              <Text variant="labelSmall" style={styles.dateText}>
+                {formatDateTime(task.createdAt)}
+              </Text>
             </View>
-            
+
             {task.dueDate && (
               <View style={styles.dateRow}>
-                <Ionicons 
-                  name={isOverdue ? "alert-circle" : "alarm-outline"} 
-                  size={12} 
-                  color={isOverdue ? "#FF3B30" : "#FF9500"} 
+                <Ionicons
+                  name={isOverdue ? "alert-circle" : "alarm-outline"}
+                  size={14}
+                  color={isOverdue ? "#FF3B30" : "#FF9500"}
                 />
-                <Text style={styles.dateLabel}>{isOverdue ? t('tasks.overdue') : t('tasks.due')}:</Text>
-                <Text style={[
-                  styles.date, 
-                  isOverdue ? styles.overdueDate : styles.dueDate
-                ]}>
+                <Text
+                  variant="labelSmall"
+                  style={[
+                    styles.dateText,
+                    isOverdue ? { color: '#FF3B30', fontWeight: 'bold' } : { color: '#FF9500' }
+                  ]}
+                >
                   {formatDateTime(task.dueDate)}
                 </Text>
               </View>
@@ -115,105 +121,81 @@ export default function TaskCard({
           </View>
         </View>
 
-        {/* Right Arrow */}
-        <Ionicons name="chevron-forward" size={20} color="#C7C7CC" style={styles.arrow} />
-      </View>
-    </TouchableOpacity>
+        <View style={styles.rightColumn}>
+          <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+        </View>
+      </Card.Content>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    marginVertical: 6,
+    marginHorizontal: 16,
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   completedCard: {
     opacity: 0.7,
     backgroundColor: '#F9F9F9',
   },
-  content: {
+  overdueCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF3B30',
+  },
+  cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
-  checkbox: {
-    marginRight: 12,
-  },
-  info: {
-    flex: 1,
+  leftColumn: {
     marginRight: 8,
   },
-  titleRow: {
+  mainContent: {
+    flex: 1,
+    gap: 4,
+  },
+  headerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 4,
   },
   title: {
     flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1C1C1E',
     marginRight: 8,
+    fontWeight: '600',
   },
-  completedTitle: {
+  completedText: {
     textDecorationLine: 'line-through',
     color: '#8E8E93',
   },
-  priorityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  priorityText: {
-    fontSize: 10,
-    fontWeight: '700',
+  priorityChip: {
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   description: {
-    fontSize: 14,
     color: '#3C3C43',
     marginBottom: 8,
-    lineHeight: 20,
   },
-  completedDescription: {
-    color: '#8E8E93',
-  },
-  dateContainer: {
-    gap: 4,
+  footer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 4,
   },
   dateRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  dateLabel: {
-    fontSize: 11,
-    color: '#8E8E93',
-    fontWeight: '500',
-  },
-  date: {
-    fontSize: 11,
+  dateText: {
     color: '#8E8E93',
   },
-  dueDate: {
-    color: '#FF9500',
-    fontWeight: '500',
-  },
-  overdueCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF3B30',
-  },
-  overdueDate: {
-    color: '#FF3B30',
-    fontWeight: '600',
-  },
-  arrow: {
+  rightColumn: {
     marginLeft: 8,
+    justifyContent: 'center',
   },
 });

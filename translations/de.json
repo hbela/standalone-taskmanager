@@ -190,7 +190,7 @@
         "successWithLink": "Datei auf Google Drive hochgeladen!",
         "error": "Fehler beim Exportieren der Aufgaben",
         "authError": "Google Drive-Authentifizierung fehlgeschlagen",
-        "uploading": "Wird auf Google Drive hochgeladen...",
+        "uploading": "Hochladen...",
         "generating": "Excel-Datei wird erstellt...",
         "processing": "Wird verarbeitet...",
         "noTasks": "Keine Aufgaben zum Exportieren",

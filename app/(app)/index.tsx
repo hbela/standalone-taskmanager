@@ -15,14 +15,13 @@ import {
   Alert,
   FlatList,
   Linking,
-  Modal,
   RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
-import { Appbar, Chip, Searchbar } from 'react-native-paper';
+import { Appbar, Button, Chip, Dialog, Paragraph, Portal, Searchbar } from 'react-native-paper';
 
 export default function TasksScreen() {
   const { t, _key } = useTranslation();
@@ -49,6 +48,11 @@ export default function TasksScreen() {
   }, [_key, t]);
 
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [exportDialogVisible, setExportDialogVisible] = useState(false);
+  const [successDialogVisible, setSuccessDialogVisible] = useState(false);
+  const [errorDialogVisible, setErrorDialogVisible] = useState(false);
+  const [exportResult, setExportResult] = useState<{ webViewLink?: string } | null>(null);
+  const [exportError, setExportError] = useState('');
 
   // Debug logging
   console.log('[TasksScreen] Rendering with key:', _key, 'forceRender:', forceRender);
@@ -102,60 +106,38 @@ export default function TasksScreen() {
     }
   };
 
-  const handleExport = async () => {
+  const handleExport = () => {
     if (filteredTasks.length === 0) {
       Alert.alert(t('export.title'), t('export.noTasks'));
       return;
     }
+    setExportDialogVisible(true);
+  };
 
-    Alert.alert(
-      t('export.title'),
-      filteredTasks.length === 1 
-        ? t('export.confirmSingle')
-        : t('export.confirm', { count: filteredTasks.length }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('export.button'),
-          onPress: async () => {
-            setIsExporting(true);
-            try {
-              // Generate Excel file
-              console.log('📊 Generating Excel file...');
-              const fileUri = await exportTasksToExcel(filteredTasks);
-              const fileName = getFileNameFromUri(fileUri);
-              
-              // Upload to Google Drive
-              console.log('☁️ Uploading to Google Drive...');
-              const result = await uploadToGoogleDrive(fileUri, fileName);
-              
-              // Show success with option to view in Drive
-              Alert.alert(
-                t('common.success'),
-                t('export.successWithLink'),
-                [
-                  { text: t('common.done'), style: 'default' },
-                  {
-                    text: t('export.viewInDrive'),
-                    onPress: () => {
-                      if (result.webViewLink) {
-                        Linking.openURL(result.webViewLink);
-                      }
-                    }
-                  }
-                ]
-              );
-            } catch (error) {
-              console.error('Export error:', error);
-              const errorMessage = error instanceof Error ? error.message : t('export.error');
-              Alert.alert(t('common.error'), errorMessage);
-            } finally {
-              setIsExporting(false);
-            }
-          }
-        }
-      ]
-    );
+  const performExport = async () => {
+    setExportDialogVisible(false);
+    setIsExporting(true);
+    try {
+      // Generate Excel file
+      console.log('📊 Generating Excel file...');
+      const fileUri = await exportTasksToExcel(filteredTasks);
+      const fileName = getFileNameFromUri(fileUri);
+      
+      // Upload to Google Drive
+      console.log('☁️ Uploading to Google Drive...');
+      const result = await uploadToGoogleDrive(fileUri, fileName);
+      
+      setExportResult(result);
+      setSuccessDialogVisible(true);
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      const errorMessage = error instanceof Error ? error.message : t('export.error');
+      setExportError(errorMessage);
+      setErrorDialogVisible(true);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const filteredTasks = tasks.filter(task => {
@@ -301,19 +283,79 @@ export default function TasksScreen() {
         )}
       </View>
 
-      {/* Export Loading Overlay */}
-      <Modal
-        visible={isExporting}
-        transparent
-        animationType="fade"
-      >
-        <View style={styles.loadingOverlay}>
-          <View style={styles.loadingCard}>
+      {/* Export Confirmation Dialog */}
+      <Portal>
+        <Dialog 
+          visible={exportDialogVisible} 
+          onDismiss={() => setExportDialogVisible(false)}
+          style={styles.dialog}
+        >
+          <Dialog.Title style={styles.dialogTitle}>{t('export.title')}</Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>
+              {filteredTasks.length === 1 
+                ? t('export.confirmSingle')
+                : t('export.confirm', { count: filteredTasks.length })}
+            </Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setExportDialogVisible(false)}>{t('common.cancel')}</Button>
+            <Button onPress={performExport}>{t('export.button')}</Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        {/* Success Dialog */}
+        <Dialog 
+          visible={successDialogVisible} 
+          onDismiss={() => setSuccessDialogVisible(false)}
+          style={styles.dialog}
+        >
+          <Dialog.Title style={styles.dialogTitle}>{t('common.success')}</Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>{t('export.successWithLink')}</Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setSuccessDialogVisible(false)}>{t('common.done')}</Button>
+            {exportResult?.webViewLink && (
+              <Button onPress={() => {
+                if (exportResult.webViewLink) {
+                  Linking.openURL(exportResult.webViewLink);
+                }
+                setSuccessDialogVisible(false);
+              }}>
+                {t('export.viewInDrive')}
+              </Button>
+            )}
+          </Dialog.Actions>
+        </Dialog>
+
+        {/* Error Dialog */}
+        <Dialog 
+          visible={errorDialogVisible} 
+          onDismiss={() => setErrorDialogVisible(false)}
+          style={styles.dialog}
+        >
+          <Dialog.Title style={styles.dialogTitle}>{t('common.error')}</Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>{exportError}</Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setErrorDialogVisible(false)}>OK</Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        {/* Loading Dialog */}
+        <Dialog 
+          visible={isExporting} 
+          dismissable={false}
+          style={styles.dialog}
+        >
+          <Dialog.Content style={styles.loadingContent}>
             <ActivityIndicator size="large" color="#007AFF" />
             <Text style={styles.loadingText}>{t('export.uploading')}</Text>
-          </View>
-        </View>
-      </Modal>
+          </Dialog.Content>
+        </Dialog>
+      </Portal>
     </>
   );
 }
@@ -379,21 +421,21 @@ const styles = StyleSheet.create({
     color: 'white',
     marginRight: 12,
   },
-  loadingOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingCard: {
-    backgroundColor: 'white',
-    padding: 24,
+  dialog: {
+    backgroundColor: 'white', 
     borderRadius: 12,
+  },
+  dialogTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  loadingContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    minWidth: 200,
+    padding: 20,
   },
   loadingText: {
-    marginTop: 16,
+    marginLeft: 16,
     fontSize: 16,
     color: '#1C1C1E',
     fontWeight: '500',

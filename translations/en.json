@@ -190,7 +190,7 @@
         "successWithLink": "File uploaded to Google Drive!",
         "error": "Failed to export tasks",
         "authError": "Google Drive authentication failed",
-        "uploading": "Uploading to Google Drive...",
+        "uploading": "Uploading...",
         "generating": "Generating Excel file...",
         "processing": "Processing...",
         "noTasks": "No tasks to export",

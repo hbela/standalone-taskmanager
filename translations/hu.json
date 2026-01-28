@@ -190,7 +190,7 @@
         "successWithLink": "Fájl feltöltve a Google Drive-ra!",
         "error": "Nem sikerült exportálni a feladatokat",
         "authError": "Google Drive hitelesítés sikertelen",
-        "uploading": "Feltöltés Google Drive-ra...",
+        "uploading": "Feltöltés...",
         "generating": "Excel fájl generálása...",
         "processing": "Feldolgozás...",
         "noTasks": "Nincs exportálandó feladat",

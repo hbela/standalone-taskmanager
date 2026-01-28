@@ -190,7 +190,7 @@
         "successWithLink": "Fichier téléchargé sur Google Drive!",
         "error": "Échec de l'exportation des tâches",
         "authError": "Échec de l'authentification Google Drive",
-        "uploading": "Téléchargement vers Google Drive...",
+        "uploading": "Téléchargement...",
         "generating": "Génération du fichier Excel...",
         "processing": "Traitement...",
         "noTasks": "Aucune tâche à exporter",
