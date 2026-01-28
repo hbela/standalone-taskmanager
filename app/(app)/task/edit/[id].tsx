@@ -6,13 +6,20 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { UpdateTaskInput } from '@/types/task';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Appbar, Button, Dialog, Paragraph, Portal } from 'react-native-paper';
 
 export default function EditTaskScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { t, _key } = useTranslation();
   
+  // Dialog state
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogTitle, setDialogTitle] = useState('');
+  const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogType, setDialogType] = useState<'success' | 'error'>('success');
+
   // Force re-render when language changes
   const [, forceUpdate] = useState(0);
   
@@ -33,21 +40,23 @@ export default function EditTaskScreen() {
         data,
       });
       
-      Alert.alert(
-        t('common.success'),
-        t('tasks.updateSuccess'),
-        [
-          {
-            text: t('common.done'),
-            onPress: () => router.push('/(app)')
-          }
-        ]
-      );
+      setDialogTitle(t('common.success'));
+      setDialogMessage(t('tasks.updateSuccess'));
+      setDialogType('success');
+      setDialogVisible(true);
+
     } catch (error: any) {
-      Alert.alert(
-        t('common.error'),
-        error.message || t('tasks.updateError')
-      );
+      setDialogTitle(t('common.error'));
+      setDialogMessage(error.message || t('tasks.updateError'));
+      setDialogType('error');
+      setDialogVisible(true);
+    }
+  };
+
+  const handleDialogDismiss = () => {
+    setDialogVisible(false);
+    if (dialogType === 'success') {
+      router.push('/(app)');
     }
   };
 
@@ -70,6 +79,11 @@ export default function EditTaskScreen() {
 
   return (
     <View style={styles.container}>
+      <Appbar.Header elevated>
+          <Appbar.BackAction onPress={() => router.back()} />
+          <Appbar.Content title={t('tasks.editTask')} />
+      </Appbar.Header>
+      
       <TaskForm
         key={`edit-form-${_key}`}
         initialValues={{
@@ -85,6 +99,20 @@ export default function EditTaskScreen() {
         submitLabel={t('tasks.updateTask')}
         loading={updateTaskMutation.isPending}
       />
+
+      <Portal>
+        <Dialog visible={dialogVisible} onDismiss={handleDialogDismiss}>
+          <Dialog.Title>{dialogTitle}</Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>{dialogMessage}</Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={handleDialogDismiss}>
+              {dialogType === 'success' ? t('common.done') : 'OK'}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 }

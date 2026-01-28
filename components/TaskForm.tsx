@@ -2,20 +2,30 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { DEFAULT_REMINDER_OPTIONS, DEFAULT_REMINDERS, getReminderLabel } from '@/lib/notifications';
 import { CreateTaskInput, TaskPriority, UpdateTaskInput } from '@/types/task';
 import { formatDate, formatTime } from '@/utils/dateFormatter';
-import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useRef, useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    View
 } from 'react-native';
+import { Calendar, DateData } from 'react-native-calendars';
+import {
+    Button,
+    Card,
+    Chip,
+    Divider,
+    HelperText,
+    IconButton,
+    Modal,
+    Portal,
+    Switch,
+    Text,
+    TextInput,
+    useTheme,
+} from 'react-native-paper';
 import ContactDisplay from './ContactDisplay';
 import ContactSearchButton from './ContactSearchButton';
 import DictationButton from './DictationButton';
@@ -45,13 +55,15 @@ export default function TaskForm({
   loading = false
 }: TaskFormProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [title, setTitle] = useState(initialValues?.title || '');
   const [description, setDescription] = useState(initialValues?.description || '');
   const [priority, setPriority] = useState<TaskPriority>(initialValues?.priority || 'medium');
   const [dueDate, setDueDate] = useState<Date | undefined>(
     initialValues?.dueDate ? new Date(initialValues.dueDate) : undefined
   );
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false); // Native picker fallback / Time picker
+  const [showCalendarModal, setShowCalendarModal] = useState(false); // Custom calendar modal
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [enableReminders, setEnableReminders] = useState(!!initialValues?.dueDate);
   const [reminderTimes, setReminderTimes] = useState<number[]>(
@@ -131,33 +143,33 @@ export default function TaskForm({
     });
   };
 
-  // Handle title dictation - replace the title (titles are short and concise)
+  // Handle title dictation - replace the title
   const handleTitleDictation = (dictatedText: string) => {
-    console.log('[TaskForm] Title dictation complete:', dictatedText);
     if (dictatedText.trim()) {
       setTitle(dictatedText.trim());
-      // Clear any title errors
       if (errors.title) {
         setErrors({ ...errors, title: undefined });
       }
-      // Auto-focus the description field for seamless flow
       setTimeout(() => {
         descriptionInputRef.current?.focus();
       }, 100);
     }
   };
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      if (dueDate) {
-        // Preserve time if it exists
+  const handleCalendarDayPress = (day: DateData) => {
+    setShowCalendarModal(false);
+    const selectedDate = new Date(day.dateString);
+    // Add current time or default to end of day? Or keep current time if set.
+    // If we only have date, let's set time to 12:00 PM or keep current time if updating.
+    if (dueDate) {
         selectedDate.setHours(dueDate.getHours(), dueDate.getMinutes());
-      }
-      setDueDate(selectedDate);
+    } else {
+        selectedDate.setHours(12, 0, 0, 0); // Default to noon
     }
+    setDueDate(selectedDate);
   };
-
+  
+  // Keep native handler for Time
   const handleTimeChange = (event: any, selectedTime?: Date) => {
     setShowTimePicker(false);
     if (selectedTime && dueDate) {
@@ -167,8 +179,7 @@ export default function TaskForm({
     }
   };
 
-
-  // Memoize button text to ensure it updates when submitLabel changes
+  // Memoize button text
   const buttonText = React.useMemo(() => {
     return loading ? t('common.saving') : (submitLabel || t('common.save'));
   }, [loading, submitLabel, t]);
@@ -185,84 +196,107 @@ export default function TaskForm({
       >
         {/* Title Input */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>
-            {t('form.title')} <Text style={styles.required}>*</Text>
-          </Text>
           <TextInput
             ref={titleInputRef}
-            style={[styles.input, errors.title && styles.inputError]}
+            mode="outlined"
+            label={t('form.title')}
             placeholder={t('form.placeholders.title')}
             value={title}
             onChangeText={(text) => {
               setTitle(text);
               if (errors.title) setErrors({ ...errors, title: undefined });
             }}
+            error={!!errors.title}
             maxLength={255}
-            editable={!loading}
+            disabled={loading}
             returnKeyType="next"
             onSubmitEditing={() => descriptionInputRef.current?.focus()}
+            right={<TextInput.Affix text={`${title.length}/255`} />}
           />
+          <HelperText type="error" visible={!!errors.title}>
+            {errors.title}
+          </HelperText>
           
-          {/* Dictation Button for Title */}
           <DictationButton 
             id="title-dictation"
             onDictationComplete={handleTitleDictation}
             disabled={loading}
           />
-          
-          {errors.title && (
-            <Text style={styles.errorText}>{errors.title}</Text>
-          )}
-          <Text style={styles.charCount}>{title.length}/255</Text>
         </View>
 
         {/* Description Input */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('tasks.description')}</Text>
           <TextInput
             ref={descriptionInputRef}
-            style={[styles.input, styles.textArea]}
-            placeholder={t('form.placeholders.description') + '\n\nTip: Use voice dictation or type multiple lines...'}
-            placeholderTextColor="#999"
+            mode="outlined"
+            label={t('tasks.description')}
+            placeholder={t('form.placeholders.description')}
             value={description}
             onChangeText={setDescription}
             multiline
-            scrollEnabled={true}
-            textAlignVertical="top"
-            editable={!loading}
-            maxLength={2000}
-            // Auto-grow with content
-            onContentSizeChange={(e) => {
-              // Optional: You can track height here if needed
-            }}
-          />
-          
-          {/* Dictation Button for Description */}
-          <DictationButton 
-            id="description-dictation"
-            onDictationComplete={handleDictationComplete}
+            numberOfLines={4}
             disabled={loading}
+            maxLength={2000}
+            right={<TextInput.Affix text={`${description.length}/2000`} />}
           />
-          
-          {/* Character counter */}
-          <Text style={styles.charCount}>{description.length}/2000</Text>
+          <View style={{ marginTop: 8 }}>
+            <DictationButton 
+                id="description-dictation"
+                onDictationComplete={handleDictationComplete}
+                disabled={loading}
+            />
+          </View>
+        </View>
+
+        <Divider style={styles.divider} />
+
+        {/* Priority Selector */}
+        <View style={styles.inputGroup}>
+          <Text variant="titleMedium" style={styles.label}>{t('tasks.priority')}</Text>
+          <View style={styles.priorityOptions}>
+            {priorities.map((p) => {
+                const color = getPriorityColor(p);
+                const isSelected = priority === p;
+                return (
+                    <Chip
+                        key={p}
+                        selected={isSelected}
+                        showSelectedOverlay
+                        mode={isSelected ? 'flat' : 'outlined'}
+                        onPress={() => setPriority(p)}
+                        textStyle={{ 
+                            color: isSelected ? 'white' : color, 
+                            fontWeight: 'bold' 
+                        }}
+                        style={[
+                            styles.priorityChip, 
+                            isSelected ? { backgroundColor: color } : { borderColor: color }
+                        ]}
+                        disabled={loading}
+                    >
+                        {t(`tasks.priorities.${p}`)}
+                    </Chip>
+                );
+            })}
+          </View>
         </View>
 
         {/* Contact Selector */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('form.contact')}</Text>
-          
+          <Text variant="titleMedium" style={styles.label}>{t('form.contact')}</Text>
           {selectedContactId ? (
             <View>
               <ContactDisplay contactId={selectedContactId} showActions={false} />
-              <TouchableOpacity
-                style={styles.removeContactButton}
+              <Button 
+                mode="text" 
+                textColor={theme.colors.error}
+                icon="close-circle" 
                 onPress={() => setSelectedContactId(null)}
                 disabled={loading}
+                style={{ alignSelf: 'flex-start', marginTop: 4 }}
               >
-                <Ionicons name="close-circle" size={20} color="#FF3B30" />
-                <Text style={styles.removeContactText}>{t('form.removeContact')}</Text>
-              </TouchableOpacity>
+                {t('form.removeContact')}
+              </Button>
             </View>
           ) : (
             <ContactSearchButton
@@ -273,85 +307,50 @@ export default function TaskForm({
           )}
         </View>
 
-        {/* Priority Selector */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('tasks.priority')}</Text>
-          <View style={styles.priorityContainer}>
-            {priorities.map((p) => (
-              <TouchableOpacity
-                key={p}
-                style={[
-                  styles.priorityButton,
-                  priority === p && { 
-                    backgroundColor: getPriorityColor(p),
-                    borderColor: getPriorityColor(p)
-                  }
-                ]}
-                onPress={() => setPriority(p)}
-                disabled={loading}
-              >
-                <Text style={[
-                  styles.priorityButtonText,
-                  priority === p && styles.priorityButtonTextActive
-                ]}>
-                  {t(`tasks.priorities.${p}`)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+        <Divider style={styles.divider} />
 
         {/* Due Date Selector */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('form.dueDateTime')}</Text>
-          <View style={styles.dateTimeContainer}>
-            <TouchableOpacity
-              style={styles.dateTimeButton}
-              onPress={() => setShowDatePicker(true)}
+          <Text variant="titleMedium" style={styles.label}>{t('form.dueDateTime')}</Text>
+          
+          <View style={styles.dateRow}>
+            <TextInput
+              mode="outlined"
+              label={t('tasks.dueDate')}
+              value={dueDate ? formatDate(dueDate, {
+                  month: 'short', day: 'numeric', year: 'numeric'
+              }) : ''}
+              editable={false}
+              right={<TextInput.Icon icon="calendar" onPress={() => !loading && setShowCalendarModal(true)} />}
+              style={{ flex: 1 }}
+              onPressIn={() => !loading && setShowCalendarModal(true)}
               disabled={loading}
-            >
-              <Ionicons name="calendar-outline" size={20} color="#007AFF" />
-              <Text style={styles.dateTimeButtonText}>
-                {dueDate ? formatDate(dueDate, {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric'
-                }) : t('form.selectDate')}
-              </Text>
-            </TouchableOpacity>
-
+            />
+            
             {dueDate && (
-              <TouchableOpacity
-                style={styles.dateTimeButton}
-                onPress={() => setShowTimePicker(true)}
-                disabled={loading}
-              >
-                <Ionicons name="time-outline" size={20} color="#007AFF" />
-                <Text style={styles.dateTimeButtonText}>
-                  {formatTime(dueDate)}
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {dueDate && (
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={() => setDueDate(undefined)}
-                disabled={loading}
-              >
-                <Ionicons name="close-circle" size={20} color="#FF3B30" />
-              </TouchableOpacity>
+                 <IconButton
+                    icon="close-circle"
+                    iconColor={theme.colors.error}
+                    size={24}
+                    onPress={() => setDueDate(undefined)}
+                    disabled={loading}
+                 />
             )}
           </View>
 
-          {showDatePicker && (
-            <DateTimePicker
-              value={dueDate || new Date()}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={handleDateChange}
-              minimumDate={new Date()}
-            />
+          {dueDate && (
+            <View style={styles.timeRow}>
+                <TextInput
+                    mode="outlined"
+                    label={t('date.time') || "Time"}
+                    value={formatTime(dueDate)}
+                    editable={false}
+                    right={<TextInput.Icon icon="clock-outline" onPress={() => !loading && setShowTimePicker(true)} />}
+                    style={{ flex: 1 }}
+                    onPressIn={() => !loading && setShowTimePicker(true)}
+                    disabled={loading}
+                />
+            </View>
           )}
 
           {showTimePicker && dueDate && (
@@ -362,13 +361,40 @@ export default function TaskForm({
               onChange={handleTimeChange}
             />
           )}
+
+          <Portal>
+            <Modal visible={showCalendarModal} onDismiss={() => setShowCalendarModal(false)} contentContainerStyle={styles.modalContent}>
+                <Card mode="elevated">
+                    <Card.Content style={{ padding: 0 }}>
+                        <Calendar
+                            current={dueDate ? dueDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                            onDayPress={handleCalendarDayPress}
+                            markedDates={{
+                                [(dueDate ? dueDate.toISOString().split('T')[0] : '')]: { selected: true, selectedColor: theme.colors.primary }
+                            }}
+                            theme={{
+                                selectedDayBackgroundColor: theme.colors.primary,
+                                todayTextColor: theme.colors.error,
+                                dotColor: theme.colors.primary,
+                                textDayFontWeight: '500',
+                                textMonthFontWeight: '600',
+                                textDayHeaderFontWeight: '500',
+                            }}
+                        />
+                    </Card.Content>
+                    <Card.Actions>
+                        <Button onPress={() => setShowCalendarModal(false)}>{t('common.cancel')}</Button>
+                    </Card.Actions>
+                </Card>
+            </Modal>
+          </Portal>
         </View>
 
         {/* Reminder Times Selector */}
         {dueDate && (
           <View style={styles.inputGroup}>
             <View style={styles.reminderHeader}>
-              <Text style={styles.label}>{t('form.reminders')}</Text>
+              <Text variant="bodyLarge">{t('form.reminders')}</Text>
               <Switch
                 value={enableReminders}
                 onValueChange={setEnableReminders}
@@ -378,49 +404,39 @@ export default function TaskForm({
 
             {enableReminders && (
               <View style={styles.reminderOptionsContainer}>
-                <Text style={styles.reminderHint}>
+                <HelperText type="info" visible>
                   {t('form.reminderHint')}
-                </Text>
+                </HelperText>
                 <View style={styles.reminderOptions}>
                   {DEFAULT_REMINDER_OPTIONS.map((minutes) => {
                     const isSelected = reminderTimes.includes(minutes);
                     const label = getReminderLabel(minutes, t);
                     
                     return (
-                      <TouchableOpacity
+                      <Chip
                         key={minutes}
-                        style={[
-                          styles.reminderOption,
-                          isSelected && styles.reminderOptionSelected
-                        ]}
+                        selected={isSelected}
+                        showSelectedOverlay
+                        mode={isSelected ? 'flat' : 'outlined'}
                         onPress={() => {
-                          if (isSelected) {
-                            setReminderTimes(prev => prev.filter(m => m !== minutes));
-                          } else {
-                            setReminderTimes(prev => [...prev, minutes].sort((a, b) => a - b));
-                          }
+                            if (isSelected) {
+                              setReminderTimes(prev => prev.filter(m => m !== minutes));
+                            } else {
+                              setReminderTimes(prev => [...prev, minutes].sort((a, b) => a - b));
+                            }
                         }}
                         disabled={loading}
+                        style={styles.reminderChip}
                       >
-                        <Ionicons 
-                          name={isSelected ? "checkmark-circle" : "ellipse-outline"} 
-                          size={20} 
-                          color={isSelected ? "#007AFF" : "#8E8E93"} 
-                        />
-                        <Text style={[
-                          styles.reminderOptionText,
-                          isSelected && styles.reminderOptionTextSelected
-                        ]}>
-                          {label}
-                        </Text>
-                      </TouchableOpacity>
+                        {label}
+                      </Chip>
                     );
                   })}
                 </View>
                 {reminderTimes.length === 0 && (
-                  <Text style={styles.reminderWarning}>
-                    ⚠️ {t('form.reminderWarning')}
-                  </Text>
+                   <HelperText type="error" visible>
+                       {t('form.reminderWarning')}
+                   </HelperText>
                 )}
               </View>
             )}
@@ -429,24 +445,26 @@ export default function TaskForm({
 
         {/* Action Buttons */}
         <View style={styles.actions}>
-          <TouchableOpacity
-            style={[styles.button, styles.submitButton, loading && styles.buttonDisabled]}
-            onPress={handleSubmit}
+          <Button 
+            mode="contained" 
+            onPress={handleSubmit} 
+            loading={loading}
             disabled={loading}
+            style={styles.button}
+            contentStyle={{ height: 48 }}
           >
-            <Text style={styles.submitButtonText}>
-              {buttonText}
-            </Text>
-          </TouchableOpacity>
+            {buttonText}
+          </Button>
 
           {onCancel && (
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
-              onPress={onCancel}
-              disabled={loading}
+            <Button 
+                mode="text" 
+                onPress={onCancel}
+                disabled={loading}
+                style={styles.button}
             >
-              <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
-            </TouchableOpacity>
+                {t('common.cancel')}
+            </Button>
           )}
         </View>
       </ScrollView>
@@ -464,180 +482,60 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
+    gap: 16,
   },
   inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1C1C1E',
     marginBottom: 8,
   },
-  required: {
-    color: '#FF3B30',
+  label: {
+    marginBottom: 8,
   },
-  input: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#1C1C1E',
+  divider: {
+      marginVertical: 8,
   },
-  inputError: {
-    borderColor: '#FF3B30',
+  priorityOptions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
   },
-  textArea: {
-    minHeight: 100,
-    paddingTop: 12,
+  priorityChip: {
+      
   },
-  errorText: {
-    color: '#FF3B30',
-    fontSize: 14,
-    marginTop: 4,
-  },
-  charCount: {
-    fontSize: 12,
-    color: '#8E8E93',
-    textAlign: 'right',
-    marginTop: 4,
-  },
-  priorityContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  priorityButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    backgroundColor: 'white',
-    alignItems: 'center',
-  },
-  priorityButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1C1C1E',
-  },
-  priorityButtonTextActive: {
-    color: 'white',
-  },
-  dateTimeContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
-  },
-  dateTimeButton: {
-    flex: 1,
+  dateRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    backgroundColor: 'white',
   },
-  dateTimeButtonText: {
-    fontSize: 14,
-    color: '#1C1C1E',
-  },
-  clearButton: {
-    padding: 8,
-  },
-  actions: {
-    marginTop: 20,
-    gap: 12,
-  },
-  button: {
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  submitButton: {
-    backgroundColor: '#007AFF',
-  },
-  submitButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cancelButton: {
-    backgroundColor: '#F2F2F7',
-  },
-  cancelButtonText: {
-    color: '#007AFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  buttonDisabled: {
-    opacity: 0.5,
+  timeRow: {
+    marginTop: 12,
   },
   reminderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 4,
   },
   reminderOptionsContainer: {
-    marginTop: 8,
-  },
-  reminderHint: {
-    fontSize: 14,
-    color: '#8E8E93',
-    marginBottom: 12,
+    marginTop: 4,
   },
   reminderOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between', // For grid layout
     gap: 8,
   },
-  reminderOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  reminderChip: {
+      width: '48%', // Approx 2 col
+      marginBottom: 8,
+  },
+  actions: {
+    marginTop: 16,
     gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    backgroundColor: 'white',
   },
-  reminderOptionSelected: {
-    backgroundColor: '#E8F4FF',
-    borderColor: '#007AFF',
+  button: {
+      borderRadius: 8,
   },
-  reminderOptionText: {
-    fontSize: 14,
-    color: '#1C1C1E',
-  },
-  reminderOptionTextSelected: {
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  reminderWarning: {
-    fontSize: 14,
-    color: '#FF9500',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  removeContactButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#FFF3F3',
-    marginTop: 8,
-  },
-  removeContactText: {
-    fontSize: 14,
-    color: '#FF3B30',
-    fontWeight: '500',
-  },
+  modalContent: {
+      margin: 20,
+  }
 });

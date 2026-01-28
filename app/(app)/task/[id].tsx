@@ -8,34 +8,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  View,
 } from 'react-native';
-
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case 'urgent':
-      return '#FF3B30';
-    case 'high':
-      return '#FF9500';
-    case 'medium':
-      return '#007AFF';
-    case 'low':
-      return '#34C759';
-    default:
-      return '#8E8E93';
-  }
-};
-
+import { Appbar, Button, Card, Chip, Divider, Text, useTheme } from 'react-native-paper';
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { t } = useTranslation();
+  const theme = useTheme();
   
   // Fetch task with TanStack Query
   const { data: task, isLoading, error, refetch } = useTask(Number(id));
@@ -97,156 +81,153 @@ export default function TaskDetailScreen() {
   const statusColor = getStatusColor(taskStatus);
   const statusLabel = getStatusLabel(taskStatus, t);
 
+  const priorityColors = {
+      urgent: '#FF3B30',
+      high: '#FF9500',
+      medium: '#007AFF',
+      low: '#34C759',
+  };
+  const priorityColor = priorityColors[task.priority as keyof typeof priorityColors] || '#8E8E93';
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <TouchableOpacity
-            style={styles.completionIndicator}
-            onPress={handleToggleComplete}
-          >
-            <Ionicons
-              name={task.completed ? 'checkmark-circle' : 'ellipse-outline'}
-              size={32}
-              color={task.completed ? '#34C759' : '#C7C7CC'}
-            />
-          </TouchableOpacity>
-          <Text style={[styles.title, task.completed && styles.completedTitle]}>
-            {task.title}
-          </Text>
-        </View>
-        
-        <View style={styles.metadata}>
-          <View style={styles.metadataItem}>
-            <Ionicons name="calendar-outline" size={16} color="#8E8E93" />
-            <Text style={styles.metadataText}>
-              {t('tasks.created')}: {new Date(task.createdAt).toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-              })}
-            </Text>
-          </View>
-          
-          {task.updatedAt !== task.createdAt && (
-            <View style={styles.metadataItem}>
-              <Ionicons name="time-outline" size={16} color="#8E8E93" />
-              <Text style={styles.metadataText}>
-                {t('tasks.updated')}: {new Date(task.updatedAt).toLocaleString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  hour12: true
-                })}
-              </Text>
+    <View style={styles.container}>
+      <Appbar.Header elevated>
+        <Appbar.BackAction onPress={() => router.push('/(app)')} />
+        <Appbar.Content title={t('tasks.taskDetails')} />
+        <Appbar.Action icon="pencil" onPress={() => router.push(`/(app)/task/edit/${id}`)} />
+      </Appbar.Header>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Main Header Card */}
+        <Card style={styles.card}>
+          <Card.Content>
+            <View style={styles.headerRow}>
+               <Text variant="headlineSmall" style={[
+                 styles.title, 
+                 task.completed && { textDecorationLine: 'line-through', color: theme.colors.onSurfaceDisabled }
+               ]}>
+                 {task.title}
+               </Text>
             </View>
-          )}
-        </View>
-
-        <View style={styles.statusBadge}>
-          <Text style={[
-            styles.statusText,
-            { backgroundColor: statusColor + '20', color: statusColor }
-          ]}>
-            {statusLabel}
-          </Text>
-        </View>
-      </View>
-
-      {task.description && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('tasks.description')}</Text>
-          <Text style={styles.description}>{task.description}</Text>
-        </View>
-      )}
-
-      {/* Priority and Due Date Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t('tasks.details')}</Text>
-        
-        <View style={styles.detailRow}>
-          <View style={styles.detailLabel}>
-            <Ionicons name="flag-outline" size={18} color="#8E8E93" />
-            <Text style={styles.detailLabelText}>{t('tasks.priority')}</Text>
-          </View>
-          <View style={[
-            styles.priorityBadge,
-            { backgroundColor: getPriorityColor(task.priority) + '20' }
-          ]}>
-            <Text style={[
-              styles.priorityText,
-              { color: getPriorityColor(task.priority) }
-            ]}>
-              {t(`tasks.priorities.${task.priority}`).toUpperCase()}
-            </Text>
-          </View>
-        </View>
-
-        {task.dueDate && (
-          <View style={styles.detailRow}>
-            <View style={styles.detailLabel}>
-              <Ionicons name="alarm-outline" size={18} color="#8E8E93" />
-              <Text style={styles.detailLabelText}>{t('tasks.dueDate')}</Text>
+            
+            <View style={styles.chipRow}>
+              <Chip 
+                mode="flat" 
+                style={{ backgroundColor: statusColor + '20' }}
+                textStyle={{ color: statusColor }}
+              >
+                {statusLabel}
+              </Chip>
+              <Chip 
+                  mode="outlined"
+                  textStyle={{ color: priorityColor }}
+                  style={{ borderColor: priorityColor }}
+              >
+                  {t(`tasks.priorities.${task.priority}`).toUpperCase()}
+              </Chip>
             </View>
-            <Text style={styles.detailValue}>
-              {new Date(task.dueDate).toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-              })}
-            </Text>
-          </View>
+          </Card.Content>
+        </Card>
+
+        {/* Description & Details Card */}
+        <Card style={styles.card}>
+          <Card.Content style={{ gap: 16 }}>
+             {task.description && (
+               <View>
+                 <Text variant="titleMedium" style={{ marginBottom: 4 }}>{t('tasks.description')}</Text>
+                 <Text variant="bodyLarge">{task.description}</Text>
+               </View>
+             )}
+             
+             {task.description && <Divider />}
+
+             <View style={styles.detailRow}>
+                 <Ionicons name="calendar-outline" size={20} color={theme.colors.secondary} />
+                 <View style={{ flex: 1 }}>
+                     <Text variant="labelMedium">{t('tasks.dueDate')}</Text>
+                     <Text variant="bodyMedium">
+                         {task.dueDate ? new Date(task.dueDate).toLocaleString('en-US', {
+                            month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
+                         }) : t('common.no')}
+                     </Text>
+                 </View>
+             </View>
+
+             <View style={styles.detailRow}>
+                 <Ionicons name="time-outline" size={20} color={theme.colors.secondary} />
+                 <View style={{ flex: 1 }}>
+                     <Text variant="labelMedium">{t('tasks.created')}</Text>
+                     <Text variant="bodyMedium">
+                         {new Date(task.createdAt).toLocaleString('en-US', {
+                             month: 'short', day: 'numeric', year: 'numeric'
+                         })}
+                     </Text>
+                 </View>
+             </View>
+
+             {task.updatedAt !== task.createdAt && (
+               <View style={styles.detailRow}>
+                   <Ionicons name="create-outline" size={20} color={theme.colors.secondary} />
+                   <View style={{ flex: 1 }}>
+                       <Text variant="labelMedium">{t('tasks.updated')}</Text>
+                       <Text variant="bodyMedium">
+                           {new Date(task.updatedAt).toLocaleString('en-US', {
+                               month: 'short', day: 'numeric', year: 'numeric'
+                           })}
+                       </Text>
+                   </View>
+               </View>
+             )}
+          </Card.Content>
+        </Card>
+
+        {/* Contact Section */}
+        {task.contactId && (
+          <Card style={styles.card}>
+            <Card.Title title={t('tasks.contact')} />
+            <Card.Content>
+               <ContactDisplay contactId={task.contactId} showActions={true} />
+            </Card.Content>
+          </Card>
         )}
-      </View>
 
-      {/* Contact Section */}
-      {task.contactId && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('tasks.contact')}</Text>
-          <ContactDisplay contactId={task.contactId} showActions={true} />
+        {/* Actions */}
+        <View style={styles.actions}>
+            <Button 
+                mode="contained" 
+                icon={task.completed ? "close" : "check"}
+                onPress={handleToggleComplete}
+                buttonColor={task.completed ? theme.colors.primary : "#34C759"}
+                style={styles.button}
+                contentStyle={styles.buttonContent}
+            >
+                {task.completed ? t('tasks.markPending') : t('tasks.markComplete')}
+            </Button>
+
+            <Button 
+                mode="contained"
+                icon="pencil"
+                onPress={() => router.push(`/(app)/task/edit/${id}`)}
+                style={styles.button}
+                contentStyle={styles.buttonContent}
+            >
+                {t('tasks.editTask')}
+            </Button>
+
+            <Button 
+                mode="contained" 
+                icon="delete"
+                onPress={handleDelete}
+                buttonColor={theme.colors.error}
+                style={styles.button}
+                contentStyle={styles.buttonContent}
+            >
+                {t('tasks.deleteTask')}
+            </Button>
         </View>
-      )}
 
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => router.push(`/(app)/task/edit/${id}`)}
-        >
-          <Ionicons name="pencil" size={20} color="white" />
-          <Text style={styles.actionText}>{t('tasks.editTask')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.actionButton, styles.toggleButton]}
-          onPress={handleToggleComplete}
-        >
-          <Ionicons
-            name={task.completed ? 'close-circle' : 'checkmark-circle'}
-            size={20}
-            color="white"
-          />
-          <Text style={styles.actionText}>
-            {task.completed ? t('tasks.markPending') : t('tasks.markComplete')}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={handleDelete}
-        >
-          <Ionicons name="trash" size={20} color="white" />
-          <Text style={styles.actionText}>{t('tasks.deleteTask')}</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -255,133 +236,42 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F7',
   },
-  header: {
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 40,
+    gap: 16,
+  },
+  card: {
     backgroundColor: 'white',
-    padding: 20,
-    marginBottom: 16,
+    borderRadius: 12,
   },
-  titleRow: {
+  headerRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  completionIndicator: {
-    marginRight: 12,
-    marginTop: 2,
+    marginBottom: 12,
   },
   title: {
     flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1C1C1E',
-    lineHeight: 24,
   },
-  completedTitle: {
-    textDecorationLine: 'line-through',
-    color: '#8E8E93',
-  },
-  metadata: {
-    gap: 8,
-  },
-  metadataItem: {
+  chipRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 8,
-  },
-  metadataText: {
-    fontSize: 14,
-    color: '#8E8E93',
-  },
-  statusBadge: {
-    marginTop: 12,
-    alignSelf: 'flex-start',
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: '600',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  statusCompleted: {
-    backgroundColor: '#E8F5E9',
-    color: '#34C759',
-  },
-  statusPending: {
-    backgroundColor: '#FFF3E0',
-    color: '#FF9500',
-  },
-  section: {
-    backgroundColor: 'white',
-    padding: 20,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: '#1C1C1E',
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#3C3C43',
+    flexWrap: 'wrap',
   },
   detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  detailLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  detailLabelText: {
-    fontSize: 16,
-    color: '#1C1C1E',
-    fontWeight: '500',
-  },
-  detailValue: {
-    fontSize: 16,
-    color: '#3C3C43',
-  },
-  priorityBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  priorityText: {
-    fontSize: 12,
-    fontWeight: '700',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
   },
   actions: {
-    padding: 20,
-    gap: 12,
+      gap: 12,
+      marginTop: 8,
   },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
+  button: {
+      borderRadius: 8,
   },
-  editButton: {
-    backgroundColor: '#007AFF',
-  },
-  deleteButton: {
-    backgroundColor: '#FF3B30',
-  },
-  toggleButton: {
-    backgroundColor: '#34C759',
-  },
-  actionText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  buttonContent: {
+      height: 48,
+  }
 });

@@ -1,13 +1,21 @@
 import { getTaskStats } from '@/lib/db/tasksDb';
-import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
     RefreshControl,
     ScrollView,
     StyleSheet,
-    Text,
     View,
 } from 'react-native';
+import {
+    Appbar,
+    Avatar,
+    Card,
+    Divider,
+    List,
+    Surface,
+    Text,
+    useTheme
+} from 'react-native-paper';
 
 interface TaskStats {
   total: number;
@@ -17,6 +25,12 @@ interface TaskStats {
 }
 
 export default function ProfileScreen() {
+  const theme = useTheme();
+  // We can add translations for Profile later if needed, but using hardcoded English for now
+  // to match original file, or basic keys if they exist. 
+  // The original file had hardcoded text. I will stick to hardcoded text to match behavior exactly, 
+  // or use basic keys if obvious. Match original text.
+  
   const [stats, setStats] = useState<TaskStats>({
     total: 0,
     completed: 0,
@@ -48,174 +62,156 @@ export default function ProfileScreen() {
     ? Math.round((stats.completed / stats.total) * 100) 
     : 0;
 
+  const getPriorityColor = (priority: string): string => {
+    switch (priority.toLowerCase()) {
+      case 'urgent': return '#FF3B30';
+      case 'high': return '#FF9F0A';
+      case 'medium': return '#007AFF';
+      case 'low': return '#34C759';
+      default: return '#8E8E93';
+    }
+  };
+
   return (
-    <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* App Header */}
-      <View style={styles.header}>
-        <View style={styles.appIconContainer}>
-          <Ionicons name="checkmark-done" size={50} color="#007AFF" />
-        </View>
-        
-        <Text style={styles.appName}>Task Manager</Text>
-        <Text style={styles.appTagline}>Your Personal Productivity App</Text>
-      </View>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Appbar.Header elevated>
+        <Appbar.Content title="Profile" />
+      </Appbar.Header>
 
-      {/* Task Statistics */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Task Statistics</Text>
-        
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: '#007AFF15' }]}>
-              <Ionicons name="list" size={24} color="#007AFF" />
-            </View>
-            <Text style={styles.statValue}>{stats.total}</Text>
-            <Text style={styles.statLabel}>Total Tasks</Text>
-          </View>
+      <ScrollView 
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* App Header Branding */}
+        <Surface style={styles.brandingSection} elevation={1}>
+            <Avatar.Icon size={80} icon="check-all" style={{ backgroundColor: theme.colors.primaryContainer }} />
+            <Text variant="headlineMedium" style={[styles.appName, { color: theme.colors.onSurface }]}>Task Manager</Text>
+            <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>Your Personal Productivity App</Text>
+        </Surface>
 
-          <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: '#34C75915' }]}>
-              <Ionicons name="checkmark-circle" size={24} color="#34C759" />
-            </View>
-            <Text style={styles.statValue}>{stats.completed}</Text>
-            <Text style={styles.statLabel}>Completed</Text>
-          </View>
-
-          <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: '#FF9F0A15' }]}>
-              <Ionicons name="time" size={24} color="#FF9F0A" />
-            </View>
-            <Text style={styles.statValue}>{stats.pending}</Text>
-            <Text style={styles.statLabel}>Pending</Text>
-          </View>
-
-          <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: '#AF52DE15' }]}>
-              <Ionicons name="trending-up" size={24} color="#AF52DE" />
-            </View>
-            <Text style={styles.statValue}>{completionRate}%</Text>
-            <Text style={styles.statLabel}>Completion</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Priority Breakdown */}
-      {Object.keys(stats.byPriority).length > 0 && (
+        {/* Task Statistics */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tasks by Priority</Text>
-          
-          {Object.entries(stats.byPriority).map(([priority, count]) => (
-            <View key={priority} style={styles.priorityItem}>
-              <View style={styles.priorityInfo}>
-                <View style={[
-                  styles.priorityDot,
-                  { backgroundColor: getPriorityColor(priority) }
-                ]} />
-                <Text style={styles.priorityLabel}>
-                  {priority.charAt(0).toUpperCase() + priority.slice(1)}
-                </Text>
-              </View>
-              <Text style={styles.priorityCount}>{count}</Text>
+            <Text variant="titleMedium" style={styles.sectionTitle}>Task Statistics</Text>
+            <View style={styles.statsGrid}>
+                {/* Total */}
+                <Card style={styles.statCard} mode="contained">
+                    <Card.Content style={styles.statCardContent}>
+                        <Avatar.Icon size={40} icon="format-list-bulleted" style={{ backgroundColor: theme.colors.secondaryContainer }} color={theme.colors.onSecondaryContainer} />
+                        <Text variant="headlineMedium" style={styles.statValue}>{stats.total}</Text>
+                        <Text variant="bodySmall">Total Tasks</Text>
+                    </Card.Content>
+                </Card>
+                
+                {/* Completed */}
+                <Card style={styles.statCard} mode="contained">
+                    <Card.Content style={styles.statCardContent}>
+                        <Avatar.Icon size={40} icon="check-circle-outline" style={{ backgroundColor: '#E8F5E9' }} color="#2E7D32" />
+                        <Text variant="headlineMedium" style={styles.statValue}>{stats.completed}</Text>
+                        <Text variant="bodySmall">Completed</Text>
+                    </Card.Content>
+                </Card>
+
+                {/* Pending */}
+                <Card style={styles.statCard} mode="contained">
+                    <Card.Content style={styles.statCardContent}>
+                        <Avatar.Icon size={40} icon="clock-outline" style={{ backgroundColor: '#FFF3E0' }} color="#EF6C00" />
+                        <Text variant="headlineMedium" style={styles.statValue}>{stats.pending}</Text>
+                        <Text variant="bodySmall">Pending</Text>
+                    </Card.Content>
+                </Card>
+
+                {/* Completion Rate */}
+                <Card style={styles.statCard} mode="contained">
+                    <Card.Content style={styles.statCardContent}>
+                        <Avatar.Icon size={40} icon="trending-up" style={{ backgroundColor: '#F3E5F5' }} color="#7B1FA2" />
+                        <Text variant="headlineMedium" style={styles.statValue}>{completionRate}%</Text>
+                        <Text variant="bodySmall">Completion</Text>
+                    </Card.Content>
+                </Card>
             </View>
-          ))}
-        </View>
-      )}
-
-      {/* App Info */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About</Text>
-        
-        <View style={styles.infoItem}>
-          <View style={styles.infoIcon}>
-            <Ionicons name="information-circle-outline" size={24} color="#8E8E93" />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Version</Text>
-            <Text style={styles.infoValue}>1.0.0</Text>
-          </View>
         </View>
 
-        <View style={styles.infoItem}>
-          <View style={styles.infoIcon}>
-            <Ionicons name="phone-portrait-outline" size={24} color="#8E8E93" />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Storage</Text>
-            <Text style={styles.infoValue}>Local SQLite Database</Text>
-          </View>
-        </View>
-      </View>
+        {/* Priority Breakdown */}
+        {Object.keys(stats.byPriority).length > 0 && (
+            <List.Section style={styles.sectionEntry}>
+                <List.Subheader>Tasks by Priority</List.Subheader>
+                <Card mode="elevated" style={{ backgroundColor: 'white' }}>
+                    <Card.Content style={{ padding: 0 }}>
+                        {Object.entries(stats.byPriority).map(([priority, count], index) => (
+                            <React.Fragment key={priority}>
+                                {index > 0 && <Divider />}
+                                <List.Item
+                                    title={priority.charAt(0).toUpperCase() + priority.slice(1)}
+                                    left={() => <View style={[styles.priorityDot, { backgroundColor: getPriorityColor(priority) }]} />}
+                                    right={() => <Text variant="bodyLarge" style={{ alignSelf: 'center', fontWeight: 'bold' }}>{count}</Text>}
+                                />
+                            </React.Fragment>
+                        ))}
+                    </Card.Content>
+                </Card>
+            </List.Section>
+        )}
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          Made with ❤️ for productivity
-        </Text>
-      </View>
-    </ScrollView>
+        {/* App Info */}
+        <List.Section style={styles.sectionEntry}>
+            <List.Subheader>About</List.Subheader>
+            <Card mode="elevated" style={{ backgroundColor: 'white' }}>
+                 <Card.Content style={{ padding: 0 }}>
+                    <List.Item
+                        title="Version"
+                        description="1.0.0"
+                        left={(props) => <List.Icon {...props} icon="information" />}
+                    />
+                    <Divider />
+                    <List.Item
+                        title="Storage"
+                        description="Local SQLite Database"
+                        left={(props) => <List.Icon {...props} icon="database" />}
+                    />
+                 </Card.Content>
+            </Card>
+        </List.Section>
+
+        <View style={styles.footer}>
+            <Text variant="bodySmall" style={{ color: theme.colors.outline }}>Made with ❤️ for productivity</Text>
+        </View>
+
+      </ScrollView>
+    </View>
   );
-}
-
-function getPriorityColor(priority: string): string {
-  switch (priority.toLowerCase()) {
-    case 'urgent':
-      return '#FF3B30';
-    case 'high':
-      return '#FF9F0A';
-    case 'medium':
-      return '#007AFF';
-    case 'low':
-      return '#34C759';
-    default:
-      return '#8E8E93';
-  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
   },
-  header: {
-    alignItems: 'center',
-    padding: 30,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+  content: {
+    paddingBottom: 32,
   },
-  appIconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#F0F0F0',
-    justifyContent: 'center',
+  brandingSection: {
+    padding: 32,
     alignItems: 'center',
     marginBottom: 16,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   appName: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1C1C1E',
-    marginBottom: 4,
-  },
-  appTagline: {
-    fontSize: 16,
-    color: '#8E8E93',
+    marginTop: 16,
+    fontWeight: 'bold',
   },
   section: {
-    marginTop: 20,
-    backgroundColor: 'white',
-    padding: 20,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  sectionEntry: {
+      paddingHorizontal: 16,
+      marginBottom: 0,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1C1C1E',
-    marginBottom: 16,
+      marginBottom: 12,
+      fontWeight: '600',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -223,89 +219,26 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   statCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: '#F9F9F9',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
+    width: '48%', // Approx 2 column
   },
-  statIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
+  statCardContent: {
+      alignItems: 'center',
+      paddingVertical: 16,
   },
   statValue: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1C1C1E',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#8E8E93',
-  },
-  priorityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  priorityInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+      fontWeight: 'bold',
+      marginVertical: 4,
   },
   priorityDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  priorityLabel: {
-    fontSize: 16,
-    color: '#1C1C1E',
-  },
-  priorityCount: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#8E8E93',
-  },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  infoIcon: {
-    width: 40,
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  infoContent: {
-    flex: 1,
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: '#8E8E93',
-    marginBottom: 2,
-  },
-  infoValue: {
-    fontSize: 16,
-    color: '#1C1C1E',
+      width: 12, 
+      height: 12, 
+      borderRadius: 6, 
+      margin: 10,
+      alignSelf: 'center',
   },
   footer: {
-    padding: 20,
+    padding: 24,
     alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#8E8E93',
   },
 });
 

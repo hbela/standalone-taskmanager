@@ -126,7 +126,8 @@
     "date": {
         "today": "Ma",
         "tomorrow": "Holnap",
-        "yesterday": "Tegnap"
+        "yesterday": "Tegnap",
+        "time": "Idő"
     },
     "common": {
         "locale": "hu-HU",

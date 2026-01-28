@@ -126,7 +126,8 @@
     "date": {
         "today": "Heute",
         "tomorrow": "Morgen",
-        "yesterday": "Gestern"
+        "yesterday": "Gestern",
+        "time": "Zeit"
     },
     "common": {
         "locale": "de-DE",

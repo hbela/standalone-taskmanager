@@ -126,7 +126,8 @@
     "date": {
         "today": "Today",
         "tomorrow": "Tomorrow",
-        "yesterday": "Yesterday"
+        "yesterday": "Yesterday",
+        "time": "Time"
     },
     "common": {
         "locale": "en-US",

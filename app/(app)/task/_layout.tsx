@@ -34,13 +34,13 @@ export default function TaskLayout() {
 
   const detailsOptions = useMemo(() => ({
     title: screenTitles.details,
-    headerShown: true,
+    headerShown: false,
     headerLeft: () => <BackButton />,
   }), [screenTitles.details]);
 
   const editOptions = useMemo(() => ({
     title: screenTitles.edit,
-    headerShown: true,
+    headerShown: false,
     headerLeft: () => <BackButton />,
   }), [screenTitles.edit]);
 

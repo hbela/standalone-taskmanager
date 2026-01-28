@@ -4,12 +4,19 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { CreateTaskInput, UpdateTaskInput } from '@/types/task';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Appbar, Button, Dialog, Paragraph, Portal } from 'react-native-paper';
 
 export default function CreateTaskScreen() {
   const router = useRouter();
   const createTaskMutation = useCreateTask();
   const { t, _key } = useTranslation();
+
+  // Dialog state
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogTitle, setDialogTitle] = useState('');
+  const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogType, setDialogType] = useState<'success' | 'error'>('success');
 
   // Force re-render when language changes
   const [renderKey, setRenderKey] = useState(0);
@@ -28,38 +35,57 @@ export default function CreateTaskScreen() {
   );
 
   const submitLabel = t('tasks.createTask');
-  console.log('[CreateTaskScreen] Render - _key:', _key, 'renderKey:', renderKey, 'submitLabel:', submitLabel);
 
   const handleSubmit = async (data: CreateTaskInput | UpdateTaskInput) => {
     try {
       await createTaskMutation.mutateAsync(data as CreateTaskInput);
       
-      Alert.alert(
-        t('common.success'),
-        t('tasks.createSuccess'),
-        [
-          {
-            text: t('common.done'),
-            onPress: () => router.push('/(app)')
-          }
-        ]
-      );
+      setDialogTitle(t('common.success'));
+      setDialogMessage(t('tasks.createSuccess'));
+      setDialogType('success');
+      setDialogVisible(true);
+
     } catch (error: any) {
-      Alert.alert(
-        t('common.error'),
-        error.message || t('errors.createTask')
-      );
+      setDialogTitle(t('common.error'));
+      setDialogMessage(error.message || t('errors.createTask'));
+      setDialogType('error');
+      setDialogVisible(true);
+    }
+  };
+
+  const handleDialogDismiss = () => {
+    setDialogVisible(false);
+    if (dialogType === 'success') {
+      router.push('/(app)');
     }
   };
 
   return (
     <View style={styles.container} key={`create-screen-${renderKey}`}>
+      <Appbar.Header elevated>
+        <Appbar.Content title={t('tasks.create')} />
+      </Appbar.Header>
+
       <TaskForm
         key={`create-form-${renderKey}`}
         onSubmit={handleSubmit}
         submitLabel={submitLabel}
         loading={createTaskMutation.isPending}
       />
+
+      <Portal>
+        <Dialog visible={dialogVisible} onDismiss={handleDialogDismiss}>
+          <Dialog.Title>{dialogTitle}</Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>{dialogMessage}</Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={handleDialogDismiss}>
+              {dialogType === 'success' ? t('common.done') : 'OK'}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 }
