@@ -1,5 +1,4 @@
 import ErrorMessage from '@/components/ErrorMessage';
-import ExportButton from '@/components/ExportButton';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import TaskCard from '@/components/TaskCard';
 import { useDeleteTask, useTasks, useToggleTaskComplete } from '@/hooks/useTasksQuery';
@@ -12,18 +11,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Linking,
-    Modal,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Linking,
+  Modal,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { Appbar, Chip, Searchbar } from 'react-native-paper';
 
 export default function TasksScreen() {
   const { t, _key } = useTranslation();
@@ -48,6 +47,8 @@ export default function TasksScreen() {
       placeholder: t('tasks.searchPlaceholder'),
     });
   }, [_key, t]);
+
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
 
   // Debug logging
   console.log('[TasksScreen] Rendering with key:', _key, 'forceRender:', forceRender);
@@ -231,64 +232,48 @@ export default function TasksScreen() {
   return (
     <>
       <View style={styles.container} key={`container-${_key}`}>
-        {/* Custom Header */}
-        <View style={styles.customHeader} key={`header-${_key}`}>
-          {/* Title Row: Centered with Export Button */}
-          <View style={styles.titleRow}>
-            <Text style={styles.pageTitle} key={`title-${_key}-${forceRender}`}>
-              {pageTitle}
-            </Text>
-            <View style={styles.headerActions}>
-              <ExportButton
-                onPress={handleExport}
-                isExporting={isExporting}
-                taskCount={filteredTasks.length}
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Search and Filter Bar */}
-        <View style={styles.header} key={`search-filter-${_key}`}>
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color="#666" />
-            <TextInput
-              key={`search-input-${_key}-${forceRender}`}
-              style={styles.searchInput}
+        {isSearchVisible ? (
+          <Appbar.Header elevated>
+            <Searchbar
               placeholder={searchPlaceholder}
-              value={searchQuery}
               onChangeText={setSearchQuery}
+              value={searchQuery}
+              icon="arrow-left"
+              onIconPress={() => {
+                setIsSearchVisible(false);
+                setSearchQuery('');
+              }}
+              style={styles.searchBar}
             />
-            {searchQuery ? (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={20} color="#666" />
-              </TouchableOpacity>
-            ) : null}
-          </View>
+          </Appbar.Header>
+        ) : (
+          <Appbar.Header elevated>
+            <Appbar.Content title={pageTitle} />
+            <Appbar.Action icon="magnify" onPress={() => setIsSearchVisible(true)} />
+            <Appbar.Action 
+               icon="cloud-upload"
+               onPress={handleExport} 
+               disabled={isExporting} 
+            />
+          </Appbar.Header>
+        )}
 
-          {/* Filter Chips */}
-          <View style={styles.filterContainer} key={`filters-${_key}`}>
-            {(['all', 'pending', 'overdue', 'completed'] as const).map((filterType) => (
-              <TouchableOpacity
-                key={`${filterType}-${_key}`}
-                onPress={() => setFilter(filterType)}
-                style={[
-                  styles.filterChip,
-                  filter === filterType && styles.filterChipActive
-                ]}
-              >
-                <Text style={[
-                  styles.filterChipText,
-                  filter === filterType && styles.filterChipTextActive
-                ]}>
-                  {filterType === 'all' ? t('tasks.filterAll') :
-                   filterType === 'pending' ? t('tasks.filterPending') :
-                   filterType === 'overdue' ? t('tasks.filterOverdue') :
-                   t('tasks.filterCompleted')}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {/* Filter Chips */}
+        <View style={styles.filterContainer} key={`filters-${_key}`}>
+          {(['all', 'pending', 'overdue', 'completed'] as const).map((filterType) => (
+            <Chip
+              key={`${filterType}-${_key}`}
+              selected={filter === filterType}
+              onPress={() => setFilter(filterType)}
+              style={styles.filterChip}
+              showSelectedOverlay
+            >
+                {filterType === 'all' ? t('tasks.filterAll') :
+                 filterType === 'pending' ? t('tasks.filterPending') :
+                 filterType === 'overdue' ? t('tasks.filterOverdue') :
+                 t('tasks.filterCompleted')}
+            </Chip>
+          ))}
         </View>
 
         {/* Task List */}
@@ -338,81 +323,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F7',
   },
-  customHeader: {
-    backgroundColor: 'white',
-    paddingTop: 50, // Account for status bar
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
-  userSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  welcomeText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  titleRow: {
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  headerActions: {
-    marginLeft: 12,
-  },
-  pageTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1C1C1E',
-  },
-  header: {
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-  },
-  searchInput: {
+  searchBar: {
     flex: 1,
-    padding: 12,
-    fontSize: 16,
+    backgroundColor: 'transparent',
+    elevation: 0,
   },
   filterContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
+    padding: 16,
+    backgroundColor: 'white',
   },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#F0F0F0',
-  },
-  filterChipActive: {
-    backgroundColor: '#007AFF',
-  },
-  filterChipText: {
-    color: '#666',
-    fontWeight: '400',
-  },
-  filterChipTextActive: {
-    color: 'white',
-    fontWeight: '600',
+    marginRight: 4,
   },
   listContent: {
     padding: 16,
@@ -440,9 +364,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
-  },
-  footerLoading: {
-    padding: 20,
   },
   errorBanner: {
     flexDirection: 'row',
