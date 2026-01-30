@@ -2,15 +2,16 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { DEFAULT_REMINDER_OPTIONS, DEFAULT_REMINDERS, getReminderLabel } from '@/lib/notifications';
 import { CreateTaskInput, TaskPriority, UpdateTaskInput } from '@/types/task';
 import { formatDate, formatTime } from '@/utils/dateFormatter';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+    Dimensions,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
     StyleSheet,
     View
 } from 'react-native';
-import { Calendar, DateData } from 'react-native-calendars';
+import { Calendar, DateData, LocaleConfig } from 'react-native-calendars';
 import {
     Button,
     Card,
@@ -52,6 +53,41 @@ registerTranslation('hu', {
   hour: 'Óra',
   minute: 'Perc',
 });
+
+// Configure calendar locales
+LocaleConfig.locales['en'] = {
+  monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+  dayNamesShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  today: 'Today'
+};
+
+LocaleConfig.locales['hu'] = {
+  monthNames: ['Január', 'Február', 'Március', 'Április', 'Május', 'Június', 'Július', 'Augusztus', 'Szeptember', 'Október', 'November', 'December'],
+  monthNamesShort: ['Jan', 'Feb', 'Már', 'Ápr', 'Máj', 'Jún', 'Júl', 'Aug', 'Szep', 'Okt', 'Nov', 'Dec'],
+  dayNames: ['Vasárnap', 'Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat'],
+  dayNamesShort: ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'],
+  today: 'Ma'
+};
+
+LocaleConfig.locales['fr'] = {
+  monthNames: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+  monthNamesShort: ['Janv', 'Févr', 'Mars', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'],
+  dayNames: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+  dayNamesShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+  today: "Aujourd'hui"
+};
+
+LocaleConfig.locales['de'] = {
+  monthNames: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+  monthNamesShort: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+  dayNames: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+  dayNamesShort: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+  today: 'Heute'
+};
+
+LocaleConfig.defaultLocale = 'en';
 
 
 interface TaskFormProps {
@@ -100,6 +136,12 @@ export default function TaskForm({
   // Refs for focus management
   const titleInputRef = useRef<any>(null);
   const descriptionInputRef = useRef<any>(null);
+
+  // Set calendar locale based on user's language
+  useEffect(() => {
+    const locale = t('locale') || 'en'; // Get locale from translations root
+    LocaleConfig.defaultLocale = locale;
+  }, [t]);
 
   const priorities: TaskPriority[] = ['low', 'medium', 'high', 'urgent'];
 
@@ -398,7 +440,7 @@ export default function TaskForm({
 
           <Portal>
             <Modal visible={showCalendarModal} onDismiss={() => setShowCalendarModal(false)} contentContainerStyle={styles.modalContent}>
-                <Card mode="elevated">
+                <Card mode="elevated" style={{ margin: 0, width: '100%' }}>
                     <Card.Content style={{ padding: 0 }}>
                         <Calendar
                             current={dueDate ? dueDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
@@ -415,9 +457,9 @@ export default function TaskForm({
                                 selectedDayTextColor: theme.colors.onPrimary,
                                 todayTextColor: theme.colors.error,
                                 dotColor: theme.colors.primary,
-                                textDayFontSize: 16, // Slightly increased for better balance
-                                textMonthFontSize: 18, // Slightly increased
-                                textDayHeaderFontSize: 14,
+                                textDayFontSize: 20, // Increased for better readability
+                                textMonthFontSize: 24, // Increased
+                                textDayHeaderFontSize: 18, // Increased
                                 textDayFontWeight: '500',
                                 textMonthFontWeight: '600',
                                 textDayHeaderFontWeight: '500',
@@ -581,6 +623,8 @@ const styles = StyleSheet.create({
       borderRadius: 8,
   },
   modalContent: {
-      margin: 20,
+      width: Dimensions.get('window').width * 0.98,
+      alignSelf: 'center',
+      marginVertical: 20,
   }
 });

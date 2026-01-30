@@ -1,18 +1,17 @@
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { LanguageContext } from '@/context/LanguageContext';
-import i18n from '@/i18n';
-import React, { useContext } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
+import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
-  const { key } = useContext(LanguageContext);
+  const { t } = useTranslation();
 
   return (
-    <SafeAreaView style={styles.safeArea} key={key}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>{i18n.t('settings.title')}</Text>
+          <Text style={styles.headerTitle}>{t('settings.title')}</Text>
         </View>
         
         <View style={styles.content}>
@@ -20,10 +19,10 @@ export default function SettingsScreen() {
           
           {/* You can add more settings sections here */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{i18n.t('settings.about')}</Text>
+            <Text style={styles.sectionTitle}>{t('settings.about')}</Text>
             <View style={styles.infoCard}>
-              <Text style={styles.infoText}>Task Manager App</Text>
-              <Text style={styles.infoSubtext}>Version 1.0.0</Text>
+              <Text style={styles.infoText}>{t('auth.appTitle')}</Text>
+              <Text style={styles.infoSubtext}>{t('profile.version')} 1.0.0</Text>
             </View>
           </View>
         </View>

@@ -1,4 +1,5 @@
 {
+    "locale": "fr",
     "welcome": "Bienvenue",
     "tasks": {
         "title": "Mes tâches",
@@ -72,6 +73,19 @@
         "profile": "Profil",
         "notifications": "Notifications",
         "about": "À propos"
+    },
+    "profile": {
+        "title": "Profil",
+        "taskStats": "Statistiques des Tâches",
+        "totalTasks": "Total des Tâches",
+        "completed": "Terminé",
+        "pending": "En Attente",
+        "completion": "Achèvement",
+        "tasksByPriority": "Tâches par Priorité",
+        "about": "À Propos",
+        "version": "Version",
+        "storage": "Stockage",
+        "madeWithLove": "Fait avec ❤️ pour la productivité"
     },
     "contacts": {
         "title": "Contacts",

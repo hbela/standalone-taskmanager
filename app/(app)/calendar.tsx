@@ -211,6 +211,7 @@ export default function CalendarScreen() {
           <Card style={styles.calendarCard} mode="elevated">
             <Card.Content style={{ padding: 0 }}>
                 <Calendar
+                    key={t('common.languageCode')}
                     current={selectedDate}
                     onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
                     markedDates={markedDates}

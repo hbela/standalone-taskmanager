@@ -3,15 +3,15 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Contacts from 'expo-contacts';
 import React, { useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    Linking,
-    Modal,
-    Platform,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity, // Keep native TouchableOpacity for internal flatlist items or specific touch areas if RNP Button not suitable, but try to use RNP. Actually RNP Button is good.
-    View,
+  Alert,
+  FlatList,
+  Linking,
+  Modal,
+  Platform,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity, // Keep native TouchableOpacity for internal flatlist items or specific touch areas if RNP Button not suitable, but try to use RNP. Actually RNP Button is good.
+  View,
 } from 'react-native';
 import { Text, TouchableRipple, useTheme } from 'react-native-paper';
 
@@ -152,30 +152,32 @@ export default function ContactSearchButton({
         style={[styles.contactItem, { backgroundColor: theme.colors.surface }]}
         onPress={() => handleSelectContact(item)}
       >
-        <View style={styles.contactAvatar}>
-          <Text style={styles.contactAvatarText}>
-            {item.name
-              ?.split(' ')
-              .map((n) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2) || '?'}
-          </Text>
-        </View>
-        <View style={styles.contactInfo}>
-          <Text style={styles.contactName}>{item.name || t('contacts.unknown')}</Text>
-          {phone && (
-            <Text style={[styles.contactDetail, { color: theme.colors.onSurfaceVariant }]}>
-              <Ionicons name="call-outline" size={12} color={theme.colors.onSurfaceVariant} /> {phone}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+          <View style={styles.contactAvatar}>
+            <Text style={styles.contactAvatarText}>
+              {item.name
+                ?.split(' ')
+                .map((n) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2) || '?'}
             </Text>
-          )}
-          {email && (
-            <Text style={[styles.contactDetail, { color: theme.colors.onSurfaceVariant }]}>
-              <Ionicons name="mail-outline" size={12} color={theme.colors.onSurfaceVariant} /> {email}
-            </Text>
-          )}
+          </View>
+          <View style={styles.contactInfo}>
+            <Text style={styles.contactName}>{item.name || t('contacts.unknown')}</Text>
+            {phone && (
+              <Text style={[styles.contactDetail, { color: theme.colors.onSurfaceVariant }]}>
+                <Ionicons name="call-outline" size={12} color={theme.colors.onSurfaceVariant} /> {phone}
+              </Text>
+            )}
+            {email && (
+              <Text style={[styles.contactDetail, { color: theme.colors.onSurfaceVariant }]}>
+                <Ionicons name="mail-outline" size={12} color={theme.colors.onSurfaceVariant} /> {email}
+              </Text>
+            )}
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceDisabled} />
         </View>
-        <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceDisabled} />
       </TouchableRipple>
     );
   };
@@ -406,9 +408,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   contactItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
     backgroundColor: 'white',

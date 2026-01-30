@@ -1,4 +1,5 @@
 {
+    "locale": "hu",
     "welcome": "Üdvözöljük",
     "tasks": {
         "title": "Feladataim",
@@ -72,6 +73,19 @@
         "profile": "Profil",
         "notifications": "Értesítések",
         "about": "Névjegy"
+    },
+    "profile": {
+        "title": "Profil",
+        "taskStats": "Feladat Statisztikák",
+        "totalTasks": "Összes Feladat",
+        "completed": "Befejezve",
+        "pending": "Függőben",
+        "completion": "Teljesítés",
+        "tasksByPriority": "Feladatok Prioritás Szerint",
+        "about": "Névjegy",
+        "version": "Verzió",
+        "storage": "Tárhely",
+        "madeWithLove": "Készült ❤️-el a produktivitásért"
     },
     "contacts": {
         "title": "Kapcsolatok",

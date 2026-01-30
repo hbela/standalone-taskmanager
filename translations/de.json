@@ -1,4 +1,5 @@
 {
+    "locale": "de",
     "welcome": "Willkommen",
     "tasks": {
         "title": "Meine Aufgaben",
@@ -72,6 +73,19 @@
         "profile": "Profil",
         "notifications": "Benachrichtigungen",
         "about": "Über"
+    },
+    "profile": {
+        "title": "Profil",
+        "taskStats": "Aufgabenstatistik",
+        "totalTasks": "Gesamtaufgaben",
+        "completed": "Erledigt",
+        "pending": "Ausstehend",
+        "completion": "Fertigstellung",
+        "tasksByPriority": "Aufgaben nach Priorität",
+        "about": "Über",
+        "version": "Version",
+        "storage": "Speicher",
+        "madeWithLove": "Mit ❤️ für Produktivität gemacht"
     },
     "contacts": {
         "title": "Kontakte",
