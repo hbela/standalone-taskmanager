@@ -205,5 +205,24 @@
         "permissionRequired": "Mikrofonberechtigung",
         "permissionExplanation": "Um die Diktierfunktion zu verwenden, aktivieren Sie bitte den Mikrofonzugriff in Ihren Geräteeinstellungen.",
         "startError": "Mikrofon konnte nicht gestartet werden. Bitte versuchen Sie es erneut."
+    },
+    "welcome": {
+        "title": "Willkommen bei Task Manager",
+        "subtitle": "Ihr persönlicher Produktivitätsbegleiter",
+        "getStarted": "Loslegen",
+        "feature1Title": "Organisieren Sie Ihre Aufgaben",
+        "feature1Description": "Erstellen, bearbeiten und verwalten Sie Aufgaben mit Prioritäten, Fälligkeitsdaten und Erinnerungen",
+        "feature2Title": "Kontaktintegration",
+        "feature2Description": "Verknüpfen Sie Aufgaben mit Kontakten und greifen Sie direkt auf deren Informationen zu",
+        "feature3Title": "Spracheingabe",
+        "feature3Description": "Verwenden Sie Sprache-zu-Text, um schnell freihändig Aufgaben zu erstellen",
+        "feature4Title": "Kalenderansicht",
+        "feature4Description": "Visualisieren Sie Ihre Aufgaben in einer schönen Kalenderoberfläche",
+        "feature5Title": "Mehrsprachige Unterstützung",
+        "feature5Description": "Verfügbar in Englisch, Ungarisch, Französisch und Deutsch",
+        "feature6Title": "Google Drive Export",
+        "feature6Description": "Exportieren Sie Ihre Aufgaben als Excel-Tabellen nach Google Drive",
+        "footerCreator": "Diese App ist 100% kostenlos erstellt von Bela Hajzer",
+        "footerCopyright": "Copyright © 2026. Alle Rechte vorbehalten."
     }
 }

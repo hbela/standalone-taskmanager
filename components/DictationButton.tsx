@@ -3,15 +3,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   PermissionsAndroid,
   Platform,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View
 } from 'react-native';
+import { ActivityIndicator, Text, TouchableRipple, useTheme } from 'react-native-paper';
 
 // Safely import the module
 let SpeechModule: any = null;
@@ -32,6 +30,7 @@ interface DictationButtonProps {
 
 export default function DictationButton({ id, onDictationComplete, disabled }: DictationButtonProps) {
   const { t, locale } = useTranslation();
+  const theme = useTheme();
   const [isListening, setIsListening] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [currentText, setCurrentText] = useState('');
@@ -237,33 +236,37 @@ export default function DictationButton({ id, onDictationComplete, disabled }: D
   // Main render: Button
   return (
     <View style={styles.wrapper}>
-      <TouchableOpacity
+      <TouchableRipple
         onPressIn={startListening}
         onPressOut={stopListening}
         disabled={disabled}
+        rippleColor={theme.colors.primaryContainer}
         style={[
           styles.container,
-          isListening && styles.listeningContainer,
-          disabled && styles.disabledContainer,
+          { 
+              borderColor: disabled ? theme.colors.surfaceDisabled : (isListening ? theme.colors.error : theme.colors.primary),
+              backgroundColor: disabled ? theme.colors.surfaceDisabled : (isListening ? theme.colors.errorContainer : theme.colors.surfaceVariant) // 'surfaceVariant' or similar for non-listening, errorContainer for listening
+          }
         ]}
       >
-        {isListening ? (
-          <ActivityIndicator size="small" color="#FF3B30" />
-        ) : (
-          <MaterialIcons name="mic" size={22} color="#007AFF" />
-        )}
-        <Text
-          style={[
-            styles.buttonText,
-            isListening && styles.listeningText,
-            disabled && styles.disabledText,
-          ]}
-        >
-          {isListening
-            ? t('dictation.listening')
-            : t('dictation.holdToTalk')}
-        </Text>
-      </TouchableOpacity>
+        <View style={styles.contentRow}>
+            {isListening ? (
+            <ActivityIndicator size="small" color={theme.colors.error} />
+            ) : (
+            <MaterialIcons name="mic" size={22} color={disabled ? theme.colors.onSurfaceDisabled : theme.colors.primary} />
+            )}
+            <Text
+            style={[
+                styles.buttonText,
+                { color: disabled ? theme.colors.onSurfaceDisabled : (isListening ? theme.colors.error : theme.colors.primary) }
+            ]}
+            >
+            {isListening
+                ? t('dictation.listening')
+                : t('dictation.holdToTalk')}
+            </Text>
+        </View>
+      </TouchableRipple>
 
       {/* Real-time transcription preview */}
       {currentText ? (
@@ -283,23 +286,15 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 10,
     paddingHorizontal: 16,
-    backgroundColor: '#f0f8ff',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#007AFF',
   },
-  listeningContainer: {
-    backgroundColor: '#ffeaea',
-    borderColor: '#FF3B30',
-  },
-  disabledContainer: {
-    backgroundColor: '#f5f5f5',
-    borderColor: '#ddd',
+  contentRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
   },
   buttonText: {
     marginLeft: 8,
@@ -322,10 +317,9 @@ const styles = StyleSheet.create({
   previewBox: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: '#f9f9f9',
     borderRadius: 8,
     borderLeftWidth: 4,
-    borderLeftColor: '#34C759',
+    borderLeftColor: '#34C759', // Keep green for success/preview
   },
   previewLabel: {
     fontSize: 13,
@@ -335,7 +329,6 @@ const styles = StyleSheet.create({
   },
   previewText: {
     fontSize: 15,
-    color: '#222',
     lineHeight: 20,
   },
 });

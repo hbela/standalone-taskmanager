@@ -2,7 +2,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { DEFAULT_REMINDER_OPTIONS, DEFAULT_REMINDERS, getReminderLabel } from '@/lib/notifications';
 import { CreateTaskInput, TaskPriority, UpdateTaskInput } from '@/types/task';
 import { formatDate, formatTime } from '@/utils/dateFormatter';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useRef, useState } from 'react';
 import {
     KeyboardAvoidingView,
@@ -26,9 +25,33 @@ import {
     TextInput,
     useTheme,
 } from 'react-native-paper';
+import { de, en, fr, registerTranslation, TimePickerModal } from 'react-native-paper-dates';
 import ContactDisplay from './ContactDisplay';
 import ContactSearchButton from './ContactSearchButton';
 import DictationButton from './DictationButton';
+
+// Register translations
+registerTranslation('en', en);
+registerTranslation('de', de);
+registerTranslation('fr', fr);
+registerTranslation('hu', {
+  save: 'Mentés',
+  selectSingle: 'Válasszon dátumot',
+  selectMultiple: 'Válasszon dátumokat',
+  selectRange: 'Válasszon időszakot',
+  notAccordingToDateFormat: (inputFormat) => `A dátum formátuma legyen ${inputFormat}`,
+  mustBeHigherThan: (date) => `Legyen ennél későbbi: ${date}`,
+  mustBeLowerThan: (date) => `Legyen ennél korábbi: ${date}`,
+  mustBeBetween: (startDate, endDate) => `Legyen eközött: ${startDate} - ${endDate}`,
+  dateIsDisabled: 'A dátum nem választható',
+  previous: 'Előző',
+  next: 'Következő',
+  typeInDate: 'Dátum megadása',
+  pickDateFromCalendar: 'Választás naptárból',
+  close: 'Bezárás',
+  hour: 'Óra',
+  minute: 'Perc',
+});
 
 
 interface TaskFormProps {
@@ -170,13 +193,18 @@ export default function TaskForm({
   };
   
   // Keep native handler for Time
-  const handleTimeChange = (event: any, selectedTime?: Date) => {
+  // Handle time confirmation from TimePickerModal
+  const handleTimeConfirm = ({ hours, minutes }: { hours: number; minutes: number }) => {
     setShowTimePicker(false);
-    if (selectedTime && dueDate) {
+    if (dueDate) {
       const newDate = new Date(dueDate);
-      newDate.setHours(selectedTime.getHours(), selectedTime.getMinutes());
+      newDate.setHours(hours, minutes);
       setDueDate(newDate);
     }
+  };
+
+  const handleTimeDismiss = () => {
+    setShowTimePicker(false);
   };
 
   // Memoize button text
@@ -353,12 +381,18 @@ export default function TaskForm({
             </View>
           )}
 
-          {showTimePicker && dueDate && (
-            <DateTimePicker
-              value={dueDate}
-              mode="time"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={handleTimeChange}
+          {dueDate && (
+            <TimePickerModal
+              visible={showTimePicker}
+              onDismiss={handleTimeDismiss}
+              onConfirm={handleTimeConfirm}
+              hours={dueDate.getHours()}
+              minutes={dueDate.getMinutes()}
+              locale={t('common.languageCode') || 'en'}
+              label={t('date.time')}
+              cancelLabel={t('common.cancel')}
+              confirmLabel={t('common.save')}
+              inputFontSize={18}
             />
           )}
 
@@ -373,12 +407,21 @@ export default function TaskForm({
                                 [(dueDate ? dueDate.toISOString().split('T')[0] : '')]: { selected: true, selectedColor: theme.colors.primary }
                             }}
                             theme={{
+                                calendarBackground: theme.colors.surface,
+                                textSectionTitleColor: theme.colors.onSurface,
+                                dayTextColor: theme.colors.onSurface,
+                                monthTextColor: theme.colors.onSurface,
                                 selectedDayBackgroundColor: theme.colors.primary,
+                                selectedDayTextColor: theme.colors.onPrimary,
                                 todayTextColor: theme.colors.error,
                                 dotColor: theme.colors.primary,
+                                textDayFontSize: 16, // Slightly increased for better balance
+                                textMonthFontSize: 18, // Slightly increased
+                                textDayHeaderFontSize: 14,
                                 textDayFontWeight: '500',
                                 textMonthFontWeight: '600',
                                 textDayHeaderFontWeight: '500',
+                                arrowColor: theme.colors.onSurface,
                             }}
                         />
                     </Card.Content>
@@ -482,6 +525,8 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
+    paddingBottom: 200, // Substantially increased to clear floating navigation
+    flexGrow: 1,
     gap: 16,
   },
   inputGroup: {

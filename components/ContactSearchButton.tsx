@@ -9,11 +9,11 @@ import {
     Modal,
     Platform,
     StyleSheet,
-    Text,
     TextInput,
-    TouchableOpacity,
+    TouchableOpacity, // Keep native TouchableOpacity for internal flatlist items or specific touch areas if RNP Button not suitable, but try to use RNP. Actually RNP Button is good.
     View,
 } from 'react-native';
+import { Text, TouchableRipple, useTheme } from 'react-native-paper';
 
 interface Contact {
   id: string;
@@ -34,6 +34,7 @@ export default function ContactSearchButton({
   disabled = false,
 }: ContactSearchButtonProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Contact[]>([]);
@@ -91,7 +92,14 @@ export default function ContactSearchButton({
         return nameMatch || phoneMatch || emailMatch;
       });
 
-      setSearchResults(filtered);
+      const safeFiltered: Contact[] = filtered.map(c => ({
+          id: c.id,
+          name: c.name || '',
+          phoneNumbers: c.phoneNumbers?.map(p => ({ number: p.number || '' })),
+          emails: c.emails?.map(e => ({ email: e.email || '' }))
+      }));
+
+      setSearchResults(safeFiltered);
     } catch (error) {
       console.error('Error searching contacts:', error);
       Alert.alert(t('common.error'), t('contacts.searchError'));
@@ -140,8 +148,8 @@ export default function ContactSearchButton({
     const email = item.emails?.[0]?.email;
 
     return (
-      <TouchableOpacity
-        style={styles.contactItem}
+      <TouchableRipple
+        style={[styles.contactItem, { backgroundColor: theme.colors.surface }]}
         onPress={() => handleSelectContact(item)}
       >
         <View style={styles.contactAvatar}>
@@ -157,33 +165,42 @@ export default function ContactSearchButton({
         <View style={styles.contactInfo}>
           <Text style={styles.contactName}>{item.name || t('contacts.unknown')}</Text>
           {phone && (
-            <Text style={styles.contactDetail}>
-              <Ionicons name="call-outline" size={12} color="#666" /> {phone}
+            <Text style={[styles.contactDetail, { color: theme.colors.onSurfaceVariant }]}>
+              <Ionicons name="call-outline" size={12} color={theme.colors.onSurfaceVariant} /> {phone}
             </Text>
           )}
           {email && (
-            <Text style={styles.contactDetail}>
-              <Ionicons name="mail-outline" size={12} color="#666" /> {email}
+            <Text style={[styles.contactDetail, { color: theme.colors.onSurfaceVariant }]}>
+              <Ionicons name="mail-outline" size={12} color={theme.colors.onSurfaceVariant} /> {email}
             </Text>
           )}
         </View>
-        <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-      </TouchableOpacity>
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceDisabled} />
+      </TouchableRipple>
     );
   };
 
   return (
     <>
-      <TouchableOpacity
-        style={[styles.searchButton, disabled && styles.searchButtonDisabled]}
+      <TouchableRipple
+        style={[
+            styles.searchButton, 
+            { 
+                backgroundColor: theme.colors.surfaceVariant, // or surface
+                borderColor: theme.colors.outline,
+                opacity: disabled ? 0.5 : 1
+            }
+        ]}
         onPress={handleOpenModal}
         disabled={disabled}
       >
-        <Ionicons name="search" size={20} color="#007AFF" />
-        <Text style={styles.searchButtonText}>
-          {selectedContactId ? t('contacts.change') : t('contacts.search')}
-        </Text>
-      </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Ionicons name="search" size={20} color={theme.colors.primary} />
+            <Text style={[styles.searchButtonText, { color: theme.colors.primary }]}>
+            {selectedContactId ? t('contacts.change') : t('contacts.search')}
+            </Text>
+        </View>
+      </TouchableRipple>
 
       <Modal
         visible={modalVisible}
@@ -191,21 +208,21 @@ export default function ContactSearchButton({
         presentationStyle="pageSheet"
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
+        <View style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
+          <View style={[styles.modalHeader, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outlineVariant }]}>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Ionicons name="close" size={28} color="#007AFF" />
+              <Ionicons name="close" size={28} color={theme.colors.primary} />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>{t('contacts.searchTitle')}</Text>
             <View style={{ width: 28 }} />
           </View>
 
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color="#8E8E93" style={styles.searchIcon} />
+          <View style={[styles.searchContainer, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outline }]}>
+            <Ionicons name="search" size={20} color={theme.colors.onSurfaceVariant} style={styles.searchIcon} />
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: theme.colors.onSurface }]}
               placeholder={t('contacts.searchPlaceholder')}
-              placeholderTextColor="#8E8E93"
+              placeholderTextColor={theme.colors.onSurfaceVariant}
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);
@@ -274,15 +291,10 @@ export default function ContactSearchButton({
 
 const styles = StyleSheet.create({
   searchButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
-    backgroundColor: 'white',
   },
   searchButtonDisabled: {
     opacity: 0.5,
@@ -294,7 +306,6 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -302,9 +313,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
   },
   modalTitle: {
     fontSize: 18,
@@ -317,12 +326,10 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: 'white',
     marginHorizontal: 16,
     marginVertical: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
     minHeight: 56,
   },
   searchIcon: {

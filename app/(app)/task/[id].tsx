@@ -4,7 +4,6 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useDeleteTask, useTask, useToggleTaskComplete } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getStatusColor, getStatusLabel, getTaskStatus } from '@/lib/taskUtils';
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -13,7 +12,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { Appbar, Button, Card, Chip, Divider, Text, useTheme } from 'react-native-paper';
+import { Appbar, Button, Card, Chip, Dialog, Divider, List, Paragraph, Portal, Text, useTheme } from 'react-native-paper';
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -27,27 +26,22 @@ export default function TaskDetailScreen() {
   // Mutations
   const deleteTaskMutation = useDeleteTask();
   const toggleCompleteMutation = useToggleTaskComplete();
+  
+  // Dialog state
+  const [deleteDialogVisible, setDeleteDialogVisible] = React.useState(false);
 
   const handleDelete = () => {
-    Alert.alert(
-      t('tasks.deleteConfirmTitle'),
-      t('tasks.deleteConfirmMessage'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('tasks.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteTaskMutation.mutateAsync(Number(id));
-              router.push('/(app)');
-            } catch (err) {
-              Alert.alert(t('common.error'), t('tasks.deleteError'));
-            }
-          }
-        }
-      ]
-    );
+    setDeleteDialogVisible(true);
+  };
+  
+  const handleConfirmDelete = async () => {
+    setDeleteDialogVisible(false);
+    try {
+      await deleteTaskMutation.mutateAsync(Number(id));
+      router.push('/(app)');
+    } catch (err) {
+      Alert.alert(t('common.error'), t('tasks.deleteError'));
+    }
   };
 
   const handleToggleComplete = async () => {
@@ -90,7 +84,7 @@ export default function TaskDetailScreen() {
   const priorityColor = priorityColors[task.priority as keyof typeof priorityColors] || '#8E8E93';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
         <Appbar.BackAction onPress={() => router.push('/(app)')} />
         <Appbar.Content title={t('tasks.taskDetails')} />
@@ -134,49 +128,43 @@ export default function TaskDetailScreen() {
           <Card.Content style={{ gap: 16 }}>
              {task.description && (
                <View>
-                 <Text variant="titleMedium" style={{ marginBottom: 4 }}>{t('tasks.description')}</Text>
-                 <Text variant="bodyLarge">{task.description}</Text>
+                 <Text variant="titleMedium" style={{ marginBottom: 8, color: theme.colors.primary }}>{t('tasks.description')}</Text>
+                 <Text variant="bodyLarge" style={{ color: theme.colors.onSurface }}>{task.description}</Text>
                </View>
              )}
              
-             {task.description && <Divider />}
+             {task.description && <Divider style={{ marginVertical: 8 }} />}
 
-             <View style={styles.detailRow}>
-                 <Ionicons name="calendar-outline" size={20} color={theme.colors.secondary} />
-                 <View style={{ flex: 1 }}>
-                     <Text variant="labelMedium">{t('tasks.dueDate')}</Text>
-                     <Text variant="bodyMedium">
-                         {task.dueDate ? new Date(task.dueDate).toLocaleString('en-US', {
-                            month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
-                         }) : t('common.no')}
-                     </Text>
-                 </View>
-             </View>
+             <List.Item
+                 title={t('tasks.dueDate')}
+                 description={task.dueDate ? new Date(task.dueDate).toLocaleString(t('common.locale'), {
+                    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+                 }) : t('common.no')}
+                 left={props => <List.Icon {...props} icon="calendar-outline" color={theme.colors.primary} />}
+                 titleStyle={{ fontSize: 14, color: theme.colors.onSurfaceVariant }}
+                 descriptionStyle={{ fontSize: 16, color: theme.colors.onSurface, marginTop: 4 }}
+             />
 
-             <View style={styles.detailRow}>
-                 <Ionicons name="time-outline" size={20} color={theme.colors.secondary} />
-                 <View style={{ flex: 1 }}>
-                     <Text variant="labelMedium">{t('tasks.created')}</Text>
-                     <Text variant="bodyMedium">
-                         {new Date(task.createdAt).toLocaleString('en-US', {
-                             month: 'short', day: 'numeric', year: 'numeric'
-                         })}
-                     </Text>
-                 </View>
-             </View>
+             <List.Item
+                 title={t('tasks.created')}
+                 description={new Date(task.createdAt).toLocaleString(t('common.locale'), {
+                     month: 'short', day: 'numeric', year: 'numeric'
+                 })}
+                 left={props => <List.Icon {...props} icon="clock-outline" color={theme.colors.primary} />}
+                 titleStyle={{ fontSize: 14, color: theme.colors.onSurfaceVariant }}
+                 descriptionStyle={{ fontSize: 16, color: theme.colors.onSurface, marginTop: 4 }}
+             />
 
              {task.updatedAt !== task.createdAt && (
-               <View style={styles.detailRow}>
-                   <Ionicons name="create-outline" size={20} color={theme.colors.secondary} />
-                   <View style={{ flex: 1 }}>
-                       <Text variant="labelMedium">{t('tasks.updated')}</Text>
-                       <Text variant="bodyMedium">
-                           {new Date(task.updatedAt).toLocaleString('en-US', {
-                               month: 'short', day: 'numeric', year: 'numeric'
-                           })}
-                       </Text>
-                   </View>
-               </View>
+               <List.Item
+                   title={t('tasks.updated')}
+                   description={new Date(task.updatedAt).toLocaleString(t('common.locale'), {
+                       month: 'short', day: 'numeric', year: 'numeric'
+                   })}
+                   left={props => <List.Icon {...props} icon="pencil-outline" color={theme.colors.primary} />}
+                   titleStyle={{ fontSize: 14, color: theme.colors.onSurfaceVariant }}
+                   descriptionStyle={{ fontSize: 16, color: theme.colors.onSurface, marginTop: 4 }}
+               />
              )}
           </Card.Content>
         </Card>
@@ -227,6 +215,19 @@ export default function TaskDetailScreen() {
         </View>
 
       </ScrollView>
+      
+      <Portal>
+        <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
+          <Dialog.Title>{t('tasks.deleteConfirmTitle')}</Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>{t('tasks.deleteConfirmMessage')}</Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDeleteDialogVisible(false)}>{t('common.cancel')}</Button>
+            <Button onPress={handleConfirmDelete} textColor={theme.colors.error}>{t('tasks.delete')}</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 }
@@ -238,11 +239,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 200,
     gap: 16,
   },
   card: {
-    backgroundColor: 'white',
     borderRadius: 12,
   },
   headerRow: {

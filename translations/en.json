@@ -70,6 +70,7 @@
         "title": "Settings",
         "language": "Language",
         "profile": "Profile",
+        "appearance": "Appearance",
         "notifications": "Notifications",
         "about": "About"
     },
@@ -187,6 +188,9 @@
         "buttonShort": "Export",
         "confirm": "Export %{count} tasks to Google Drive?",
         "confirmSingle": "Export 1 task to Google Drive?",
+        "confirmCompleted": "Export %{count} completed tasks to Google Drive?",
+        "confirmCompletedSingle": "Export 1 completed task to Google Drive?",
+        "backupNote": "This will create a backup of your completed tasks as an Excel file.",
         "success": "Tasks exported successfully!",
         "successWithLink": "File uploaded to Google Drive!",
         "error": "Failed to export tasks",
@@ -205,5 +209,24 @@
         "permissionRequired": "Microphone Permission",
         "permissionExplanation": "To use dictation, please enable microphone access in your device settings.",
         "startError": "Could not start the microphone. Please try again."
+    },
+    "welcome": {
+        "title": "Welcome to Task Manager",
+        "subtitle": "Your personal productivity companion",
+        "getStarted": "Get Started",
+        "feature1Title": "Organize Your Tasks",
+        "feature1Description": "Create, edit, and manage tasks with priorities, due dates, and reminders",
+        "feature2Title": "Contact Integration",
+        "feature2Description": "Link tasks to contacts and access their information directly",
+        "feature3Title": "Voice Input",
+        "feature3Description": "Use speech-to-text to quickly create tasks hands-free",
+        "feature4Title": "Calendar View",
+        "feature4Description": "Visualize your tasks in a beautiful calendar interface",
+        "feature5Title": "Multi-Language Support",
+        "feature5Description": "Available in English, Hungarian, French, and German",
+        "feature6Title": "Google Drive Export",
+        "feature6Description": "Export your tasks to Google Drive as Excel spreadsheets",
+        "footerCreator": "This app is 100% free created by Bela Hajzer",
+        "footerCopyright": "Copyright © 2026. All rights reserved."
     }
 }

@@ -4,7 +4,7 @@ import { Task } from '@/types/task';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Calendar, DateData, LocaleConfig } from 'react-native-calendars';
 import {
     ActivityIndicator,
@@ -202,46 +202,59 @@ export default function CalendarScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
         <Appbar.Content title={t('calendar.title')} />
       </Appbar.Header>
 
-      <Card style={styles.calendarCard} mode="elevated">
-        <Card.Content style={{ padding: 0 }}>
-            <Calendar
-                current={selectedDate}
-                onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
-                markedDates={markedDates}
-                theme={{
-                selectedDayBackgroundColor: theme.colors.primary,
-                todayTextColor: theme.colors.error,
-                dotColor: theme.colors.primary,
-                textDayFontWeight: '500',
-                textMonthFontWeight: '600',
-                textDayHeaderFontWeight: '500',
-                }}
-            />
-        </Card.Content>
-      </Card>
-      
-      <View style={styles.tasksSection}>
-        <Text variant="headlineSmall" style={styles.sectionTitle}>
-          {new Date(selectedDate).toLocaleDateString(t('common.locale'), {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </Text>
-        <FlatList
-          data={selectedTasks}
-          renderItem={renderTask}
-          keyExtractor={(item) => `task-${item.id}`}
-          ListEmptyComponent={renderEmpty}
-          contentContainerStyle={styles.tasksList}
-        />
-      </View>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+          <Card style={styles.calendarCard} mode="elevated">
+            <Card.Content style={{ padding: 0 }}>
+                <Calendar
+                    current={selectedDate}
+                    onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
+                    markedDates={markedDates}
+                    theme={{
+                    calendarBackground: theme.colors.surface,
+                    textSectionTitleColor: theme.colors.onSurface,
+                    dayTextColor: theme.colors.onSurface,
+                    monthTextColor: theme.colors.onSurface,
+                    selectedDayBackgroundColor: theme.colors.primary,
+                    selectedDayTextColor: theme.colors.onPrimary,
+                    todayTextColor: theme.colors.error,
+                    dotColor: theme.colors.primary,
+                    textDayFontWeight: '500',
+                    textMonthFontWeight: '600',
+                    textDayHeaderFontWeight: '500',
+                    arrowColor: theme.colors.onSurface,
+                    }}
+                />
+            </Card.Content>
+          </Card>
+          
+          <View style={styles.tasksSection}>
+            <Text variant="titleMedium" style={styles.sectionTitle}>
+              {new Date(selectedDate).toLocaleDateString(t('common.locale'), {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Text>
+            
+            <View style={styles.tasksList}>
+                {selectedTasks.length === 0 ? (
+                    renderEmpty()
+                ) : (
+                    selectedTasks.map(task => (
+                        <React.Fragment key={`task-${task.id}`}>
+                            {renderTask({ item: task })}
+                        </React.Fragment>
+                    ))
+                )}
+            </View>
+          </View>
+      </ScrollView>
     </View>
   );
 }
@@ -249,7 +262,9 @@ export default function CalendarScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
+  },
+  scrollContent: {
+      paddingBottom: 120,
   },
   loadingContainer: {
     flex: 1,
@@ -258,25 +273,22 @@ const styles = StyleSheet.create({
   },
   calendarCard: {
       margin: 16,
-      backgroundColor: 'white', 
       borderRadius: 12,
       overflow: 'hidden',
   },
   tasksSection: {
-    flex: 1,
-    paddingTop: 16,
   },
   sectionTitle: {
     paddingHorizontal: 16,
     marginBottom: 12,
   },
   tasksList: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 120, // Increased to clear floating bottom navbar
   },
   taskCard: {
     marginBottom: 12,
-    backgroundColor: 'white',
+    marginHorizontal: 16, // Use marginHorizontal as it's directly in FlatList now
+    // backgroundColor: 'white', // Removed hardcoded white
   },
   taskHeader: {
     flexDirection: 'row',

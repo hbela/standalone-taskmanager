@@ -137,7 +137,7 @@ export default function ProfileScreen() {
         {Object.keys(stats.byPriority).length > 0 && (
             <List.Section style={styles.sectionEntry}>
                 <List.Subheader>Tasks by Priority</List.Subheader>
-                <Card mode="elevated" style={{ backgroundColor: 'white' }}>
+                <Card mode="elevated">
                     <Card.Content style={{ padding: 0 }}>
                         {Object.entries(stats.byPriority).map(([priority, count], index) => (
                             <React.Fragment key={priority}>
@@ -157,7 +157,7 @@ export default function ProfileScreen() {
         {/* App Info */}
         <List.Section style={styles.sectionEntry}>
             <List.Subheader>About</List.Subheader>
-            <Card mode="elevated" style={{ backgroundColor: 'white' }}>
+            <Card mode="elevated">
                  <Card.Content style={{ padding: 0 }}>
                     <List.Item
                         title="Version"

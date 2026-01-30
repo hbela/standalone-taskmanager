@@ -3,10 +3,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { CommonActions } from '@react-navigation/native';
 import { Tabs } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { BottomNavigation } from 'react-native-paper';
+import { BottomNavigation, useTheme } from 'react-native-paper';
 
 export default function AppLayout() {
   const { t, _key } = useTranslation();
+  const theme = useTheme();
   
   // State for tab titles to force updates
   const [tabTitles, setTabTitles] = useState({
@@ -123,10 +124,14 @@ export default function AppLayout() {
               return options.title !== undefined ? options.title : route.name;
             }}
             style={{
+               position: 'absolute',
+               left: 0,
+               right: 0,
+               bottom: 0,
                marginBottom: 25,
                marginHorizontal: 20,
                borderRadius: 20,
-               backgroundColor: 'white',
+               backgroundColor: theme.colors.elevation.level2,
                elevation: 4,
                justifyContent: 'center',
             }}

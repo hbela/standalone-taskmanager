@@ -1,5 +1,6 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { LanguageProvider } from '@/context/LanguageContext';
+import { ThemeProvider, useAppTheme } from '@/context/ThemeContext';
 import { initializeDatabase } from '@/lib/database';
 import { configureErrorHandling } from '@/utils/errorHandler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -100,14 +101,24 @@ function RootLayoutNav() {
   );
 }
 
+function InnerRootLayout() {
+    const { theme } = useAppTheme();
+    
+    return (
+        <PaperProvider theme={theme}>
+            <LanguageProvider>
+                <QueryClientProvider client={queryClient}>
+                    <RootLayoutNav />
+                </QueryClientProvider>
+            </LanguageProvider>
+        </PaperProvider>
+    );
+}
+
 export default function RootLayout() {
   return (
-    <PaperProvider>
-      <LanguageProvider>
-        <QueryClientProvider client={queryClient}>
-          <RootLayoutNav />
-        </QueryClientProvider>
-      </LanguageProvider>
-    </PaperProvider>
+      <ThemeProvider>
+          <InnerRootLayout />
+      </ThemeProvider>
   );
 }

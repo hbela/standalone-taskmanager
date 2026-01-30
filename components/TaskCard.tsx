@@ -54,7 +54,7 @@ export default function TaskCard({
             status={task.completed ? 'checked' : 'unchecked'}
             onPress={onToggleComplete}
             color={task.completed ? '#34C759' : theme.colors.primary}
-            uncheckedColor={isOverdue ? '#FF3B30' : '#C7C7CC'}
+            uncheckedColor={isOverdue ? '#FF3B30' : theme.colors.outline}
           />
         </View>
 
@@ -94,8 +94,8 @@ export default function TaskCard({
 
           <View style={styles.footer}>
             <View style={styles.dateRow}>
-              <Ionicons name="calendar-outline" size={14} color="#8E8E93" />
-              <Text variant="labelSmall" style={styles.dateText}>
+              <Ionicons name="calendar-outline" size={14} color={theme.colors.outline} />
+              <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
                 {formatDateTime(task.createdAt)}
               </Text>
             </View>
@@ -133,11 +133,9 @@ const styles = StyleSheet.create({
   card: {
     marginVertical: 6,
     marginHorizontal: 16,
-    backgroundColor: 'white',
   },
   completedCard: {
     opacity: 0.7,
-    backgroundColor: '#F9F9F9',
   },
   overdueCard: {
     borderLeftWidth: 4,
@@ -177,7 +175,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   description: {
-    color: '#3C3C43',
+    // color: '#3C3C43', // Use Default Text color
     marginBottom: 8,
   },
   footer: {
@@ -192,7 +190,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   dateText: {
-    color: '#8E8E93',
+    // color: '#8E8E93', // replaced inline
   },
   rightColumn: {
     marginLeft: 8,

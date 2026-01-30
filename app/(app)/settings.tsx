@@ -1,23 +1,72 @@
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { LanguageContext } from '@/context/LanguageContext';
+import { useAppTheme } from '@/context/ThemeContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useRouter } from 'expo-router';
 import React, { useContext } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Appbar, Avatar, Card, List, Text, useTheme } from 'react-native-paper';
+import { Appbar, Avatar, Button, Card, IconButton, List, Text, useTheme } from 'react-native-paper';
 
 export default function SettingsScreen() {
   const { key } = useContext(LanguageContext);
   const { t } = useTranslation();
   const theme = useTheme();
+  const { isDark, toggleTheme } = useAppTheme();
+  const router = useRouter();
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]} key={key}>
       <Appbar.Header elevated>
         <Appbar.Content title={t('settings.title')} />
+        <Appbar.Action 
+            icon={isDark ? "weather-night" : "weather-sunny"} 
+            onPress={toggleTheme} 
+        />
       </Appbar.Header>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
+        <List.Section>
+            <List.Subheader>{t('settings.appearance') || 'Appearance'}</List.Subheader>
+            <Card style={styles.card} mode="elevated">
+                <Card.Content style={{ padding: 0 }}>
+                    <List.Item
+                        title={isDark ? "Dark Mode" : "Light Mode"}
+                        left={props => <List.Icon {...props} icon="theme-light-dark" />}
+                        right={props => (
+                            <IconButton
+                                icon={isDark ? "weather-night" : "weather-sunny"}
+                                selected={isDark}
+                                onPress={toggleTheme}
+                            />
+                        )}
+                    />
+                </Card.Content>
+            </Card>
+        </List.Section>
+
         <LanguageSwitcher />
+        
+        <List.Section>
+            <List.Subheader>Developer</List.Subheader>
+            <Card style={styles.card}>
+                <Card.Content style={{ gap: 12 }}>
+                    <Button 
+                        mode="outlined" 
+                        icon="eye" 
+                        onPress={() => router.push('/splash-test')}
+                    >
+                        Preview Splash Screen
+                    </Button>
+                    <Button 
+                        mode="outlined" 
+                        icon="hand-wave" 
+                        onPress={() => router.push('/welcome')}
+                    >
+                        Preview Welcome Screen
+                    </Button>
+                </Card.Content>
+            </Card>
+        </List.Section>
         
         <List.Section>
             <List.Subheader>{t('settings.about')}</List.Subheader>
@@ -28,6 +77,12 @@ export default function SettingsScreen() {
                         <View style={styles.appInfoText}>
                             <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>Task Manager App</Text>
                             <Text variant="bodyMedium" style={{ color: theme.colors.outline }}>Version 1.0.0</Text>
+                            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
+                                This app is 100% free created by Bela Hajzer.
+                            </Text>
+                            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 4 }}>
+                                Copyright © 2026. All rights reserved.
+                            </Text>
                         </View>
                     </View>
                 </Card.Content>
@@ -44,7 +99,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 120,
   },
   card: {
     marginBottom: 16,

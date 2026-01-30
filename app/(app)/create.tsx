@@ -5,12 +5,13 @@ import { CreateTaskInput, UpdateTaskInput } from '@/types/task';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Appbar, Button, Dialog, Paragraph, Portal } from 'react-native-paper';
+import { Appbar, Button, Dialog, Paragraph, Portal, useTheme } from 'react-native-paper';
 
 export default function CreateTaskScreen() {
   const router = useRouter();
   const createTaskMutation = useCreateTask();
   const { t, _key } = useTranslation();
+  const theme = useTheme();
 
   // Dialog state
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -61,7 +62,7 @@ export default function CreateTaskScreen() {
   };
 
   return (
-    <View style={styles.container} key={`create-screen-${renderKey}`}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]} key={`create-screen-${renderKey}`}>
       <Appbar.Header elevated>
         <Appbar.Content title={t('tasks.create')} />
       </Appbar.Header>
@@ -93,6 +94,5 @@ export default function CreateTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
   },
 });

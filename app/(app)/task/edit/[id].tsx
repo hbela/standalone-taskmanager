@@ -7,12 +7,13 @@ import { UpdateTaskInput } from '@/types/task';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Appbar, Button, Dialog, Paragraph, Portal } from 'react-native-paper';
+import { Appbar, Button, Dialog, Paragraph, Portal, useTheme } from 'react-native-paper';
 
 export default function EditTaskScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { t, _key } = useTranslation();
+  const theme = useTheme();
   
   // Dialog state
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -78,7 +79,7 @@ export default function EditTaskScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
           <Appbar.BackAction onPress={() => router.back()} />
           <Appbar.Content title={t('tasks.editTask')} />
@@ -121,6 +122,5 @@ export default function EditTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
   },
 });

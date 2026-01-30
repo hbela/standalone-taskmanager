@@ -205,5 +205,24 @@
         "permissionRequired": "Mikrofonengedély",
         "permissionExplanation": "A diktálás használatához kérjük, engedélyezze a mikrofonhozzáférést az eszköz beállításaiban.",
         "startError": "Nem sikerült elindítani a mikrofont. Kérjük, próbálja újra."
+    },
+    "welcome": {
+        "title": "Üdvözöljük a Feladatkezelőben",
+        "subtitle": "Az Ön személyes produktivitási társa",
+        "getStarted": "Kezdjük",
+        "feature1Title": "Rendszerezze feladatait",
+        "feature1Description": "Hozzon létre, szerkesszen és kezeljen feladatokat prioritásokkal, határidőkkel és emlékeztetőkkel",
+        "feature2Title": "Névjegy integráció",
+        "feature2Description": "Kapcsoljon feladatokat névjegyekhez és érje el közvetlenül az információikat",
+        "feature3Title": "Hangbemenet",
+        "feature3Description": "Használjon beszéd-szöveg átalakítást feladatok gyors létrehozásához kéz nélkül",
+        "feature4Title": "Naptár nézet",
+        "feature4Description": "Jelenítse meg feladatait egy gyönyörű naptár felületen",
+        "feature5Title": "Többnyelvű támogatás",
+        "feature5Description": "Elérhető angol, magyar, francia és német nyelven",
+        "feature6Title": "Google Drive exportálás",
+        "feature6Description": "Exportálja feladatait Google Drive-ra Excel táblázatokként",
+        "footerCreator": "Ez az alkalmazás 100%-ban ingyenes, készítette: Hajzer Béla",
+        "footerCopyright": "Copyright © 2026. Minden jog fenntartva."
     }
 }

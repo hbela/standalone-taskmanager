@@ -2,7 +2,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Ionicons } from '@expo/vector-icons';
 import * as Contacts from 'expo-contacts';
 import React, { useEffect, useState } from 'react';
-import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Card, Text, useTheme } from 'react-native-paper';
 import OpenMapButton from './OpenMapButton';
 
 interface ContactDisplayProps {
@@ -20,6 +21,7 @@ interface ContactInfo {
 
 export default function ContactDisplay({ contactId, showActions = true }: ContactDisplayProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [contact, setContact] = useState<ContactInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -80,9 +82,9 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Ionicons name="person-outline" size={20} color="#8E8E93" />
-          <Text style={styles.loadingText}>{t('contacts.loadingContact')}</Text>
+        <View style={[styles.loadingContainer, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outline }]}>
+          <Ionicons name="person-outline" size={20} color={theme.colors.onSurfaceVariant} />
+          <Text style={[styles.loadingText, { color: theme.colors.onSurfaceVariant }]}>{t('contacts.loadingContact')}</Text>
         </View>
       </View>
     );
@@ -91,17 +93,17 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
   if (notFound) {
     return (
       <View style={styles.container}>
-        <View style={styles.notFoundContainer}>
-          <Ionicons name="alert-circle-outline" size={20} color="#FF9500" />
+        <View style={[styles.notFoundContainer, { backgroundColor: theme.colors.errorContainer, borderColor: theme.colors.error }]}>
+          <Ionicons name="alert-circle-outline" size={20} color={theme.colors.error} />
           <View style={styles.notFoundTextContainer}>
-            <Text style={styles.notFoundTitle}>{t('contacts.contactNotFound')}</Text>
-            <Text style={styles.notFoundSubtitle}>
+            <Text style={[styles.notFoundTitle, { color: theme.colors.onSurface }]}>{t('contacts.contactNotFound')}</Text>
+            <Text style={[styles.notFoundSubtitle, { color: theme.colors.onSurfaceVariant }]}>
               {t('contacts.contactNotFoundHint')}
             </Text>
           </View>
           {showActions && (
             <TouchableOpacity onPress={handleCreateContact}>
-              <Ionicons name="add-circle" size={24} color="#007AFF" />
+              <Ionicons name="add-circle" size={24} color={theme.colors.primary} />
             </TouchableOpacity>
           )}
         </View>
@@ -118,126 +120,128 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
 
   return (
     <View style={styles.container}>
-      <View style={styles.contactCard}>
-        <View style={styles.contactHeader}>
-          <View style={styles.contactAvatar}>
-            <Text style={styles.contactAvatarText}>
-              {contact.name
-                ?.split(' ')
-                .map((n) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2) || '?'}
-            </Text>
-          </View>
-          <View style={styles.contactHeaderInfo}>
-            <Text style={styles.contactName}>{contact.name || t('contacts.unknown')}</Text>
-            {primaryPhone && (
-              <Text style={styles.contactLabel}>
-                {primaryPhone.label || 'Phone'}
+      <Card style={styles.contactCard} mode="elevated">
+        <Card.Content>
+          <View style={[styles.contactHeader, { borderBottomColor: theme.colors.outlineVariant }]}>
+            <View style={[styles.contactAvatar, { backgroundColor: theme.colors.primary }]}>
+              <Text style={styles.contactAvatarText}>
+                {contact.name
+                  ?.split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2) || '?'}
               </Text>
-            )}
-          </View>
-        </View>
-
-        {primaryPhone && primaryPhone.number && (
-          <View style={styles.contactDetail}>
-            <View style={styles.contactDetailInfo}>
-              <Ionicons name="call" size={16} color="#007AFF" />
-              <Text style={styles.contactDetailText}>{primaryPhone.number}</Text>
             </View>
-            {showActions && (
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => handleCall(primaryPhone.number!)}
-              >
-                <Ionicons name="call-outline" size={20} color="#007AFF" />
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
-        {primaryEmail && primaryEmail.email && (
-          <View style={styles.contactDetail}>
-            <View style={styles.contactDetailInfo}>
-              <Ionicons name="mail" size={16} color="#007AFF" />
-              <Text style={styles.contactDetailText}>{primaryEmail.email}</Text>
+            <View style={styles.contactHeaderInfo}>
+              <Text style={[styles.contactName, { color: theme.colors.onSurface }]}>{contact.name || t('contacts.unknown')}</Text>
+              {primaryPhone && (
+                <Text style={[styles.contactLabel, { color: theme.colors.onSurfaceVariant }]}>
+                  {primaryPhone.label || 'Phone'}
+                </Text>
+              )}
             </View>
-            {showActions && (
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => handleEmail(primaryEmail.email!)}
-              >
-                <Ionicons name="mail-outline" size={20} color="#007AFF" />
-              </TouchableOpacity>
-            )}
-        </View>
-        )}
+          </View>
 
-        {/* Address Section with Map Button */}
-        {contact.addresses && contact.addresses.length > 0 && contact.addresses[0] && (
-          <View style={styles.addressSection}>
+          {primaryPhone && primaryPhone.number && (
             <View style={styles.contactDetail}>
               <View style={styles.contactDetailInfo}>
-                <Ionicons name="location" size={16} color="#007AFF" />
-                <View style={styles.addressTextContainer}>
-                  <Text style={styles.contactDetailText}>
-                    {[
-                      contact.addresses[0].street,
-                      contact.addresses[0].city,
-                      contact.addresses[0].region,
-                      contact.addresses[0].postalCode,
-                      contact.addresses[0].country
-                    ].filter(Boolean).join(', ')}
-                  </Text>
-                  {contact.addresses[0].label && (
-                    <Text style={styles.addressLabel}>{contact.addresses[0].label}</Text>
-                  )}
+                <Ionicons name="call" size={16} color={theme.colors.primary} />
+                <Text style={[styles.contactDetailText, { color: theme.colors.onSurface }]}>{primaryPhone.number}</Text>
+              </View>
+              {showActions && (
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => handleCall(primaryPhone.number!)}
+                >
+                  <Ionicons name="call-outline" size={20} color={theme.colors.primary} />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {primaryEmail && primaryEmail.email && (
+            <View style={styles.contactDetail}>
+              <View style={styles.contactDetailInfo}>
+                <Ionicons name="mail" size={16} color={theme.colors.primary} />
+                <Text style={[styles.contactDetailText, { color: theme.colors.onSurface }]}>{primaryEmail.email}</Text>
+              </View>
+              {showActions && (
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => handleEmail(primaryEmail.email!)}
+                >
+                  <Ionicons name="mail-outline" size={20} color={theme.colors.primary} />
+                </TouchableOpacity>
+              )}
+          </View>
+          )}
+
+          {/* Address Section with Map Button */}
+          {contact.addresses && contact.addresses.length > 0 && contact.addresses[0] && (
+            <View style={[styles.addressSection, { borderTopColor: theme.colors.outlineVariant }]}>
+              <View style={styles.contactDetail}>
+                <View style={styles.contactDetailInfo}>
+                  <Ionicons name="location" size={16} color={theme.colors.primary} />
+                  <View style={styles.addressTextContainer}>
+                    <Text style={[styles.contactDetailText, { color: theme.colors.onSurface }]}>
+                      {[
+                        contact.addresses[0].street,
+                        contact.addresses[0].city,
+                        contact.addresses[0].region,
+                        contact.addresses[0].postalCode,
+                        contact.addresses[0].country
+                      ].filter(Boolean).join(', ')}
+                    </Text>
+                    {contact.addresses[0].label && (
+                      <Text style={[styles.addressLabel, { color: theme.colors.onSurfaceVariant }]}>{contact.addresses[0].label}</Text>
+                    )}
+                  </View>
                 </View>
               </View>
+              {showActions && (
+                <OpenMapButton 
+                  address={[
+                    contact.addresses[0].street,
+                    contact.addresses[0].city,
+                    contact.addresses[0].region,
+                    contact.addresses[0].postalCode,
+                    contact.addresses[0].country
+                  ].filter(Boolean).join(', ')}
+                  style={styles.mapButton}
+                />
+              )}
             </View>
-            {showActions && (
-              <OpenMapButton 
-                address={[
-                  contact.addresses[0].street,
-                  contact.addresses[0].city,
-                  contact.addresses[0].region,
-                  contact.addresses[0].postalCode,
-                  contact.addresses[0].country
-                ].filter(Boolean).join(', ')}
-                style={styles.mapButton}
-              />
-            )}
-          </View>
-        )}
+          )}
 
-        {contact.phoneNumbers && contact.phoneNumbers.length > 1 && (
-          <Text style={styles.moreInfo}>
-            {contact.phoneNumbers.length - 1 > 1 
-              ? t('contacts.morePhonesPlural').replace('%{count}', String(contact.phoneNumbers.length - 1))
-              : t('contacts.morePhones').replace('%{count}', String(contact.phoneNumbers.length - 1))
-            }
-          </Text>
-        )}
+          {contact.phoneNumbers && contact.phoneNumbers.length > 1 && (
+            <Text style={[styles.moreInfo, { color: theme.colors.onSurfaceVariant }]}>
+              {contact.phoneNumbers.length - 1 > 1 
+                ? t('contacts.morePhonesPlural').replace('%{count}', String(contact.phoneNumbers.length - 1))
+                : t('contacts.morePhones').replace('%{count}', String(contact.phoneNumbers.length - 1))
+              }
+            </Text>
+          )}
 
-        {contact.emails && contact.emails.length > 1 && (
-          <Text style={styles.moreInfo}>
-            {contact.emails.length - 1 > 1
-              ? t('contacts.moreEmailsPlural').replace('%{count}', String(contact.emails.length - 1))
-              : t('contacts.moreEmails').replace('%{count}', String(contact.emails.length - 1))
-            }
-          </Text>
-        )}
+          {contact.emails && contact.emails.length > 1 && (
+            <Text style={[styles.moreInfo, { color: theme.colors.onSurfaceVariant }]}>
+              {contact.emails.length - 1 > 1
+                ? t('contacts.moreEmailsPlural').replace('%{count}', String(contact.emails.length - 1))
+                : t('contacts.moreEmails').replace('%{count}', String(contact.emails.length - 1))
+              }
+            </Text>
+          )}
 
-        {contact.addresses && contact.addresses.length > 1 && (
-          <Text style={styles.moreInfo}>
-            {contact.addresses.length - 1 > 1
-              ? t('contacts.moreAddressesPlural').replace('%{count}', String(contact.addresses.length - 1))
-              : t('contacts.moreAddresses').replace('%{count}', String(contact.addresses.length - 1))
-            }
-          </Text>
-        )}
-      </View>
+          {contact.addresses && contact.addresses.length > 1 && (
+            <Text style={[styles.moreInfo, { color: theme.colors.onSurfaceVariant }]}>
+              {contact.addresses.length - 1 > 1
+                ? t('contacts.moreAddressesPlural').replace('%{count}', String(contact.addresses.length - 1))
+                : t('contacts.moreAddresses').replace('%{count}', String(contact.addresses.length - 1))
+              }
+            </Text>
+          )}
+        </Card.Content>
+      </Card>
     </View>
   );
 }
@@ -251,24 +255,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     padding: 16,
-    backgroundColor: '#F9F9F9',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
   },
   loadingText: {
     fontSize: 14,
-    color: '#8E8E93',
   },
   notFoundContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     padding: 16,
-    backgroundColor: '#FFF9E6',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFE5B4',
   },
   notFoundTextContainer: {
     flex: 1,
@@ -276,19 +275,13 @@ const styles = StyleSheet.create({
   notFoundTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1C1C1E',
     marginBottom: 2,
   },
   notFoundSubtitle: {
     fontSize: 12,
-    color: '#8E8E93',
   },
   contactCard: {
-    backgroundColor: 'white',
     borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
   },
   contactHeader: {
     flexDirection: 'row',
@@ -297,13 +290,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   contactAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -318,12 +309,10 @@ const styles = StyleSheet.create({
   contactName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1C1C1E',
     marginBottom: 2,
   },
   contactLabel: {
     fontSize: 12,
-    color: '#8E8E93',
   },
   contactDetail: {
     flexDirection: 'row',
@@ -339,7 +328,6 @@ const styles = StyleSheet.create({
   },
   contactDetailText: {
     fontSize: 14,
-    color: '#1C1C1E',
     flex: 1,
   },
   actionButton: {
@@ -349,14 +337,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
   },
   addressTextContainer: {
     flex: 1,
   },
   addressLabel: {
     fontSize: 11,
-    color: '#8E8E93',
     marginTop: 2,
   },
   mapButton: {
@@ -364,7 +350,6 @@ const styles = StyleSheet.create({
   },
   moreInfo: {
     fontSize: 12,
-    color: '#8E8E93',
     fontStyle: 'italic',
     marginTop: 4,
   },

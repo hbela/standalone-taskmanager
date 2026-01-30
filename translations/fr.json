@@ -205,5 +205,24 @@
         "permissionRequired": "Permission du microphone",
         "permissionExplanation": "Pour utiliser la dictée, veuillez activer l'accès au microphone dans les paramètres de votre appareil.",
         "startError": "Impossible de démarrer le microphone. Veuillez réessayer."
+    },
+    "welcome": {
+        "title": "Bienvenue dans Task Manager",
+        "subtitle": "Votre compagnon de productivité personnel",
+        "getStarted": "Commencer",
+        "feature1Title": "Organisez vos tâches",
+        "feature1Description": "Créez, modifiez et gérez des tâches avec des priorités, des dates d'échéance et des rappels",
+        "feature2Title": "Intégration des contacts",
+        "feature2Description": "Liez des tâches à des contacts et accédez directement à leurs informations",
+        "feature3Title": "Saisie vocale",
+        "feature3Description": "Utilisez la reconnaissance vocale pour créer rapidement des tâches mains libres",
+        "feature4Title": "Vue calendrier",
+        "feature4Description": "Visualisez vos tâches dans une belle interface de calendrier",
+        "feature5Title": "Support multilingue",
+        "feature5Description": "Disponible en anglais, hongrois, français et allemand",
+        "feature6Title": "Export Google Drive",
+        "feature6Description": "Exportez vos tâches vers Google Drive sous forme de feuilles Excel",
+        "footerCreator": "Cette application est 100% gratuite créée par Bela Hajzer",
+        "footerCopyright": "Copyright © 2026. Tous droits réservés."
     }
 }

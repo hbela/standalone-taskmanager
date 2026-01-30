@@ -21,10 +21,11 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { Appbar, Button, Chip, Dialog, Paragraph, Portal, Searchbar } from 'react-native-paper';
+import { Appbar, Button, Chip, Dialog, Paragraph, Portal, Searchbar, useTheme } from 'react-native-paper';
 
 export default function TasksScreen() {
   const { t, _key } = useTranslation();
+  const theme = useTheme();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'overdue' | 'completed'>('pending');
@@ -213,7 +214,7 @@ export default function TasksScreen() {
 
   return (
     <>
-      <View style={styles.container} key={`container-${_key}`}>
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]} key={`container-${_key}`}>
         {isSearchVisible ? (
           <Appbar.Header elevated>
             <Searchbar
@@ -232,16 +233,18 @@ export default function TasksScreen() {
           <Appbar.Header elevated>
             <Appbar.Content title={pageTitle} />
             <Appbar.Action icon="magnify" onPress={() => setIsSearchVisible(true)} />
-            <Appbar.Action 
-               icon="cloud-upload"
-               onPress={handleExport} 
-               disabled={isExporting} 
-            />
+            {filter === 'completed' && (
+              <Appbar.Action 
+                 icon="cloud-upload"
+                 onPress={handleExport} 
+                 disabled={isExporting} 
+              />
+            )}
           </Appbar.Header>
         )}
 
         {/* Filter Chips */}
-        <View style={styles.filterContainer} key={`filters-${_key}`}>
+        <View style={[styles.filterContainer, { backgroundColor: theme.colors.background }]} key={`filters-${_key}`}>
           {(['all', 'pending', 'overdue', 'completed'] as const).map((filterType) => (
             <Chip
               key={`${filterType}-${_key}`}
@@ -288,14 +291,17 @@ export default function TasksScreen() {
         <Dialog 
           visible={exportDialogVisible} 
           onDismiss={() => setExportDialogVisible(false)}
-          style={styles.dialog}
+          style={[styles.dialog, { backgroundColor: theme.colors.surface }]}
         >
           <Dialog.Title style={styles.dialogTitle}>{t('export.title')}</Dialog.Title>
           <Dialog.Content>
             <Paragraph>
               {filteredTasks.length === 1 
-                ? t('export.confirmSingle')
-                : t('export.confirm', { count: filteredTasks.length })}
+                ? t('export.confirmCompletedSingle')
+                : t('export.confirmCompleted', { count: filteredTasks.length })}
+            </Paragraph>
+            <Paragraph style={{ marginTop: 8, fontStyle: 'italic' }}>
+              {t('export.backupNote')}
             </Paragraph>
           </Dialog.Content>
           <Dialog.Actions>
@@ -308,7 +314,7 @@ export default function TasksScreen() {
         <Dialog 
           visible={successDialogVisible} 
           onDismiss={() => setSuccessDialogVisible(false)}
-          style={styles.dialog}
+          style={[styles.dialog, { backgroundColor: theme.colors.surface }]}
         >
           <Dialog.Title style={styles.dialogTitle}>{t('common.success')}</Dialog.Title>
           <Dialog.Content>
@@ -333,7 +339,7 @@ export default function TasksScreen() {
         <Dialog 
           visible={errorDialogVisible} 
           onDismiss={() => setErrorDialogVisible(false)}
-          style={styles.dialog}
+          style={[styles.dialog, { backgroundColor: theme.colors.surface }]}
         >
           <Dialog.Title style={styles.dialogTitle}>{t('common.error')}</Dialog.Title>
           <Dialog.Content>
@@ -348,11 +354,11 @@ export default function TasksScreen() {
         <Dialog 
           visible={isExporting} 
           dismissable={false}
-          style={styles.dialog}
+          style={[styles.dialog, { backgroundColor: theme.colors.surface }]}
         >
           <Dialog.Content style={styles.loadingContent}>
-            <ActivityIndicator size="large" color="#007AFF" />
-            <Text style={styles.loadingText}>{t('export.uploading')}</Text>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+            <Text style={[styles.loadingText, { color: theme.colors.onSurface }]}>{t('export.uploading')}</Text>
           </Dialog.Content>
         </Dialog>
       </Portal>
@@ -363,7 +369,6 @@ export default function TasksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
   },
   searchBar: {
     flex: 1,
@@ -375,7 +380,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
     padding: 16,
-    backgroundColor: 'white',
   },
   filterChip: {
     marginRight: 4,
@@ -422,7 +426,6 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   dialog: {
-    backgroundColor: 'white', 
     borderRadius: 12,
   },
   dialogTitle: {
