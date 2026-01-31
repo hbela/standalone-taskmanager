@@ -1,3 +1,4 @@
+import { Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DEFAULT_REMINDER_OPTIONS, DEFAULT_REMINDERS, getReminderLabel } from '@/lib/notifications';
 import { CreateTaskInput, TaskPriority, UpdateTaskInput } from '@/types/task';
@@ -309,7 +310,7 @@ export default function TaskForm({
             maxLength={2000}
             right={<TextInput.Affix text={`${description.length}/2000`} />}
           />
-          <View style={{ marginTop: 8 }}>
+          <View style={styles.dictationButtonContainer}>
             <DictationButton 
                 id="description-dictation"
                 onDictationComplete={handleDictationComplete}
@@ -363,7 +364,7 @@ export default function TaskForm({
                 icon="close-circle" 
                 onPress={() => setSelectedContactId(null)}
                 disabled={loading}
-                style={{ alignSelf: 'flex-start', marginTop: 4 }}
+                style={styles.removeContactButton}
               >
                 {t('form.removeContact')}
               </Button>
@@ -566,65 +567,72 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 200, // Substantially increased to clear floating navigation
+    padding: Spacing.xl,
+    paddingBottom: 200, // Keep for floating navigation
     flexGrow: 1,
-    gap: 16,
+    gap: Spacing.lg,
   },
   inputGroup: {
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   label: {
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
+  },
+  dictationButtonContainer: {
+    marginTop: Spacing.sm,
   },
   divider: {
-      marginVertical: 8,
+      marginVertical: Spacing.sm,
   },
   priorityOptions: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: Spacing.sm,
   },
   priorityChip: {
       
   },
+  removeContactButton: {
+    alignSelf: 'flex-start',
+    marginTop: Spacing.xs,
+  },
   dateRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
   },
   timeRow: {
-    marginTop: 12,
+    marginTop: Spacing.md,
   },
   reminderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   reminderOptionsContainer: {
-    marginTop: 4,
+    marginTop: Spacing.xs,
   },
   reminderOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between', // For grid layout
-    gap: 8,
+    gap: Spacing.sm,
   },
   reminderChip: {
       width: '48%', // Approx 2 col
-      marginBottom: 8,
+      marginBottom: Spacing.sm,
   },
   actions: {
-    marginTop: 16,
-    gap: 12,
+    marginTop: Spacing.lg,
+    gap: Spacing.md,
   },
   button: {
-      borderRadius: 8,
+      borderRadius: Spacing.sm,
   },
   modalContent: {
       width: Dimensions.get('window').width * 0.98,
       alignSelf: 'center',
-      marginVertical: 20,
+      marginVertical: Spacing.xl,
   }
 });

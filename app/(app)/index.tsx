@@ -1,6 +1,7 @@
 import ErrorMessage from '@/components/ErrorMessage';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import TaskCard from '@/components/TaskCard';
+import { Spacing } from '@/constants/theme';
 import { useDeleteTask, useTasks, useToggleTaskComplete } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
 import { exportTasksToExcel, getFileNameFromUri } from '@/lib/export/excelExporter';
@@ -17,11 +18,10 @@ import {
   Linking,
   RefreshControl,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View
 } from 'react-native';
-import { Appbar, Button, Chip, Dialog, Paragraph, Portal, Searchbar, useTheme } from 'react-native-paper';
+import { Appbar, Button, Chip, Dialog, Paragraph, Portal, Searchbar, Text, useTheme } from 'react-native-paper';
 
 export default function TasksScreen() {
   const { t, _key } = useTranslation();
@@ -300,7 +300,7 @@ export default function TasksScreen() {
                 ? t('export.confirmCompletedSingle')
                 : t('export.confirmCompleted', { count: filteredTasks.length })}
             </Paragraph>
-            <Paragraph style={{ marginTop: 8, fontStyle: 'italic' }}>
+            <Paragraph style={{ marginTop: Spacing.sm, fontStyle: 'italic' }}>
               {t('export.backupNote')}
             </Paragraph>
           </Dialog.Content>
@@ -366,6 +366,7 @@ export default function TasksScreen() {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -378,37 +379,37 @@ const styles = StyleSheet.create({
   filterContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    padding: 16,
+    gap: Spacing.sm,
+    padding: Spacing.lg,
   },
   filterChip: {
-    marginRight: 4,
+    marginRight: Spacing.xs,
   },
   listContent: {
-    padding: 16,
+    padding: Spacing.lg,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: Spacing.huge,
   },
   emptyText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: Spacing.lg,
+    fontSize: 16, // bodyLarge equivalent
     color: '#666',
     textAlign: 'center',
   },
   createButton: {
-    marginTop: 20,
+    marginTop: Spacing.xl,
     backgroundColor: '#007AFF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: Spacing.xxl,
+    paddingVertical: Spacing.md,
+    borderRadius: Spacing.sm,
   },
   createButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 16, // labelLarge equivalent
     fontWeight: '600',
   },
   errorBanner: {
@@ -416,30 +417,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FF3B30',
-    padding: 16,
-    margin: 16,
-    borderRadius: 8,
+    padding: Spacing.lg,
+    margin: Spacing.lg,
+    borderRadius: Spacing.sm,
   },
   errorBannerText: {
     flex: 1,
     color: 'white',
-    marginRight: 12,
+    marginRight: Spacing.md,
   },
   dialog: {
-    borderRadius: 12,
+    borderRadius: Spacing.md,
   },
   dialogTitle: {
-    fontSize: 18,
+    fontSize: 18, // headlineSmall equivalent
     fontWeight: '700',
   },
   loadingContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
+    padding: Spacing.xl,
   },
   loadingText: {
-    marginLeft: 16,
-    fontSize: 16,
+    marginLeft: Spacing.lg,
+    fontSize: 16, // bodyLarge equivalent
     color: '#1C1C1E',
     fontWeight: '500',
   },

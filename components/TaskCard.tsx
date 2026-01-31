@@ -1,3 +1,4 @@
+import { Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { isTaskOverdue } from '@/lib/taskUtils';
 import { Task } from '@/types/task';
@@ -71,7 +72,7 @@ export default function TaskCard({
               {task.title}
             </Text>
             <Chip
-              textStyle={{ color: priorityColor, fontSize: 10, lineHeight: 10, marginVertical: 0, marginHorizontal: 0 }}
+              textStyle={{ color: priorityColor, fontWeight: 'bold' }}
               style={[styles.priorityChip, { backgroundColor: priorityColor + '20', borderColor: priorityColor }]}
               compact
             >
@@ -122,7 +123,7 @@ export default function TaskCard({
         </View>
 
         <View style={styles.rightColumn}>
-          <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.outlineVariant} />
         </View>
       </Card.Content>
     </Card>
@@ -132,7 +133,7 @@ export default function TaskCard({
 const styles = StyleSheet.create({
   card: {
     marginVertical: 6,
-    marginHorizontal: 16,
+    marginHorizontal: Spacing.lg,
   },
   completedCard: {
     opacity: 0.7,
@@ -144,25 +145,25 @@ const styles = StyleSheet.create({
   cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.sm,
   },
   leftColumn: {
-    marginRight: 8,
+    marginRight: Spacing.sm,
   },
   mainContent: {
     flex: 1,
-    gap: 4,
+    gap: Spacing.xs,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   title: {
     flex: 1,
-    marginRight: 8,
+    marginRight: Spacing.sm,
     fontWeight: '600',
   },
   completedText: {
@@ -175,25 +176,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   description: {
-    // color: '#3C3C43', // Use Default Text color
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   footer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 4,
+    gap: Spacing.md,
+    marginTop: Spacing.xs,
   },
   dateRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: Spacing.xs,
   },
   dateText: {
-    // color: '#8E8E93', // replaced inline
   },
   rightColumn: {
-    marginLeft: 8,
+    marginLeft: Spacing.sm,
     justifyContent: 'center',
   },
 });

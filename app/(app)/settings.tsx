@@ -1,4 +1,5 @@
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { Spacing } from '@/constants/theme';
 import { LanguageContext } from '@/context/LanguageContext';
 import { useAppTheme } from '@/context/ThemeContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -49,7 +50,7 @@ export default function SettingsScreen() {
         <List.Section>
             <List.Subheader>Developer</List.Subheader>
             <Card style={styles.card}>
-                <Card.Content style={{ gap: 12 }}>
+                <Card.Content style={styles.developerButtons}>
                     <Button 
                         mode="outlined" 
                         icon="eye" 
@@ -75,12 +76,22 @@ export default function SettingsScreen() {
                     <View style={styles.appInfoRow}>
                         <Avatar.Icon size={48} icon="check-bold" />
                         <View style={styles.appInfoText}>
-                            <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>Task Manager App</Text>
-                            <Text variant="bodyMedium" style={{ color: theme.colors.outline }}>Version 1.0.0</Text>
-                            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
+                            <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>
+                              Task Manager App
+                            </Text>
+                            <Text variant="bodyMedium" style={{ color: theme.colors.outline }}>
+                              Version 1.0.0
+                            </Text>
+                            <Text 
+                              variant="bodySmall" 
+                              style={[styles.aboutText, { color: theme.colors.onSurfaceVariant }]}
+                            >
                                 This app is 100% free created by Bela Hajzer.
                             </Text>
-                            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 4 }}>
+                            <Text 
+                              variant="bodySmall" 
+                              style={[styles.copyrightText, { color: theme.colors.onSurfaceVariant }]}
+                            >
                                 Copyright © 2026. All rights reserved.
                             </Text>
                         </View>
@@ -98,18 +109,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: Spacing.lg,
     paddingBottom: 120,
   },
   card: {
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
+  },
+  developerButtons: {
+    gap: Spacing.md,
   },
   appInfoRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 16,
+      gap: Spacing.lg,
   },
   appInfoText: {
       flex: 1,
-  }
+  },
+  aboutText: {
+    marginTop: Spacing.sm,
+  },
+  copyrightText: {
+    marginTop: Spacing.xs,
+  },
 });

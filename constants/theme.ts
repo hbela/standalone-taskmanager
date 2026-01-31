@@ -146,3 +146,20 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+/**
+ * Spacing System - 4px base unit
+ * Use these tokens for all margin, padding, and gap values to ensure visual consistency
+ */
+export const Spacing = {
+  xs: 4,    // Extra Small - tight spacing, icon gaps, chip padding
+  sm: 8,    // Small - compact layouts, list item padding
+  md: 12,   // Medium - card spacing, form field margins
+  lg: 16,   // Large - standard padding, section spacing, card padding
+  xl: 20,   // Extra Large - large spacing, screen padding
+  xxl: 24,  // Extra Extra Large - section dividers
+  xxxl: 32, // Extra Extra Extra Large - major section spacing, screen margins
+  huge: 48, // Huge - hero section spacing, empty states
+} as const;
+
+export type SpacingKey = keyof typeof Spacing;

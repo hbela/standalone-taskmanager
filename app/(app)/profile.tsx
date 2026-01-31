@@ -1,3 +1,4 @@
+import { Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getTaskStats } from '@/lib/db/tasksDb';
 import React, { useEffect, useState } from 'react';
@@ -92,19 +93,32 @@ export default function ProfileScreen() {
         {/* App Header Branding */}
         <Surface style={styles.brandingSection} elevation={1}>
             <Avatar.Icon size={80} icon="check-all" style={{ backgroundColor: theme.colors.primaryContainer }} />
-            <Text variant="headlineMedium" style={[styles.appName, { color: theme.colors.onSurface }]}>{t('auth.appTitle')}</Text>
-            <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>{t('welcome.subtitle')}</Text>
+            <Text variant="headlineMedium" style={[styles.appName, { color: theme.colors.onSurface }]}>
+              {t('auth.appTitle')}
+            </Text>
+            <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
+              {t('welcome.subtitle')}
+            </Text>
         </Surface>
 
         {/* Task Statistics */}
         <View style={styles.section}>
-            <Text variant="titleMedium" style={styles.sectionTitle}>{t('profile.taskStats')}</Text>
+            <Text variant="titleMedium" style={styles.sectionTitle}>
+              {t('profile.taskStats')}
+            </Text>
             <View style={styles.statsGrid}>
                 {/* Total */}
                 <Card style={styles.statCard} mode="contained">
                     <Card.Content style={styles.statCardContent}>
-                        <Avatar.Icon size={40} icon="format-list-bulleted" style={{ backgroundColor: theme.colors.secondaryContainer }} color={theme.colors.onSecondaryContainer} />
-                        <Text variant="headlineMedium" style={styles.statValue}>{stats.total}</Text>
+                        <Avatar.Icon 
+                          size={40} 
+                          icon="format-list-bulleted" 
+                          style={{ backgroundColor: theme.colors.secondaryContainer }} 
+                          color={theme.colors.onSecondaryContainer} 
+                        />
+                        <Text variant="headlineMedium" style={styles.statValue}>
+                          {stats.total}
+                        </Text>
                         <Text variant="bodySmall">{t('profile.totalTasks')}</Text>
                     </Card.Content>
                 </Card>
@@ -112,8 +126,15 @@ export default function ProfileScreen() {
                 {/* Completed */}
                 <Card style={styles.statCard} mode="contained">
                     <Card.Content style={styles.statCardContent}>
-                        <Avatar.Icon size={40} icon="check-circle-outline" style={{ backgroundColor: '#E8F5E9' }} color="#2E7D32" />
-                        <Text variant="headlineMedium" style={styles.statValue}>{stats.completed}</Text>
+                        <Avatar.Icon 
+                          size={40} 
+                          icon="check-circle-outline" 
+                          style={{ backgroundColor: '#E8F5E9' }} 
+                          color="#2E7D32" 
+                        />
+                        <Text variant="headlineMedium" style={styles.statValue}>
+                          {stats.completed}
+                        </Text>
                         <Text variant="bodySmall">{t('profile.completed')}</Text>
                     </Card.Content>
                 </Card>
@@ -121,8 +142,15 @@ export default function ProfileScreen() {
                 {/* Pending */}
                 <Card style={styles.statCard} mode="contained">
                     <Card.Content style={styles.statCardContent}>
-                        <Avatar.Icon size={40} icon="clock-outline" style={{ backgroundColor: '#FFF3E0' }} color="#EF6C00" />
-                        <Text variant="headlineMedium" style={styles.statValue}>{stats.pending}</Text>
+                        <Avatar.Icon 
+                          size={40} 
+                          icon="clock-outline" 
+                          style={{ backgroundColor: '#FFF3E0' }} 
+                          color="#EF6C00" 
+                        />
+                        <Text variant="headlineMedium" style={styles.statValue}>
+                          {stats.pending}
+                        </Text>
                         <Text variant="bodySmall">{t('profile.pending')}</Text>
                     </Card.Content>
                 </Card>
@@ -130,8 +158,15 @@ export default function ProfileScreen() {
                 {/* Completion Rate */}
                 <Card style={styles.statCard} mode="contained">
                     <Card.Content style={styles.statCardContent}>
-                        <Avatar.Icon size={40} icon="trending-up" style={{ backgroundColor: '#F3E5F5' }} color="#7B1FA2" />
-                        <Text variant="headlineMedium" style={styles.statValue}>{completionRate}%</Text>
+                        <Avatar.Icon 
+                          size={40} 
+                          icon="trending-up" 
+                          style={{ backgroundColor: '#F3E5F5' }} 
+                          color="#7B1FA2" 
+                        />
+                        <Text variant="headlineMedium" style={styles.statValue}>
+                          {completionRate}%
+                        </Text>
                         <Text variant="bodySmall">{t('profile.completion')}</Text>
                     </Card.Content>
                 </Card>
@@ -150,7 +185,11 @@ export default function ProfileScreen() {
                                 <List.Item
                                     title={getPriorityLabel(priority)}
                                     left={() => <View style={[styles.priorityDot, { backgroundColor: getPriorityColor(priority) }]} />}
-                                    right={() => <Text variant="bodyLarge" style={{ alignSelf: 'center', fontWeight: 'bold' }}>{count}</Text>}
+                                    right={() => (
+                                      <Text variant="bodyLarge" style={{ alignSelf: 'center', fontWeight: 'bold' }}>
+                                        {count}
+                                      </Text>
+                                    )}
                                 />
                             </React.Fragment>
                         ))}
@@ -180,7 +219,9 @@ export default function ProfileScreen() {
         </List.Section>
 
         <View style={styles.footer}>
-            <Text variant="bodySmall" style={{ color: theme.colors.outline }}>{t('profile.madeWithLove')}</Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.outline }}>
+              {t('profile.madeWithLove')}
+            </Text>
         </View>
 
       </ScrollView>
@@ -193,57 +234,56 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: 32,
+    paddingBottom: Spacing.xxxl,
   },
   brandingSection: {
-    padding: 32,
+    padding: Spacing.xxxl,
     alignItems: 'center',
-    marginBottom: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    marginBottom: Spacing.lg,
+    borderBottomLeftRadius: Spacing.xxl,
+    borderBottomRightRadius: Spacing.xxl,
   },
   appName: {
-    marginTop: 16,
+    marginTop: Spacing.lg,
     fontWeight: 'bold',
   },
   section: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
   },
   sectionEntry: {
-      paddingHorizontal: 16,
+      paddingHorizontal: Spacing.lg,
       marginBottom: 0,
   },
   sectionTitle: {
-      marginBottom: 12,
+      marginBottom: Spacing.md,
       fontWeight: '600',
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: Spacing.md,
   },
   statCard: {
     width: '48%', // Approx 2 column
   },
   statCardContent: {
       alignItems: 'center',
-      paddingVertical: 16,
+      paddingVertical: Spacing.lg,
   },
   statValue: {
       fontWeight: 'bold',
-      marginVertical: 4,
+      marginVertical: Spacing.xs,
   },
   priorityDot: {
-      width: 12, 
-      height: 12, 
+      width: Spacing.md, 
+      height: Spacing.md, 
       borderRadius: 6, 
       margin: 10,
       alignSelf: 'center',
   },
   footer: {
-    padding: 24,
+    padding: Spacing.xxl,
     alignItems: 'center',
   },
 });
-

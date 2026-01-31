@@ -1,3 +1,4 @@
+import { Spacing } from '@/constants/theme';
 import { useTasks } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Task } from '@/types/task';
@@ -7,12 +8,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Calendar, DateData, LocaleConfig } from 'react-native-calendars';
 import {
-    ActivityIndicator,
-    Appbar,
-    Card,
-    Chip,
-    Text,
-    useTheme
+  ActivityIndicator,
+  Appbar,
+  Card,
+  Chip,
+  Text,
+  useTheme
 } from 'react-native-paper';
 
 // Configure calendar localization
@@ -163,10 +164,10 @@ export default function CalendarScreen() {
             </View>
             <Chip 
                 compact 
-                textStyle={{ fontSize: 10, lineHeight: 10 }}
+                textStyle={{ color: 'white', fontWeight: 'bold' }}
                 style={{ backgroundColor: getPriorityColor(task.priority), height: 24 }}
             >
-                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>{task.priority.toUpperCase()}</Text>
+                {task.priority.toUpperCase()}
             </Chip>
             </View>
             {task.description && (
@@ -187,8 +188,10 @@ export default function CalendarScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="calendar-outline" size={64} color="#C7C7CC" />
-      <Text variant="bodyLarge" style={styles.emptyText}>{t('calendar.noTasks')}</Text>
+      <Ionicons name="calendar-outline" size={64} color={theme.colors.outlineVariant} />
+      <Text variant="bodyLarge" style={[styles.emptyText, { color: theme.colors.onSurfaceVariant }]}>
+        {t('calendar.noTasks')}
+      </Text>
     </View>
   );
 
@@ -196,7 +199,9 @@ export default function CalendarScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 16 }}>{t('common.loading')}</Text>
+        <Text variant="bodyMedium" style={{ marginTop: Spacing.lg }}>
+          {t('common.loading')}
+        </Text>
       </View>
     );
   }
@@ -273,35 +278,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   calendarCard: {
-      margin: 16,
-      borderRadius: 12,
+      margin: Spacing.lg,
+      borderRadius: Spacing.md,
       overflow: 'hidden',
   },
   tasksSection: {
   },
   sectionTitle: {
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
   },
   tasksList: {
-    paddingBottom: 120, // Increased to clear floating bottom navbar
+    paddingBottom: 120, // Keep for floating bottom navbar
   },
   taskCard: {
-    marginBottom: 12,
-    marginHorizontal: 16, // Use marginHorizontal as it's directly in FlatList now
-    // backgroundColor: 'white', // Removed hardcoded white
+    marginBottom: Spacing.md,
+    marginHorizontal: Spacing.lg,
   },
   taskHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   taskTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 8,
+    gap: Spacing.sm,
   },
   taskTitle: {
     flex: 1,
@@ -311,24 +315,23 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   taskDescription: {
-    marginTop: 4,
+    marginTop: Spacing.xs,
     marginLeft: 32,
     opacity: 0.7,
   },
   contactInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: Spacing.sm,
     marginLeft: 32,
-    gap: 4,
+    gap: Spacing.xs,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 48,
+    paddingVertical: Spacing.huge,
   },
   emptyText: {
-    color: '#8E8E93',
-    marginTop: 16,
+    marginTop: Spacing.lg,
   },
 });

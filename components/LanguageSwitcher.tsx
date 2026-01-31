@@ -1,4 +1,5 @@
 // components/LanguageSwitcher.tsx
+import { Spacing } from '@/constants/theme';
 import { useRouter } from 'expo-router';
 import React, { useContext } from 'react';
 import { StyleSheet } from 'react-native';
@@ -57,10 +58,14 @@ export default function LanguageSwitcher() {
               <React.Fragment key={lang.code}>
                   <List.Item
                       title={lang.label}
-                      left={() => <Text style={{ fontSize: 24, alignSelf:'center', marginHorizontal: 16 }}>{lang.flag}</Text>}
+                      left={() => (
+                        <Text variant="headlineSmall" style={styles.flagText}>
+                          {lang.flag}
+                        </Text>
+                      )}
                       right={(props) => currentLocale === lang.code ? <List.Icon {...props} icon="check" color={theme.colors.primary} /> : null}
                       onPress={() => handleLanguageChange(lang.code)}
-                      style={{ paddingVertical: 8 }}
+                      style={styles.listItem}
                   />
               </React.Fragment>
             ))}
@@ -85,8 +90,14 @@ export default function LanguageSwitcher() {
 
 const styles = StyleSheet.create({
   card: {
-    // backgroundColor: 'white', // Use theme
-    overflow: 'hidden', // For rounded corners with list items
-    marginBottom: 16, // Add margin to match other sections
+    overflow: 'hidden',
+    marginBottom: Spacing.lg,
+  },
+  flagText: {
+    alignSelf: 'center',
+    marginHorizontal: Spacing.lg,
+  },
+  listItem: {
+    paddingVertical: Spacing.sm,
   },
 });

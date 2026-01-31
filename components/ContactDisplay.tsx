@@ -1,3 +1,4 @@
+import { Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Ionicons } from '@expo/vector-icons';
 import * as Contacts from 'expo-contacts';
@@ -84,7 +85,9 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
       <View style={styles.container}>
         <View style={[styles.loadingContainer, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outline }]}>
           <Ionicons name="person-outline" size={20} color={theme.colors.onSurfaceVariant} />
-          <Text style={[styles.loadingText, { color: theme.colors.onSurfaceVariant }]}>{t('contacts.loadingContact')}</Text>
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            {t('contacts.loadingContact')}
+          </Text>
         </View>
       </View>
     );
@@ -96,8 +99,10 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
         <View style={[styles.notFoundContainer, { backgroundColor: theme.colors.errorContainer, borderColor: theme.colors.error }]}>
           <Ionicons name="alert-circle-outline" size={20} color={theme.colors.error} />
           <View style={styles.notFoundTextContainer}>
-            <Text style={[styles.notFoundTitle, { color: theme.colors.onSurface }]}>{t('contacts.contactNotFound')}</Text>
-            <Text style={[styles.notFoundSubtitle, { color: theme.colors.onSurfaceVariant }]}>
+            <Text variant="titleSmall" style={[styles.notFoundTitle, { color: theme.colors.onSurface }]}>
+              {t('contacts.contactNotFound')}
+            </Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
               {t('contacts.contactNotFoundHint')}
             </Text>
           </View>
@@ -124,7 +129,7 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
         <Card.Content>
           <View style={[styles.contactHeader, { borderBottomColor: theme.colors.outlineVariant }]}>
             <View style={[styles.contactAvatar, { backgroundColor: theme.colors.primary }]}>
-              <Text style={styles.contactAvatarText}>
+              <Text variant="titleMedium" style={styles.contactAvatarText}>
                 {contact.name
                   ?.split(' ')
                   .map((n) => n[0])
@@ -134,9 +139,11 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
               </Text>
             </View>
             <View style={styles.contactHeaderInfo}>
-              <Text style={[styles.contactName, { color: theme.colors.onSurface }]}>{contact.name || t('contacts.unknown')}</Text>
+              <Text variant="titleMedium" style={[styles.contactName, { color: theme.colors.onSurface }]}>
+                {contact.name || t('contacts.unknown')}
+              </Text>
               {primaryPhone && (
-                <Text style={[styles.contactLabel, { color: theme.colors.onSurfaceVariant }]}>
+                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
                   {primaryPhone.label || 'Phone'}
                 </Text>
               )}
@@ -147,7 +154,9 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
             <View style={styles.contactDetail}>
               <View style={styles.contactDetailInfo}>
                 <Ionicons name="call" size={16} color={theme.colors.primary} />
-                <Text style={[styles.contactDetailText, { color: theme.colors.onSurface }]}>{primaryPhone.number}</Text>
+                <Text variant="bodyMedium" style={{ color: theme.colors.onSurface, flex: 1 }}>
+                  {primaryPhone.number}
+                </Text>
               </View>
               {showActions && (
                 <TouchableOpacity
@@ -164,7 +173,9 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
             <View style={styles.contactDetail}>
               <View style={styles.contactDetailInfo}>
                 <Ionicons name="mail" size={16} color={theme.colors.primary} />
-                <Text style={[styles.contactDetailText, { color: theme.colors.onSurface }]}>{primaryEmail.email}</Text>
+                <Text variant="bodyMedium" style={{ color: theme.colors.onSurface, flex: 1 }}>
+                  {primaryEmail.email}
+                </Text>
               </View>
               {showActions && (
                 <TouchableOpacity
@@ -184,7 +195,7 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
                 <View style={styles.contactDetailInfo}>
                   <Ionicons name="location" size={16} color={theme.colors.primary} />
                   <View style={styles.addressTextContainer}>
-                    <Text style={[styles.contactDetailText, { color: theme.colors.onSurface }]}>
+                    <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
                       {[
                         contact.addresses[0].street,
                         contact.addresses[0].city,
@@ -194,7 +205,9 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
                       ].filter(Boolean).join(', ')}
                     </Text>
                     {contact.addresses[0].label && (
-                      <Text style={[styles.addressLabel, { color: theme.colors.onSurfaceVariant }]}>{contact.addresses[0].label}</Text>
+                      <Text variant="bodySmall" style={[styles.addressLabel, { color: theme.colors.onSurfaceVariant }]}>
+                        {contact.addresses[0].label}
+                      </Text>
                     )}
                   </View>
                 </View>
@@ -215,7 +228,7 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
           )}
 
           {contact.phoneNumbers && contact.phoneNumbers.length > 1 && (
-            <Text style={[styles.moreInfo, { color: theme.colors.onSurfaceVariant }]}>
+            <Text variant="bodySmall" style={[styles.moreInfo, { color: theme.colors.onSurfaceVariant }]}>
               {contact.phoneNumbers.length - 1 > 1 
                 ? t('contacts.morePhonesPlural').replace('%{count}', String(contact.phoneNumbers.length - 1))
                 : t('contacts.morePhones').replace('%{count}', String(contact.phoneNumbers.length - 1))
@@ -224,7 +237,7 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
           )}
 
           {contact.emails && contact.emails.length > 1 && (
-            <Text style={[styles.moreInfo, { color: theme.colors.onSurfaceVariant }]}>
+            <Text variant="bodySmall" style={[styles.moreInfo, { color: theme.colors.onSurfaceVariant }]}>
               {contact.emails.length - 1 > 1
                 ? t('contacts.moreEmailsPlural').replace('%{count}', String(contact.emails.length - 1))
                 : t('contacts.moreEmails').replace('%{count}', String(contact.emails.length - 1))
@@ -233,7 +246,7 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
           )}
 
           {contact.addresses && contact.addresses.length > 1 && (
-            <Text style={[styles.moreInfo, { color: theme.colors.onSurfaceVariant }]}>
+            <Text variant="bodySmall" style={[styles.moreInfo, { color: theme.colors.onSurfaceVariant }]}>
               {contact.addresses.length - 1 > 1
                 ? t('contacts.moreAddressesPlural').replace('%{count}', String(contact.addresses.length - 1))
                 : t('contacts.moreAddresses').replace('%{count}', String(contact.addresses.length - 1))
@@ -248,47 +261,40 @@ export default function ContactDisplay({ contactId, showActions = true }: Contac
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    padding: 16,
-    borderRadius: 8,
+    gap: Spacing.sm,
+    padding: Spacing.lg,
+    borderRadius: Spacing.sm,
     borderWidth: 1,
-  },
-  loadingText: {
-    fontSize: 14,
   },
   notFoundContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    padding: 16,
-    borderRadius: 8,
+    gap: Spacing.md,
+    padding: Spacing.lg,
+    borderRadius: Spacing.sm,
     borderWidth: 1,
   },
   notFoundTextContainer: {
     flex: 1,
   },
   notFoundTitle: {
-    fontSize: 14,
     fontWeight: '600',
     marginBottom: 2,
   },
-  notFoundSubtitle: {
-    fontSize: 12,
-  },
   contactCard: {
-    borderRadius: 12,
+    borderRadius: Spacing.md,
   },
   contactHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
-    paddingBottom: 12,
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+    paddingBottom: Spacing.md,
     borderBottomWidth: 1,
   },
   contactAvatar: {
@@ -300,57 +306,46 @@ const styles = StyleSheet.create({
   },
   contactAvatarText: {
     color: 'white',
-    fontSize: 18,
     fontWeight: '600',
   },
   contactHeaderInfo: {
     flex: 1,
   },
   contactName: {
-    fontSize: 16,
     fontWeight: '600',
     marginBottom: 2,
-  },
-  contactLabel: {
-    fontSize: 12,
   },
   contactDetail: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: Spacing.sm,
   },
   contactDetailInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    flex: 1,
-  },
-  contactDetailText: {
-    fontSize: 14,
+    gap: Spacing.sm,
     flex: 1,
   },
   actionButton: {
-    padding: 8,
+    padding: Spacing.sm,
   },
   addressSection: {
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: Spacing.sm,
+    paddingTop: Spacing.sm,
     borderTopWidth: 1,
   },
   addressTextContainer: {
     flex: 1,
   },
   addressLabel: {
-    fontSize: 11,
     marginTop: 2,
   },
   mapButton: {
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
   moreInfo: {
-    fontSize: 12,
     fontStyle: 'italic',
-    marginTop: 4,
+    marginTop: Spacing.xs,
   },
 });
