@@ -14,7 +14,7 @@ export default function AppLayout() {
     tasks: t('tasks.title'),
     calendar: t('calendar.title'),
     create: t('tasks.create'),
-    profile: t('settings.profile'),
+    profile: t('dashboard.title'),
     settings: t('settings.title'),
   });
 
@@ -24,7 +24,7 @@ export default function AppLayout() {
       tasks: t('tasks.title'),
       calendar: t('calendar.title'),
       create: t('tasks.create'),
-      profile: t('settings.profile'),
+      profile: t('dashboard.title'),
       settings: t('settings.title'),
     });
   }, [_key, t]);
@@ -56,7 +56,7 @@ export default function AppLayout() {
   const profileOptions = useMemo(() => ({
     title: tabTitles.profile,
     tabBarIcon: ({ color, size }: any) => (
-      <Ionicons name="person" size={size} color={color} />
+      <Ionicons name="stats-chart" size={size} color={color} />
     ),
   }), [tabTitles.profile]);
 

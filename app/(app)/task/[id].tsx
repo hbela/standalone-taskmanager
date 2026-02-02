@@ -13,7 +13,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { Appbar, Button, Card, Chip, Dialog, Divider, List, Paragraph, Portal, Text, useTheme } from 'react-native-paper';
+import { Appbar, Button, Card, Dialog, Divider, List, Paragraph, Portal, Text, useTheme } from 'react-native-paper';
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -96,30 +96,53 @@ export default function TaskDetailScreen() {
         {/* Main Header Card */}
         <Card style={styles.card}>
           <Card.Content>
-            <View style={styles.headerRow}>
-               <Text variant="headlineSmall" style={[
-                 styles.title, 
-                 task.completed && { textDecorationLine: 'line-through', color: theme.colors.onSurfaceDisabled }
-               ]}>
-                 {task.title}
-               </Text>
+            {/* Title Section */}
+            <View style={styles.inlineFieldRow}>
+              <Text 
+                variant="titleMedium" 
+                style={[styles.fieldLabel, { color: theme.colors.primary }]}
+              >
+                {t('tasks.titleLabel')}:{' '}
+              </Text>
+              <Text variant="bodyLarge" style={[
+                styles.inlineFieldValue,
+                { color: theme.colors.onSurface },
+                task.completed && { textDecorationLine: 'line-through', color: theme.colors.onSurfaceDisabled }
+              ]}>
+                {task.title}
+              </Text>
             </View>
             
-            <View style={styles.chipRow}>
-              <Chip 
-                mode="flat" 
-                style={{ backgroundColor: statusColor + '20' }}
-                textStyle={{ color: statusColor }}
+            {/* Status Section */}
+            <View style={styles.inlineFieldRow}>
+              <Text 
+                variant="titleMedium" 
+                style={[styles.fieldLabel, { color: theme.colors.primary }]}
+              >
+                {t('tasks.statusLabel')}:{' '}
+              </Text>
+              <Text 
+                variant="bodyLarge"
+                style={{ color: statusColor, fontSize: 11, lineHeight: 11, textTransform: 'uppercase' }}
               >
                 {statusLabel}
-              </Chip>
-              <Chip 
-                  mode="outlined"
-                  textStyle={{ color: priorityColor }}
-                  style={{ borderColor: priorityColor }}
+              </Text>
+            </View>
+            
+            {/* Priority Section */}
+            <View style={styles.inlineFieldRow}>
+              <Text 
+                variant="titleMedium" 
+                style={[styles.fieldLabel, { color: theme.colors.primary }]}
               >
-                  {t(`tasks.priorities.${task.priority}`).toUpperCase()}
-              </Chip>
+                {t('tasks.priorityLabel')}:{' '}
+              </Text>
+              <Text 
+                variant="bodyLarge"
+                style={{ color: priorityColor, fontSize: 11, lineHeight: 11, textTransform: 'uppercase' }}
+              >
+                {t(`tasks.priorities.${task.priority}`)}
+              </Text>
             </View>
           </Card.Content>
         </Card>
@@ -143,24 +166,34 @@ export default function TaskDetailScreen() {
              
              {task.description && <Divider style={styles.divider} />}
 
+             {task.bill && (
+               <List.Item
+                   title={t('form.bill')}
+                   description={`${task.bill.toFixed(2)} ${task.billCurrency || 'USD'}`}
+                   left={props => <List.Icon {...props} icon="currency-usd" color={theme.colors.primary} />}
+                   titleStyle={[styles.listItemTitle, { color: theme.colors.primary }]}
+                   descriptionStyle={[styles.listItemDescription, { color: theme.colors.onSurface, fontWeight: '600' }]}
+               />
+             )}
+
              <List.Item
                  title={t('tasks.dueDate')}
                  description={task.dueDate ? new Date(task.dueDate).toLocaleString(t('common.locale'), {
                     month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
                  }) : t('common.no')}
                  left={props => <List.Icon {...props} icon="calendar-outline" color={theme.colors.primary} />}
-                 titleStyle={styles.listItemTitle}
-                 descriptionStyle={styles.listItemDescription}
+                 titleStyle={[styles.listItemTitle, { color: theme.colors.primary }]}
+                 descriptionStyle={[styles.listItemDescription, { color: theme.colors.onSurface }]}
              />
 
              <List.Item
                  title={t('tasks.created')}
                  description={new Date(task.createdAt).toLocaleString(t('common.locale'), {
-                     month: 'short', day: 'numeric', year: 'numeric'
+                     month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
                  })}
                  left={props => <List.Icon {...props} icon="clock-outline" color={theme.colors.primary} />}
-                 titleStyle={styles.listItemTitle}
-                 descriptionStyle={styles.listItemDescription}
+                 titleStyle={[styles.listItemTitle, { color: theme.colors.primary }]}
+                 descriptionStyle={[styles.listItemDescription, { color: theme.colors.onSurface }]}
              />
 
              {task.updatedAt !== task.createdAt && (
@@ -252,19 +285,17 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: Spacing.md,
   },
-  headerRow: {
+  inlineFieldRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: Spacing.md,
-  },
-  title: {
-    flex: 1,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
     flexWrap: 'wrap',
+  },
+  fieldLabel: {
+    fontWeight: '600',
+  },
+  inlineFieldValue: {
+    flex: 1,
   },
   detailsContent: {
     gap: Spacing.lg,

@@ -72,7 +72,7 @@ export default function TaskCard({
               {task.title}
             </Text>
             <Chip
-              textStyle={{ color: priorityColor, fontWeight: 'bold' }}
+              textStyle={{ color: priorityColor, fontSize: 11, lineHeight: 11 }}
               style={[styles.priorityChip, { backgroundColor: priorityColor + '20', borderColor: priorityColor }]}
               compact
             >
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
   },
   priorityChip: {
-    height: 24,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },

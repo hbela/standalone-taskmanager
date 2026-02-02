@@ -23,6 +23,8 @@ function rowToTask(row: any): Task {
     taskAddress: row.taskAddress,
     latitude: row.latitude,
     longitude: row.longitude,
+    bill: row.bill,
+    billCurrency: row.billCurrency,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -89,8 +91,8 @@ export async function createTask(data: CreateTaskInput): Promise<Task> {
     `INSERT INTO tasks (
       title, description, completed, priority, dueDate, 
       notificationId, reminderTimes, contactId, taskAddress, 
-      latitude, longitude, createdAt, updatedAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+      latitude, longitude, bill, billCurrency, createdAt, updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
     [
       data.title,
       data.description || null,
@@ -103,6 +105,8 @@ export async function createTask(data: CreateTaskInput): Promise<Task> {
       data.taskAddress || null,
       data.latitude || null,
       data.longitude || null,
+      data.bill || null,
+      data.billCurrency || null,
     ]
   );
   
@@ -178,6 +182,16 @@ export async function updateTask(id: number, data: UpdateTaskInput): Promise<Tas
     values.push(data.longitude);
   }
   
+  if (data.bill !== undefined) {
+    updates.push('bill = ?');
+    values.push(data.bill);
+  }
+  
+  if (data.billCurrency !== undefined) {
+    updates.push('billCurrency = ?');
+    values.push(data.billCurrency);
+  }
+  
   updates.push('updatedAt = datetime(\'now\')');
   values.push(id);
   
@@ -221,18 +235,54 @@ export async function getTaskStats(): Promise<{
   total: number;
   completed: number;
   pending: number;
+  overdue: number;
   byPriority: Record<string, number>;
+  totalBilling: { currency: string; amount: number }[];
+  monthlyBilling: { month: string; currency: string; amount: number }[];
+  billingByCategory: { category: string; currency: string; amount: number }[];
 }> {
   const db = await getDatabase();
   
   const totalRow = await db.getFirstAsync('SELECT COUNT(*) as count FROM tasks');
   const completedRow = await db.getFirstAsync('SELECT COUNT(*) as count FROM tasks WHERE completed = 1');
+  const overdueRow = await db.getFirstAsync(
+    'SELECT COUNT(*) as count FROM tasks WHERE completed = 0 AND dueDate IS NOT NULL AND dueDate < ?',
+    [new Date().toISOString()]
+  );
+  
   const priorityRows = await db.getAllAsync(
     'SELECT priority, COUNT(*) as count FROM tasks GROUP BY priority'
   );
   
+  // Billing stats
+  const totalBillingRows = await db.getAllAsync(
+    'SELECT billCurrency, SUM(bill) as total FROM tasks WHERE bill IS NOT NULL GROUP BY billCurrency'
+  );
+  
+  // Monthly billing (group by YYYY-MM of dueDate)
+  // Using substr(dueDate, 1, 7) is safer for ISO strings than strftime in some SQLite versions
+  const monthlyBillingRows = await db.getAllAsync(
+    `SELECT substr(dueDate, 1, 7) as month, billCurrency, SUM(bill) as total 
+     FROM tasks 
+     WHERE bill IS NOT NULL AND dueDate IS NOT NULL 
+     GROUP BY month, billCurrency 
+     ORDER BY month DESC 
+     LIMIT 12`
+  );
+  
+  // Billing by Category (Title)
+  const billingByCategoryRows = await db.getAllAsync(
+    `SELECT title as category, billCurrency, SUM(bill) as total 
+     FROM tasks 
+     WHERE bill IS NOT NULL 
+     GROUP BY title, billCurrency
+     ORDER BY total DESC
+     LIMIT 10`
+  );
+  
   const total = (totalRow as any)?.count || 0;
   const completed = (completedRow as any)?.count || 0;
+  const overdue = (overdueRow as any)?.count || 0;
   
   const byPriority: Record<string, number> = {};
   priorityRows.forEach((row: any) => {
@@ -243,6 +293,21 @@ export async function getTaskStats(): Promise<{
     total,
     completed,
     pending: total - completed,
+    overdue,
     byPriority,
+    totalBilling: totalBillingRows.map((row: any) => ({ 
+      currency: row.billCurrency || 'USD', 
+      amount: row.total 
+    })),
+    monthlyBilling: monthlyBillingRows.map((row: any) => ({
+      month: row.month,
+      currency: row.billCurrency || 'USD',
+      amount: row.total
+    })),
+    billingByCategory: billingByCategoryRows.map((row: any) => ({
+      category: row.category,
+      currency: row.billCurrency || 'USD',
+      amount: row.total
+    })),
   };
 }

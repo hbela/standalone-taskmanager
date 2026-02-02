@@ -55,6 +55,9 @@
             "high": "Hoch",
             "urgent": "Dringend"
         },
+        "titleLabel": "Titel",
+        "statusLabel": "Status",
+        "priorityLabel": "Priorität",
         "reminders": {
             "5min": "5 Minuten vorher",
             "15min": "15 Minuten vorher",
@@ -70,22 +73,27 @@
     "settings": {
         "title": "Einstellungen",
         "language": "Sprache",
-        "profile": "Profil",
         "notifications": "Benachrichtigungen",
-        "about": "Über"
+        "about": "Über",
+        "showWelcomeScreen": "Willkommensbildschirm anzeigen",
+        "showWelcomeScreenDescription": "Willkommensbildschirm beim App-Start anzeigen"
     },
-    "profile": {
-        "title": "Profil",
-        "taskStats": "Aufgabenstatistik",
-        "totalTasks": "Gesamtaufgaben",
+    "dashboard": {
+        "title": "Übersicht",
+        "taskStats": "Aufgabenstatistiken",
+        "totalTasks": "Gesamt",
         "completed": "Erledigt",
         "pending": "Ausstehend",
-        "completion": "Fertigstellung",
+        "completion": "Erledigung",
         "tasksByPriority": "Aufgaben nach Priorität",
         "about": "Über",
         "version": "Version",
         "storage": "Speicher",
-        "madeWithLove": "Mit ❤️ für Produktivität gemacht"
+        "madeWithLove": "Mit ❤️ für Produktivität gemacht",
+        "totalBilling": "Gesamtrechnung",
+        "monthlyBilling": "Monatliche Abrechnung",
+        "billingByCategory": "Abrechnung nach Kategorie",
+        "overdueTasks": "Überfällige Aufgaben"
     },
     "contacts": {
         "title": "Kontakte",
@@ -169,14 +177,20 @@
         "reminderHint": "Wählen Sie aus, wann Sie erinnert werden möchten:",
         "reminderWarning": "Wählen Sie mindestens eine Erinnerungszeit",
         "removeContact": "Kontakt entfernen",
+        "bill": "Rechnungsbetrag",
+        "billOptional": "Rechnungsbetrag (Optional)",
+        "currency": "Währung",
         "placeholders": {
             "title": "Aufgabentitel eingeben",
-            "description": "Aufgabenbeschreibung eingeben (optional)"
+            "description": "Aufgabenbeschreibung eingeben (optional)",
+            "bill": "Rechnungsbetrag eingeben"
         },
         "errors": {
             "titleRequired": "Titel ist erforderlich",
             "titleTooShort": "Titel muss mindestens 3 Zeichen lang sein",
-            "titleTooLong": "Titel muss weniger als 255 Zeichen lang sein"
+            "titleTooLong": "Titel muss weniger als 255 Zeichen lang sein",
+            "billInvalid": "Rechnungsbetrag muss eine gültige Zahl sein",
+            "billNegative": "Rechnungsbetrag kann nicht negativ sein"
         }
     },
     "success": "Erfolg",

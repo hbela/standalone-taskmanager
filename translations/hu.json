@@ -55,6 +55,9 @@
             "high": "Magas",
             "urgent": "Sürgős"
         },
+        "titleLabel": "Cím",
+        "statusLabel": "Állapot",
+        "priorityLabel": "Prioritás",
         "reminders": {
             "5min": "5 perccel előtte",
             "15min": "15 perccel előtte",
@@ -72,10 +75,12 @@
         "language": "Nyelv",
         "profile": "Profil",
         "notifications": "Értesítések",
-        "about": "Névjegy"
+        "about": "Névjegy",
+        "showWelcomeScreen": "Üdvözlő képernyő megjelenítése",
+        "showWelcomeScreenDescription": "Üdvözlő képernyő megjelenítése az alkalmazás indításakor"
     },
-    "profile": {
-        "title": "Profil",
+    "dashboard": {
+        "title": "Vezérlőpult",
         "taskStats": "Feladat Statisztikák",
         "totalTasks": "Összes Feladat",
         "completed": "Befejezve",
@@ -85,7 +90,11 @@
         "about": "Névjegy",
         "version": "Verzió",
         "storage": "Tárhely",
-        "madeWithLove": "Készült ❤️-el a produktivitásért"
+        "madeWithLove": "Szeretettel készült a produktivitásért ❤️",
+        "totalBilling": "Számlák Összege",
+        "monthlyBilling": "Havi Számlázás",
+        "billingByCategory": "Számlázás Kategóriánként",
+        "overdueTasks": "Lejárt Feladatok"
     },
     "contacts": {
         "title": "Kapcsolatok",
@@ -169,14 +178,20 @@
         "reminderHint": "Válassza ki, mikor szeretne emlékeztetőt kapni:",
         "reminderWarning": "Válasszon legalább egy emlékeztető időpontot",
         "removeContact": "Kapcsolat eltávolítása",
+        "bill": "Számla összege",
+        "billOptional": "Számla összege (Opcionális)",
+        "currency": "Pénznem",
         "placeholders": {
             "title": "Adja meg a feladat címét",
-            "description": "Adja meg a feladat leírását (opcionális)"
+            "description": "Adja meg a feladat leírását (opcionális)",
+            "bill": "Adja meg a számla összegét"
         },
         "errors": {
             "titleRequired": "A cím megadása kötelező",
             "titleTooShort": "A címnek legalább 3 karakterből kell állnia",
-            "titleTooLong": "A cím nem lehet hosszabb 255 karakternél"
+            "titleTooLong": "A cím nem lehet hosszabb 255 karakternél",
+            "billInvalid": "A számla összegének érvényes számnak kell lennie",
+            "billNegative": "A számla összege nem lehet negatív"
         }
     },
     "success": "Siker",

@@ -1,47 +1,78 @@
+
 import { Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getTaskStats } from '@/lib/db/tasksDb';
 import React, { useEffect, useState } from 'react';
 import {
+    Dimensions,
     RefreshControl,
     ScrollView,
     StyleSheet,
-    View,
+    View
 } from 'react-native';
+import { BarChart, PieChart } from 'react-native-gifted-charts';
 import {
     Appbar,
     Avatar,
+    Button,
     Card,
+    Chip,
     Divider,
     List,
+    Modal,
+    Portal,
     Surface,
     Text,
     useTheme
 } from 'react-native-paper';
 
+// Currency options with symbols
+const CURRENCY_OPTIONS = [
+  { code: 'USD', symbol: '$', name: 'US Dollar' },
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'GBP', symbol: '£', name: 'British Pound' },
+  { code: 'HUF', symbol: 'Ft', name: 'Hungarian Forint' },
+];
+
 interface TaskStats {
   total: number;
   completed: number;
   pending: number;
+  overdue: number;
   byPriority: Record<string, number>;
+  totalBilling: { currency: string; amount: number }[];
+  monthlyBilling: { month: string; currency: string; amount: number }[];
+  billingByCategory: { category: string; currency: string; amount: number }[];
 }
 
 export default function ProfileScreen() {
   const theme = useTheme();
   const { t } = useTranslation();
+  const screenWidth = Dimensions.get('window').width;
   
   const [stats, setStats] = useState<TaskStats>({
     total: 0,
     completed: 0,
     pending: 0,
+    overdue: 0,
     byPriority: {},
+    totalBilling: [],
+    monthlyBilling: [],
+    billingByCategory: [],
   });
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
+  const [currencyMenuVisible, setCurrencyMenuVisible] = useState(false);
 
   const loadStats = async () => {
     try {
       const taskStats = await getTaskStats();
       setStats(taskStats);
+      
+      // Set default currency if not set and we have billing data
+      if (!selectedCurrency && taskStats.totalBilling.length > 0) {
+        setSelectedCurrency(taskStats.totalBilling[0].currency);
+      }
     } catch (error) {
       console.error('Failed to load task stats:', error);
     }
@@ -74,14 +105,38 @@ export default function ProfileScreen() {
   // Get localized priority label
   const getPriorityLabel = (priority: string): string => {
     const key = priority.toLowerCase() as 'low' | 'medium' | 'high' | 'urgent';
-    // If we have a translation for this priority, use it, otherwise capitalize the key
     return t(`tasks.priorities.${key}`, { defaultValue: priority.charAt(0).toUpperCase() + priority.slice(1) });
   };
+
+  // Filter data for charts based on selected currency
+  const monthlyData = stats.monthlyBilling
+    .filter(item => item.currency === selectedCurrency)
+    .map(item => ({ 
+        value: item.amount, 
+        label: item.month.substring(5), // Show only 'MM' part or 'MM-XX'
+        labelTextStyle: { color: theme.colors.onSurfaceVariant, fontSize: 10 },
+        frontColor: theme.colors.primary,
+    }))
+    .reverse(); // Show oldest to newest if API returns desc, check order
+
+  // Pie chart colors
+  const pieColors = ['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#5856D6', '#AF52DE', '#FF2D55', '#5AC8FA'];
+
+  const categoryData = stats.billingByCategory
+    .filter(item => item.currency === selectedCurrency)
+    .map((item, index) => ({ 
+        value: item.amount, 
+        color: pieColors[index % pieColors.length],
+        text: `${item.amount.toFixed(0)}`,
+        category: item.category
+    }));
+
+  const currentTotalBilling = stats.totalBilling.find(b => b.currency === selectedCurrency)?.amount || 0;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
-        <Appbar.Content title={t('profile.title')} />
+        <Appbar.Content title={t('dashboard.title')} />
       </Appbar.Header>
 
       <ScrollView 
@@ -90,93 +145,187 @@ export default function ProfileScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* App Header Branding */}
-        <Surface style={styles.brandingSection} elevation={1}>
-            <Avatar.Icon size={80} icon="check-all" style={{ backgroundColor: theme.colors.primaryContainer }} />
-            <Text variant="headlineMedium" style={[styles.appName, { color: theme.colors.onSurface }]}>
-              {t('auth.appTitle')}
-            </Text>
-            <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
-              {t('welcome.subtitle')}
-            </Text>
-        </Surface>
+        {/* Overdue Alert */}
+        {stats.overdue > 0 && (
+           <Surface style={[styles.overdueAlert, { backgroundColor: theme.colors.errorContainer }]}>
+               <View style={styles.overdueContent}>
+                   <Avatar.Icon size={40} icon="alert-circle" style={{ backgroundColor: theme.colors.error }} />
+                   <View style={{ marginLeft: Spacing.md, flex: 1 }}>
+                       <Text variant="titleMedium" style={{ color: theme.colors.onErrorContainer, fontWeight: 'bold' }}>
+                           {t('dashboard.overdueTasks')}
+                       </Text>
+                       <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
+                           {stats.overdue} {t('dashboard.overdueTasks').toLowerCase()}
+                       </Text>
+                   </View>
+                   <Chip textStyle={{ color: theme.colors.error }}>{stats.overdue}</Chip>
+               </View>
+           </Surface>
+        )}
 
-        {/* Task Statistics */}
+        {/* Task Statistics Grid */}
         <View style={styles.section}>
             <Text variant="titleMedium" style={styles.sectionTitle}>
-              {t('profile.taskStats')}
+              {t('dashboard.taskStats')}
             </Text>
             <View style={styles.statsGrid}>
-                {/* Total */}
                 <Card style={styles.statCard} mode="contained">
                     <Card.Content style={styles.statCardContent}>
-                        <Avatar.Icon 
-                          size={40} 
-                          icon="format-list-bulleted" 
-                          style={{ backgroundColor: theme.colors.secondaryContainer }} 
-                          color={theme.colors.onSecondaryContainer} 
-                        />
-                        <Text variant="headlineMedium" style={styles.statValue}>
-                          {stats.total}
-                        </Text>
-                        <Text variant="bodySmall">{t('profile.totalTasks')}</Text>
+                        <Text variant="headlineMedium" style={styles.statValue}>{stats.total}</Text>
+                        <Text variant="bodySmall">{t('dashboard.totalTasks')}</Text>
                     </Card.Content>
                 </Card>
-                
-                {/* Completed */}
                 <Card style={styles.statCard} mode="contained">
                     <Card.Content style={styles.statCardContent}>
-                        <Avatar.Icon 
-                          size={40} 
-                          icon="check-circle-outline" 
-                          style={{ backgroundColor: '#E8F5E9' }} 
-                          color="#2E7D32" 
-                        />
-                        <Text variant="headlineMedium" style={styles.statValue}>
-                          {stats.completed}
-                        </Text>
-                        <Text variant="bodySmall">{t('profile.completed')}</Text>
+                        <Text variant="headlineMedium" style={[styles.statValue, { color: '#2E7D32' }]}>{stats.completed}</Text>
+                        <Text variant="bodySmall">{t('dashboard.completed')}</Text>
                     </Card.Content>
                 </Card>
-
-                {/* Pending */}
                 <Card style={styles.statCard} mode="contained">
                     <Card.Content style={styles.statCardContent}>
-                        <Avatar.Icon 
-                          size={40} 
-                          icon="clock-outline" 
-                          style={{ backgroundColor: '#FFF3E0' }} 
-                          color="#EF6C00" 
-                        />
-                        <Text variant="headlineMedium" style={styles.statValue}>
-                          {stats.pending}
-                        </Text>
-                        <Text variant="bodySmall">{t('profile.pending')}</Text>
+                        <Text variant="headlineMedium" style={[styles.statValue, { color: '#EF6C00' }]}>{stats.pending}</Text>
+                        <Text variant="bodySmall">{t('dashboard.pending')}</Text>
                     </Card.Content>
                 </Card>
-
-                {/* Completion Rate */}
                 <Card style={styles.statCard} mode="contained">
                     <Card.Content style={styles.statCardContent}>
-                        <Avatar.Icon 
-                          size={40} 
-                          icon="trending-up" 
-                          style={{ backgroundColor: '#F3E5F5' }} 
-                          color="#7B1FA2" 
-                        />
-                        <Text variant="headlineMedium" style={styles.statValue}>
-                          {completionRate}%
-                        </Text>
-                        <Text variant="bodySmall">{t('profile.completion')}</Text>
+                        <Text variant="headlineMedium" style={[styles.statValue, { color: '#7B1FA2' }]}>{completionRate}%</Text>
+                        <Text variant="bodySmall">{t('dashboard.completion')}</Text>
                     </Card.Content>
                 </Card>
             </View>
         </View>
 
+        {/* Billing Section */}
+        {stats.totalBilling.length > 0 && (
+          <View style={styles.section}>
+             <Text variant="titleMedium" style={styles.sectionTitle}>
+                {t('dashboard.monthlyBilling')}
+             </Text>
+             
+             {/* Currency Selector */}
+             <View style={styles.currencySelectorContainer}>
+               <Button
+                  mode="outlined"
+                  onPress={() => setCurrencyMenuVisible(true)}
+                  style={styles.currencySelectorButton}
+                  icon="chevron-down"
+                  contentStyle={{ flexDirection: 'row-reverse' }}
+               >
+                  {selectedCurrency ? (
+                    CURRENCY_OPTIONS.find(c => c.code === selectedCurrency)?.name || selectedCurrency
+                  ) : t('common.select')}
+               </Button>
+             </View>
+
+             <Portal>
+                <Modal 
+                  visible={currencyMenuVisible} 
+                  onDismiss={() => setCurrencyMenuVisible(false)}
+                  contentContainerStyle={styles.currencyModalContent}
+                >
+                  <Card>
+                    <Card.Title title={t('form.currency')} />
+                    <Card.Content>
+                      {CURRENCY_OPTIONS.map((currency) => {
+                        const hasData = stats.totalBilling.some(item => item.currency === currency.code);
+                        return (
+                          <Button
+                            key={currency.code}
+                            mode={selectedCurrency === currency.code ? 'contained' : 'outlined'}
+                            onPress={() => {
+                              setSelectedCurrency(currency.code);
+                              setCurrencyMenuVisible(false);
+                            }}
+                            style={{ marginBottom: 8 }}
+                            icon={selectedCurrency === currency.code ? 'check' : undefined}
+                            textColor={!hasData && selectedCurrency !== currency.code ? theme.colors.outline : undefined}
+                          >
+                            {currency.symbol} {currency.name}
+                          </Button>
+                        );
+                      })}
+                    </Card.Content>
+                    <Card.Actions>
+                      <Button onPress={() => setCurrencyMenuVisible(false)}>
+                        {t('common.cancel')}
+                      </Button>
+                    </Card.Actions>
+                  </Card>
+                </Modal>
+             </Portal>
+
+             {selectedCurrency && (
+                 <Card mode="elevated" style={styles.chartCard} contentStyle={{ backgroundColor: theme.colors.surface }}>
+                     <Card.Content>
+                         <View style={{ alignItems: 'center', marginBottom: Spacing.lg }}>
+                             <Text variant="displaySmall" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
+                                {currentTotalBilling.toFixed(2)} {selectedCurrency}
+                             </Text>
+                             <Text variant="bodySmall">{t('dashboard.totalBilling')}</Text>
+                         </View>
+
+                         {monthlyData.length > 0 ? (
+                            <View style={{ alignItems: 'center', paddingRight: 20 }}>
+                               <BarChart
+                                   data={monthlyData}
+                                   width={screenWidth - 100}
+                                   height={200}
+                                   barWidth={22}
+                                   spacing={20}
+                                   roundedTop
+                                   yAxisTextStyle={{ color: theme.colors.onSurfaceVariant, fontSize: 10 }}
+                                   xAxisLabelTextStyle={{ color: theme.colors.onSurfaceVariant, fontSize: 10 }}
+                                   hideRules
+                                   isAnimated
+                               />
+                            </View>
+                         ) : (
+                             <Text style={{ textAlign: 'center', margin: 20 }}>No monthly data available</Text>
+                         )}
+                     </Card.Content>
+                 </Card>
+             )}
+          </View>
+        )}
+
+        {/* Category Pie Chart */}
+        {selectedCurrency && categoryData.length > 0 && (
+           <View style={styles.section}>
+               <Text variant="titleMedium" style={styles.sectionTitle}>
+                   {t('dashboard.billingByCategory')}
+               </Text>
+               <Card mode="elevated" style={styles.chartCard} contentStyle={{ backgroundColor: theme.colors.surface }}>
+                   <Card.Content style={{ alignItems: 'center' }}>
+                       <PieChart
+                           data={categoryData}
+                           donut
+                           showText
+                           textColor="white"
+                           radius={120}
+                           innerRadius={60}
+                           textSize={12}
+                           labelsPosition='outward'
+                       />
+                       <View style={styles.legendContainer}>
+                           {categoryData.map((item, index) => (
+                               <View key={index} style={styles.legendItem}>
+                                   <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+                                   <Text variant="bodySmall" numberOfLines={1} style={{ maxWidth: 120 }}>
+                                       {item.category}: {item.value.toFixed(0)}
+                                   </Text>
+                               </View>
+                           ))}
+                       </View>
+                   </Card.Content>
+               </Card>
+           </View>
+        )}
+
         {/* Priority Breakdown */}
         {Object.keys(stats.byPriority).length > 0 && (
             <List.Section style={styles.sectionEntry}>
-                <List.Subheader>{t('profile.tasksByPriority')}</List.Subheader>
+                <List.Subheader>{t('dashboard.tasksByPriority')}</List.Subheader>
                 <Card mode="elevated">
                     <Card.Content style={{ padding: 0 }}>
                         {Object.entries(stats.byPriority).map(([priority, count], index) => (
@@ -200,17 +349,17 @@ export default function ProfileScreen() {
 
         {/* App Info */}
         <List.Section style={styles.sectionEntry}>
-            <List.Subheader>{t('profile.about')}</List.Subheader>
+            <List.Subheader>{t('dashboard.about')}</List.Subheader>
             <Card mode="elevated">
                  <Card.Content style={{ padding: 0 }}>
                     <List.Item
-                        title={t('profile.version')}
+                        title={t('dashboard.version')}
                         description="1.0.0"
                         left={(props) => <List.Icon {...props} icon="information" />}
                     />
                     <Divider />
                     <List.Item
-                        title={t('profile.storage')}
+                        title={t('dashboard.storage')}
                         description="Local SQLite Database"
                         left={(props) => <List.Icon {...props} icon="database" />}
                     />
@@ -220,7 +369,7 @@ export default function ProfileScreen() {
 
         <View style={styles.footer}>
             <Text variant="bodySmall" style={{ color: theme.colors.outline }}>
-              {t('profile.madeWithLove')}
+              {t('dashboard.madeWithLove')}
             </Text>
         </View>
 
@@ -234,18 +383,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: Spacing.xxxl,
-  },
-  brandingSection: {
-    padding: Spacing.xxxl,
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-    borderBottomLeftRadius: Spacing.xxl,
-    borderBottomRightRadius: Spacing.xxl,
-  },
-  appName: {
-    marginTop: Spacing.lg,
-    fontWeight: 'bold',
+    paddingBottom: 150,
   },
   section: {
     paddingHorizontal: Spacing.lg,
@@ -265,7 +403,8 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   statCard: {
-    width: '48%', // Approx 2 column
+    width: '47%', 
+    marginBottom: Spacing.xs,
   },
   statCardContent: {
       alignItems: 'center',
@@ -286,4 +425,48 @@ const styles = StyleSheet.create({
     padding: Spacing.xxl,
     alignItems: 'center',
   },
+  overdueAlert: {
+      margin: Spacing.lg,
+      padding: Spacing.md,
+      borderRadius: Spacing.md,
+      marginBottom: Spacing.md,
+  },
+  overdueContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+  },
+  currencySelectorContainer: {
+      flexDirection: 'row',
+      marginBottom: Spacing.md,
+      alignItems: 'center',
+  },
+  currencySelectorButton: {
+      flexDirection: 'row',
+  },
+  currencyModalContent: {
+    padding: Spacing.md,
+    margin: Spacing.xl,
+  },
+  chartCard: {
+      marginBottom: Spacing.lg,
+  },
+  legendContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.lg,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+    marginBottom: Spacing.xs,
+  },
+  legendColor: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 6,
+  }
 });

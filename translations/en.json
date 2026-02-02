@@ -55,6 +55,9 @@
             "high": "High",
             "urgent": "Urgent"
         },
+        "titleLabel": "Title",
+        "statusLabel": "Status",
+        "priorityLabel": "Priority",
         "reminders": {
             "5min": "5 minutes before",
             "15min": "15 minutes before",
@@ -73,10 +76,12 @@
         "profile": "Profile",
         "appearance": "Appearance",
         "notifications": "Notifications",
-        "about": "About"
+        "about": "About",
+        "showWelcomeScreen": "Show Welcome Screen",
+        "showWelcomeScreenDescription": "Display welcome screen on app startup"
     },
-    "profile": {
-        "title": "Profile",
+    "dashboard": {
+        "title": "Dashboard",
         "taskStats": "Task Statistics",
         "totalTasks": "Total Tasks",
         "completed": "Completed",
@@ -86,7 +91,11 @@
         "about": "About",
         "version": "Version",
         "storage": "Storage",
-        "madeWithLove": "Made with ❤️ for productivity"
+        "madeWithLove": "Made with ❤️ for productivity",
+        "totalBilling": "Total Billing",
+        "monthlyBilling": "Monthly Billing",
+        "billingByCategory": "Billing by Category",
+        "overdueTasks": "Overdue Tasks"
     },
     "contacts": {
         "title": "Contacts",
@@ -170,14 +179,20 @@
         "reminderHint": "Select when you'd like to be reminded:",
         "reminderWarning": "Select at least one reminder time",
         "removeContact": "Remove Contact",
+        "bill": "Bill Amount",
+        "billOptional": "Bill Amount (Optional)",
+        "currency": "Currency",
         "placeholders": {
             "title": "Enter task title",
-            "description": "Enter task description (optional)"
+            "description": "Enter task description (optional)",
+            "bill": "Enter bill amount"
         },
         "errors": {
             "titleRequired": "Title is required",
             "titleTooShort": "Title must be at least 3 characters",
-            "titleTooLong": "Title must be less than 255 characters"
+            "titleTooLong": "Title must be less than 255 characters",
+            "billInvalid": "Bill amount must be a valid number",
+            "billNegative": "Bill amount cannot be negative"
         }
     },
     "success": "Success",

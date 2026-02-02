@@ -64,6 +64,22 @@ export default function TasksScreen() {
   });
   console.log('[TasksScreen] State values:', { pageTitle, searchPlaceholder });
 
+  // Check for overdue tasks on mount to set default filter
+  React.useEffect(() => {
+    const checkOverdue = async () => {
+      try {
+        const { getTaskStats } = await import('@/lib/db/tasksDb');
+        const stats = await getTaskStats();
+        if (stats.overdue > 0) {
+          setFilter('overdue');
+        }
+      } catch (e) {
+        console.error('Failed to check overdue tasks', e);
+      }
+    };
+    checkOverdue();
+  }, []);
+
   // Fetch tasks with TanStack Query
   const { data, isLoading, error, refetch, isRefetching } = useTasks({
     status: filter === 'all' || filter === 'overdue' ? undefined : filter,
@@ -387,6 +403,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: Spacing.lg,
+    paddingBottom: 150, // Extra padding for bottom navigation
   },
   emptyContainer: {
     flex: 1,

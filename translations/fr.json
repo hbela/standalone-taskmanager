@@ -55,6 +55,9 @@
             "high": "Haute",
             "urgent": "Urgente"
         },
+        "titleLabel": "Titre",
+        "statusLabel": "Statut",
+        "priorityLabel": "Priorité",
         "reminders": {
             "5min": "5 minutes avant",
             "15min": "15 minutes avant",
@@ -72,20 +75,26 @@
         "language": "Langue",
         "profile": "Profil",
         "notifications": "Notifications",
-        "about": "À propos"
+        "about": "À propos",
+        "showWelcomeScreen": "Afficher l'écran de bienvenue",
+        "showWelcomeScreenDescription": "Afficher l'écran de bienvenue au démarrage de l'application"
     },
-    "profile": {
-        "title": "Profil",
-        "taskStats": "Statistiques des Tâches",
-        "totalTasks": "Total des Tâches",
-        "completed": "Terminé",
-        "pending": "En Attente",
+    "dashboard": {
+        "title": "Tableau de bord",
+        "taskStats": "Statistiques des tâches",
+        "totalTasks": "Total des tâches",
+        "completed": "Terminées",
+        "pending": "En attente",
         "completion": "Achèvement",
-        "tasksByPriority": "Tâches par Priorité",
-        "about": "À Propos",
+        "tasksByPriority": "Tâches par priorité",
+        "about": "À propos",
         "version": "Version",
         "storage": "Stockage",
-        "madeWithLove": "Fait avec ❤️ pour la productivité"
+        "madeWithLove": "Fait avec ❤️ pour la productivité",
+        "totalBilling": "Facturation Totale",
+        "monthlyBilling": "Facturation Mensuelle",
+        "billingByCategory": "Facturation par Catégorie",
+        "overdueTasks": "Tâches en Retard"
     },
     "contacts": {
         "title": "Contacts",
@@ -169,14 +178,20 @@
         "reminderHint": "Sélectionnez quand vous souhaitez être rappelé:",
         "reminderWarning": "Sélectionnez au moins un rappel",
         "removeContact": "Supprimer le contact",
+        "bill": "Montant de la facture",
+        "billOptional": "Montant de la facture (Facultatif)",
+        "currency": "Devise",
         "placeholders": {
             "title": "Entrez le titre de la tâche",
-            "description": "Entrez la description de la tâche (facultatif)"
+            "description": "Entrez la description de la tâche (facultatif)",
+            "bill": "Entrez le montant de la facture"
         },
         "errors": {
             "titleRequired": "Le titre est requis",
             "titleTooShort": "Le titre doit contenir au moins 3 caractères",
-            "titleTooLong": "Le titre doit contenir moins de 255 caractères"
+            "titleTooLong": "Le titre doit contenir moins de 255 caractères",
+            "billInvalid": "Le montant de la facture doit être un nombre valide",
+            "billNegative": "Le montant de la facture ne peut pas être négatif"
         }
     },
     "success": "Succès",

@@ -164,8 +164,14 @@ export default function CalendarScreen() {
             </View>
             <Chip 
                 compact 
-                textStyle={{ color: 'white', fontWeight: 'bold' }}
-                style={{ backgroundColor: getPriorityColor(task.priority), height: 24 }}
+                textStyle={{ color: getPriorityColor(task.priority), fontSize: 11, lineHeight: 11 }}
+                style={{ 
+                  backgroundColor: getPriorityColor(task.priority) + '20', 
+                  borderColor: getPriorityColor(task.priority),
+                  height: 28,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
             >
                 {task.priority.toUpperCase()}
             </Chip>
@@ -213,10 +219,10 @@ export default function CalendarScreen() {
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Card style={styles.calendarCard} mode="elevated">
-            <Card.Content style={{ padding: 0 }}>
+          <Card style={styles.calendarCard} mode="contained">
+            <Card.Content style={{ padding: 0, backgroundColor: theme.colors.surface }}>
                 <Calendar
-                    key={t('common.languageCode')}
+                    key={`${t('common.languageCode')}-${theme.dark}`}
                     current={selectedDate}
                     onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
                     markedDates={markedDates}
@@ -233,6 +239,7 @@ export default function CalendarScreen() {
                     textMonthFontWeight: '600',
                     textDayHeaderFontWeight: '500',
                     arrowColor: theme.colors.onSurface,
+                    textDisabledColor: theme.colors.onSurfaceDisabled,
                     }}
                 />
             </Card.Content>
@@ -278,7 +285,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   calendarCard: {
-      margin: Spacing.lg,
+      margin: Spacing.sm,
       borderRadius: Spacing.md,
       overflow: 'hidden',
   },

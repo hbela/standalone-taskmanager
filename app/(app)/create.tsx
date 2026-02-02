@@ -64,6 +64,7 @@ export default function CreateTaskScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]} key={`create-screen-${renderKey}`}>
       <Appbar.Header elevated>
+        <Appbar.BackAction onPress={() => router.push('/(app)')} />
         <Appbar.Content title={t('tasks.create')} />
       </Appbar.Header>
 

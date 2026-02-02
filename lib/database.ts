@@ -40,10 +40,38 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
         taskAddress TEXT,
         latitude REAL,
         longitude REAL,
+        bill REAL,
+        billCurrency TEXT,
         createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
         updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    
+    // Add bill column to existing tables (migration)
+    try {
+      await db.execAsync(`
+        ALTER TABLE tasks ADD COLUMN bill REAL;
+      `);
+      console.log('✅ Bill column added to tasks table');
+    } catch (error: any) {
+      // Column might already exist, which is fine
+      if (!error.message?.includes('duplicate column name')) {
+        console.warn('Note: Bill column migration:', error.message);
+      }
+    }
+    
+    // Add billCurrency column to existing tables (migration)
+    try {
+      await db.execAsync(`
+        ALTER TABLE tasks ADD COLUMN billCurrency TEXT;
+      `);
+      console.log('✅ BillCurrency column added to tasks table');
+    } catch (error: any) {
+      // Column might already exist, which is fine
+      if (!error.message?.includes('duplicate column name')) {
+        console.warn('Note: BillCurrency column migration:', error.message);
+      }
+    }
     
     // Create indexes for better query performance
     await db.execAsync(`

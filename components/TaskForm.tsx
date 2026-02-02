@@ -25,7 +25,7 @@ import {
     Switch,
     Text,
     TextInput,
-    useTheme,
+    useTheme
 } from 'react-native-paper';
 import { de, en, fr, registerTranslation, TimePickerModal } from 'react-native-paper-dates';
 import ContactDisplay from './ContactDisplay';
@@ -90,6 +90,13 @@ LocaleConfig.locales['de'] = {
 
 LocaleConfig.defaultLocale = 'en';
 
+// Currency options with symbols and decimal separators
+const CURRENCY_OPTIONS = [
+  { code: 'USD', symbol: '$', name: 'US Dollar', decimalSeparator: '.' },
+  { code: 'EUR', symbol: '€', name: 'Euro', decimalSeparator: ',' },
+  { code: 'GBP', symbol: '£', name: 'British Pound', decimalSeparator: '.' },
+  { code: 'HUF', symbol: 'Ft', name: 'Hungarian Forint', decimalSeparator: ',' },
+];
 
 interface TaskFormProps {
   initialValues?: {
@@ -99,6 +106,8 @@ interface TaskFormProps {
     dueDate?: string;
     reminderTimes?: number[];
     contactId?: string | null;
+    bill?: number | null;
+    billCurrency?: string | null;
   };
   onSubmit: (data: CreateTaskInput | UpdateTaskInput) => Promise<void>;
   onCancel?: () => void;
@@ -132,7 +141,11 @@ export default function TaskForm({
   const [selectedContactId, setSelectedContactId] = useState<string | null>(
     initialValues?.contactId || null
   );
-  const [errors, setErrors] = useState<{ title?: string }>({});
+  const [enableBill, setEnableBill] = useState(!!initialValues?.bill);
+  const [billAmount, setBillAmount] = useState(initialValues?.bill ? initialValues.bill.toString() : '');
+  const [billCurrency, setBillCurrency] = useState<string>(initialValues?.billCurrency || 'USD');
+  const [currencyMenuVisible, setCurrencyMenuVisible] = useState(false);
+  const [errors, setErrors] = useState<{ title?: string; bill?: string }>({});
 
   // Refs for focus management
   const titleInputRef = useRef<any>(null);
@@ -156,7 +169,7 @@ export default function TaskForm({
   };
 
   const validate = (): boolean => {
-    const newErrors: { title?: string } = {};
+    const newErrors: { title?: string; bill?: string } = {};
 
     if (!title.trim()) {
       newErrors.title = t('form.errors.titleRequired');
@@ -166,12 +179,31 @@ export default function TaskForm({
       newErrors.title = t('form.errors.titleTooLong');
     }
 
+    // Validate bill amount if enabled
+    if (enableBill && billAmount.trim()) {
+      // Replace comma with dot for parsing (EU format)
+      const normalizedAmount = billAmount.replace(',', '.');
+      const billValue = parseFloat(normalizedAmount);
+      if (isNaN(billValue)) {
+        newErrors.bill = t('form.errors.billInvalid');
+      } else if (billValue < 0) {
+        newErrors.bill = t('form.errors.billNegative');
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
+
+    // Parse bill amount - replace comma with dot for parsing
+    let parsedBill: number | undefined;
+    if (enableBill && billAmount.trim()) {
+      const normalizedAmount = billAmount.replace(',', '.');
+      parsedBill = parseFloat(normalizedAmount);
+    }
 
     const data: CreateTaskInput = {
       title: title.trim(),
@@ -180,6 +212,7 @@ export default function TaskForm({
       ...(dueDate && { dueDate: dueDate.toISOString() }),
       ...(dueDate && enableReminders && { reminderTimes }),
       ...(selectedContactId && { contactId: selectedContactId }),
+      ...(parsedBill && { bill: parsedBill, billCurrency }),
     };
 
     try {
@@ -192,6 +225,9 @@ export default function TaskForm({
       setEnableReminders(false);
       setReminderTimes(DEFAULT_REMINDERS);
       setSelectedContactId(null);
+      setEnableBill(false);
+      setBillAmount('');
+      setBillCurrency('USD');
       setErrors({});
     } catch (error) {
       // Error handling is done by parent component
@@ -317,6 +353,87 @@ export default function TaskForm({
                 disabled={loading}
             />
           </View>
+        </View>
+
+        {/* Bill Amount Input */}
+        <View style={styles.inputGroup}>
+          <View style={styles.reminderHeader}>
+            <Text variant="bodyLarge">{t('form.billOptional')}</Text>
+            <Switch
+              value={enableBill}
+              onValueChange={setEnableBill}
+              disabled={loading}
+            />
+          </View>
+
+          {enableBill && (
+            <View>
+              <View style={styles.billInputRow}>
+                <TextInput
+                  mode="outlined"
+                  label={t('form.bill')}
+                  placeholder={t('form.placeholders.bill')}
+                  value={billAmount}
+                  onChangeText={(text) => {
+                    setBillAmount(text);
+                    if (errors.bill) setErrors({ ...errors, bill: undefined });
+                  }}
+                  keyboardType="decimal-pad"
+                  disabled={loading}
+                  error={!!errors.bill}
+                  style={{ flex: 1 }}
+                />
+                
+                <Button
+                  mode="outlined"
+                  onPress={() => setCurrencyMenuVisible(true)}
+                  disabled={loading}
+                  style={styles.currencyButton}
+                  contentStyle={{ height: 56 }}
+                  icon="chevron-down"
+                >
+                  {CURRENCY_OPTIONS.find(c => c.code === billCurrency)?.symbol || billCurrency}
+                </Button>
+              </View>
+              <HelperText type="error" visible={!!errors.bill}>
+                {errors.bill}
+              </HelperText>
+              
+              {/* Currency Selection Modal */}
+              <Portal>
+                <Modal 
+                  visible={currencyMenuVisible} 
+                  onDismiss={() => setCurrencyMenuVisible(false)}
+                  contentContainerStyle={styles.currencyModalContent}
+                >
+                  <Card>
+                    <Card.Title title={t('form.currency')} />
+                    <Card.Content>
+                      {CURRENCY_OPTIONS.map((currency) => (
+                        <Button
+                          key={currency.code}
+                          mode={billCurrency === currency.code ? 'contained' : 'outlined'}
+                          onPress={() => {
+                            setBillCurrency(currency.code);
+                            setCurrencyMenuVisible(false);
+                          }}
+                          style={{ marginBottom: 8 }}
+                          icon={billCurrency === currency.code ? 'check' : undefined}
+                        >
+                          {currency.symbol} {currency.name}
+                        </Button>
+                      ))}
+                    </Card.Content>
+                    <Card.Actions>
+                      <Button onPress={() => setCurrencyMenuVisible(false)}>
+                        {t('common.cancel')}
+                      </Button>
+                    </Card.Actions>
+                  </Card>
+                </Modal>
+              </Portal>
+            </View>
+          )}
         </View>
 
         <Divider style={styles.divider} />
@@ -634,5 +751,17 @@ const styles = StyleSheet.create({
       width: Dimensions.get('window').width * 0.98,
       alignSelf: 'center',
       marginVertical: Spacing.xl,
-  }
+  },
+  billInputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+  },
+  currencyButton: {
+    minWidth: 80,
+  },
+  currencyModalContent: {
+    padding: Spacing.md,
+    margin: Spacing.xl,
+  },
 });

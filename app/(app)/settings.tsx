@@ -3,10 +3,13 @@ import { Spacing } from '@/constants/theme';
 import { LanguageContext } from '@/context/LanguageContext';
 import { useAppTheme } from '@/context/ThemeContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Appbar, Avatar, Button, Card, IconButton, List, Text, useTheme } from 'react-native-paper';
+import { Appbar, Avatar, Button, Card, IconButton, List, Switch, Text, useTheme } from 'react-native-paper';
+
+const WELCOME_SHOWN_KEY = '@task_manager_welcome_shown';
 
 export default function SettingsScreen() {
   const { key } = useContext(LanguageContext);
@@ -14,15 +17,40 @@ export default function SettingsScreen() {
   const theme = useTheme();
   const { isDark, toggleTheme } = useAppTheme();
   const router = useRouter();
+  const [showWelcomeScreen, setShowWelcomeScreen] = useState(true);
+
+  // Load welcome screen preference
+  useEffect(() => {
+    loadWelcomePreference();
+  }, []);
+
+  const loadWelcomePreference = async () => {
+    try {
+      const value = await AsyncStorage.getItem(WELCOME_SHOWN_KEY);
+      // If value is 'true', welcome has been shown, so we DON'T show it again (toggle is OFF)
+      // If value is null or 'false', we SHOULD show it (toggle is ON)
+      setShowWelcomeScreen(value !== 'true');
+    } catch (error) {
+      console.error('Error loading welcome preference:', error);
+    }
+  };
+
+  const handleWelcomeToggle = async () => {
+    try {
+      const newValue = !showWelcomeScreen;
+      setShowWelcomeScreen(newValue);
+      // If toggle is ON (true), we want to show welcome, so set storage to 'false'
+      // If toggle is OFF (false), we don't want to show welcome, so set storage to 'true'
+      await AsyncStorage.setItem(WELCOME_SHOWN_KEY, newValue ? 'false' : 'true');
+    } catch (error) {
+      console.error('Error saving welcome preference:', error);
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]} key={key}>
       <Appbar.Header elevated>
         <Appbar.Content title={t('settings.title')} />
-        <Appbar.Action 
-            icon={isDark ? "weather-night" : "weather-sunny"} 
-            onPress={toggleTheme} 
-        />
       </Appbar.Header>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
@@ -38,6 +66,25 @@ export default function SettingsScreen() {
                                 icon={isDark ? "weather-night" : "weather-sunny"}
                                 selected={isDark}
                                 onPress={toggleTheme}
+                            />
+                        )}
+                    />
+                </Card.Content>
+            </Card>
+        </List.Section>
+
+        <List.Section>
+            <List.Subheader>{t('settings.notifications')}</List.Subheader>
+            <Card style={styles.card} mode="elevated">
+                <Card.Content style={{ padding: 0 }}>
+                    <List.Item
+                        title={t('settings.showWelcomeScreen')}
+                        description={t('settings.showWelcomeScreenDescription')}
+                        left={props => <List.Icon {...props} icon="hand-wave" />}
+                        right={props => (
+                            <Switch
+                                value={showWelcomeScreen}
+                                onValueChange={handleWelcomeToggle}
                             />
                         )}
                     />

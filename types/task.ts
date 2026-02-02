@@ -20,6 +20,8 @@ export interface Task {
   taskAddress: string | null;
   latitude: number | null;
   longitude: number | null;
+  bill: number | null;
+  billCurrency: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,6 +38,8 @@ export interface CreateTaskInput {
   taskAddress?: string;
   latitude?: number;
   longitude?: number;
+  bill?: number;
+  billCurrency?: string;
 }
 
 export interface UpdateTaskInput extends Partial<CreateTaskInput> {
