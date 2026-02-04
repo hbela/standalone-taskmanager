@@ -23,10 +23,12 @@
         "dueDate": "Fälligkeitsdatum",
         "due": "Fällig",
         "overdue": "Überfällig",
+        "status": "Status",
         "priority": "Priorität",
         "description": "Beschreibung",
         "details": "Details",
         "category": "Kategorie",
+        "comment": "Kommentar",
         "contact": "Kontakt",
         "created": "Erstellt",
         "updated": "Aktualisiert",
@@ -166,7 +168,8 @@
         "confirm": "Bestätigen",
         "yes": "Ja",
         "no": "Nein",
-        "created": "Erstellt"
+        "created": "Erstellt",
+        "info": "Info"
     },
     "form": {
         "title": "Titel",
@@ -177,12 +180,14 @@
         "reminderHint": "Wählen Sie aus, wann Sie erinnert werden möchten:",
         "reminderWarning": "Wählen Sie mindestens eine Erinnerungszeit",
         "removeContact": "Kontakt entfernen",
-        "bill": "Rechnungsbetrag",
-        "billOptional": "Rechnungsbetrag (Optional)",
+        "bill": "Ausgaben",
+        "billOptional": "Ausgaben (Optional)",
         "currency": "Währung",
         "placeholders": {
-            "title": "Aufgabentitel eingeben",
-            "description": "Aufgabenbeschreibung eingeben (optional)",
+            "title": "Aufgabentitel",
+            "description": "Details zur Aufgabe",
+            "comment": "Kommentar eingeben",
+            "search": "Aufgaben suchen...",
             "bill": "Rechnungsbetrag eingeben"
         },
         "errors": {

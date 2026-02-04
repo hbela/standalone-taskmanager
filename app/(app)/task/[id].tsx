@@ -8,10 +8,10 @@ import { getStatusColor, getStatusLabel, getTaskStatus } from '@/lib/taskUtils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  View,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    View,
 } from 'react-native';
 import { Appbar, Button, Card, Dialog, Divider, List, Paragraph, Portal, Text, useTheme } from 'react-native-paper';
 
@@ -52,8 +52,8 @@ export default function TaskDetailScreen() {
         id: task.id,
         completed: !task.completed,
       });
-      // Redirect to task list after toggling
-      router.push('/(app)');
+      // Redirect to task list after toggling - Removed to allow seeing completion date
+      // router.push('/(app)');
     } catch (err) {
       Alert.alert(t('common.error'), t('tasks.updateError'));
     }
@@ -165,6 +165,22 @@ export default function TaskDetailScreen() {
              )}
              
              {task.description && <Divider style={styles.divider} />}
+ 
+             {task.comment && (
+               <View>
+                 <Text 
+                   variant="titleMedium" 
+                   style={[styles.sectionTitle, { color: theme.colors.primary }]}
+                 >
+                   {t('tasks.comment')}
+                 </Text>
+                 <Text variant="bodyLarge" style={{ color: theme.colors.onSurface }}>
+                   {task.comment}
+                 </Text>
+               </View>
+             )}
+             
+             {task.comment && <Divider style={styles.divider} />}
 
              {task.bill && (
                <List.Item
@@ -196,15 +212,16 @@ export default function TaskDetailScreen() {
                  descriptionStyle={[styles.listItemDescription, { color: theme.colors.onSurface }]}
              />
 
-             {task.updatedAt !== task.createdAt && (
+
+             {task.completed && task.completedAt && (
                <List.Item
-                   title={t('tasks.updated')}
-                   description={new Date(task.updatedAt).toLocaleString(t('common.locale'), {
-                       month: 'short', day: 'numeric', year: 'numeric'
+                   title={t('tasks.completed')}
+                   description={new Date(task.completedAt).toLocaleString(t('common.locale'), {
+                       month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
                    })}
-                   left={props => <List.Icon {...props} icon="pencil-outline" color={theme.colors.primary} />}
-                   titleStyle={styles.listItemTitle}
-                   descriptionStyle={styles.listItemDescription}
+                   left={props => <List.Icon {...props} icon="check-circle-outline" color={theme.colors.primary} />}
+                   titleStyle={[styles.listItemTitle, { color: theme.colors.primary }]}
+                   descriptionStyle={[styles.listItemDescription, { color: theme.colors.onSurface }]}
                />
              )}
           </Card.Content>
@@ -222,26 +239,30 @@ export default function TaskDetailScreen() {
 
         {/* Actions */}
         <View style={styles.actions}>
-            <Button 
-                mode="contained" 
-                icon={task.completed ? "close" : "check"}
-                onPress={handleToggleComplete}
-                buttonColor={task.completed ? theme.colors.primary : "#34C759"}
-                style={styles.button}
-                contentStyle={styles.buttonContent}
-            >
-                {task.completed ? t('tasks.markPending') : t('tasks.markComplete')}
-            </Button>
+            {taskStatus !== 'completed' && (
+                <Button 
+                    mode="contained" 
+                    icon="check"
+                    onPress={handleToggleComplete}
+                    buttonColor="#34C759"
+                    style={styles.button}
+                    contentStyle={styles.buttonContent}
+                >
+                    {t('tasks.markComplete')}
+                </Button>
+            )}
 
-            <Button 
-                mode="contained"
-                icon="pencil"
-                onPress={() => router.push(`/(app)/task/edit/${id}`)}
-                style={styles.button}
-                contentStyle={styles.buttonContent}
-            >
-                {t('tasks.editTask')}
-            </Button>
+            {taskStatus === 'pending' && (
+                <Button 
+                    mode="contained"
+                    icon="pencil"
+                    onPress={() => router.push(`/(app)/task/edit/${id}`)}
+                    style={styles.button}
+                    contentStyle={styles.buttonContent}
+                >
+                    {t('tasks.editTask')}
+                </Button>
+            )}
 
             <Button 
                 mode="contained" 

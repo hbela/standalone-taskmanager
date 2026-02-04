@@ -2,11 +2,10 @@ import ErrorMessage from '@/components/ErrorMessage';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import TaskCard from '@/components/TaskCard';
 import { Spacing } from '@/constants/theme';
-import { useDeleteTask, useTasks, useToggleTaskComplete } from '@/hooks/useTasksQuery';
+import { useDeleteTask, useTasks } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
 import { exportTasksToExcel, getFileNameFromUri } from '@/lib/export/excelExporter';
 import { uploadToGoogleDrive } from '@/lib/export/googleDriveService';
-import { syncBills } from '@/lib/import/billImporter';
 import { isTaskOverdue } from '@/lib/taskUtils';
 import { Task } from '@/types/task';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,7 +31,7 @@ export default function TasksScreen() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'overdue' | 'completed'>('pending');
   const [forceRender, setForceRender] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
+
   
   // State for translated text to force updates
   const [pageTitle, setPageTitle] = useState(t('tasks.title'));
@@ -89,7 +88,6 @@ export default function TasksScreen() {
 
   // Mutations
   const deleteTaskMutation = useDeleteTask();
-  const toggleCompleteMutation = useToggleTaskComplete();
 
   const tasks = data?.tasks || [];
 
@@ -112,17 +110,6 @@ export default function TasksScreen() {
         }
       ]
     );
-  };
-
-  const handleToggleComplete = async (task: Task) => {
-    try {
-      await toggleCompleteMutation.mutateAsync({
-        id: task.id,
-        completed: !task.completed,
-      });
-    } catch (err) {
-      Alert.alert(t('common.error'), t('errors.updateTask'));
-    }
   };
 
   const handleExport = () => {
@@ -159,26 +146,6 @@ export default function TasksScreen() {
     }
   };
 
-  const handleSyncBills = async () => {
-    setIsSyncing(true);
-    try {
-      const result = await syncBills();
-      if (result.added > 0) {
-        Alert.alert(t('common.success'), `Synced ${result.added} bills.`);
-        refetch();
-      } else if (result.errors > 0) {
-        Alert.alert(t('common.warning'), `Sync issues: ${result.errors} errors. Checked others.`);
-      } else {
-        Alert.alert(t('common.info'), 'No new bills found.');
-      }
-    } catch (e) {
-      console.error('Sync failed', e);
-      Alert.alert(t('common.error'), 'Failed to sync with server.');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
   const filteredTasks = tasks.filter(task => {
     // Search filter
     const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -203,7 +170,6 @@ export default function TasksScreen() {
     <TaskCard
       task={item}
       onPress={() => router.push(`/(app)/task/${item.id}`)}
-      onToggleComplete={() => handleToggleComplete(item)}
     />
   );
 
@@ -271,11 +237,6 @@ export default function TasksScreen() {
           <Appbar.Header elevated>
             <Appbar.Content title={pageTitle} />
             <Appbar.Action icon="magnify" onPress={() => setIsSearchVisible(true)} />
-            <Appbar.Action 
-              icon="sync" 
-              onPress={handleSyncBills} 
-              disabled={isSyncing} 
-            />
             {filter === 'completed' && (
               <Appbar.Action 
                  icon="cloud-upload"
@@ -395,14 +356,14 @@ export default function TasksScreen() {
 
         {/* Loading Dialog */}
         <Dialog 
-          visible={isExporting || isSyncing} 
+          visible={isExporting} 
           dismissable={false}
           style={[styles.dialog, { backgroundColor: theme.colors.surface }]}
         >
           <Dialog.Content style={styles.loadingContent}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
             <Text style={[styles.loadingText, { color: theme.colors.onSurface }]}>
-              {isSyncing ? 'Syncing...' : t('export.uploading')}
+              {t('export.uploading')}
             </Text>
           </Dialog.Content>
         </Dialog>

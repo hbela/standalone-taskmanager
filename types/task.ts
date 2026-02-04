@@ -22,6 +22,8 @@ export interface Task {
   longitude: number | null;
   bill: number | null;
   billCurrency: string | null;
+  comment: string | null; // User comment
+  completedAt: string | null; // ISO date string when task was completed
   createdAt: string;
   updatedAt: string;
 }
@@ -40,6 +42,8 @@ export interface CreateTaskInput {
   longitude?: number;
   bill?: number;
   billCurrency?: string;
+  comment?: string | null;
+  completedAt?: string | null;
 }
 
 export interface UpdateTaskInput extends Partial<CreateTaskInput> {

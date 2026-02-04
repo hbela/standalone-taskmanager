@@ -94,6 +94,11 @@ export default function EditTaskScreen() {
           dueDate: task.dueDate || undefined,
           reminderTimes: task.reminderTimes || undefined,
           contactId: task.contactId || undefined,
+          bill: task.bill || undefined,
+          billCurrency: task.billCurrency || undefined,
+          comment: task.comment || undefined,
+          completed: task.completed,
+          completedAt: task.completedAt,
         }}
         onSubmit={handleSubmit}
         onCancel={handleCancel}

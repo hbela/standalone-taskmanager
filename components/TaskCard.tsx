@@ -6,12 +6,11 @@ import { formatDateTime } from '@/utils/dateFormatter';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Card, Checkbox, Chip, Text, useTheme } from 'react-native-paper';
+import { Card, Chip, Text, useTheme } from 'react-native-paper';
 
 interface TaskCardProps {
   task: Task;
   onPress: () => void;
-  onToggleComplete: () => void;
 }
 
 const getPriorityColor = (priority: string) => {
@@ -31,8 +30,7 @@ const getPriorityColor = (priority: string) => {
 
 export default function TaskCard({
   task,
-  onPress,
-  onToggleComplete
+  onPress
 }: TaskCardProps) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -51,11 +49,10 @@ export default function TaskCard({
     >
       <Card.Content style={styles.cardContent}>
         <View style={styles.leftColumn}>
-          <Checkbox
-            status={task.completed ? 'checked' : 'unchecked'}
-            onPress={onToggleComplete}
-            color={task.completed ? '#34C759' : theme.colors.primary}
-            uncheckedColor={isOverdue ? '#FF3B30' : theme.colors.outline}
+          <Ionicons 
+            name={task.completed ? "checkbox" : "square-outline"}
+            size={24}
+            color={task.completed ? '#34C759' : (isOverdue ? '#FF3B30' : theme.colors.outline)}
           />
         </View>
 

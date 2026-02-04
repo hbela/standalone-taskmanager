@@ -1,9 +1,10 @@
 
 import { Spacing } from '@/constants/theme';
+import { useDashboardStats } from '@/hooks/useDashboardQuery';
 import { useTranslation } from '@/hooks/useTranslation';
-import { getTaskStats } from '@/lib/db/tasksDb';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
+    ActivityIndicator,
     Dimensions,
     RefreshControl,
     ScrollView,
@@ -50,43 +51,32 @@ export default function ProfileScreen() {
   const { t } = useTranslation();
   const screenWidth = Dimensions.get('window').width;
   
-  const [stats, setStats] = useState<TaskStats>({
-    total: 0,
-    completed: 0,
-    pending: 0,
-    overdue: 0,
-    byPriority: {},
-    totalBilling: [],
-    monthlyBilling: [],
-    billingByCategory: [],
-  });
-  const [refreshing, setRefreshing] = useState(false);
+  // Use React Query hook
+  const { data: stats, isLoading, refetch, isRefetching } = useDashboardStats();
+
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
   const [currencyMenuVisible, setCurrencyMenuVisible] = useState(false);
 
-  const loadStats = async () => {
-    try {
-      const taskStats = await getTaskStats();
-      setStats(taskStats);
-      
-      // Set default currency if not set and we have billing data
-      if (!selectedCurrency && taskStats.totalBilling.length > 0) {
-        setSelectedCurrency(taskStats.totalBilling[0].currency);
-      }
-    } catch (error) {
-      console.error('Failed to load task stats:', error);
+  // Set default currency when data is loaded
+  React.useEffect(() => {
+    if (stats?.totalBilling && stats.totalBilling.length > 0 && !selectedCurrency) {
+      setSelectedCurrency(stats.totalBilling[0].currency);
     }
-  };
+  }, [stats]);
 
-  useEffect(() => {
-    loadStats();
-  }, []);
+  const onRefresh = React.useCallback(() => {
+    refetch();
+  }, [refetch]);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadStats();
-    setRefreshing(false);
-  };
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  if (!stats) return null;
 
   const completionRate = stats.total > 0 
     ? Math.round((stats.completed / stats.total) * 100) 
@@ -109,9 +99,9 @@ export default function ProfileScreen() {
   };
 
   // Filter data for charts based on selected currency
-  const monthlyData = stats.monthlyBilling
-    .filter(item => item.currency === selectedCurrency)
-    .map(item => ({ 
+  const monthlyData = (stats?.monthlyBilling || [])
+    .filter((item: any) => item.currency === selectedCurrency)
+    .map((item: any) => ({ 
         value: item.amount, 
         label: item.month.substring(5), // Show only 'MM' part or 'MM-XX'
         labelTextStyle: { color: theme.colors.onSurfaceVariant, fontSize: 10 },
@@ -122,16 +112,16 @@ export default function ProfileScreen() {
   // Pie chart colors
   const pieColors = ['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#5856D6', '#AF52DE', '#FF2D55', '#5AC8FA'];
 
-  const categoryData = stats.billingByCategory
-    .filter(item => item.currency === selectedCurrency)
-    .map((item, index) => ({ 
+  const categoryData = (stats?.billingByCategory || [])
+    .filter((item: any) => item.currency === selectedCurrency)
+    .map((item: any, index: number) => ({ 
         value: item.amount, 
         color: pieColors[index % pieColors.length],
         text: `${item.amount.toFixed(0)}`,
         category: item.category
     }));
 
-  const currentTotalBilling = stats.totalBilling.find(b => b.currency === selectedCurrency)?.amount || 0;
+  const currentTotalBilling = stats?.totalBilling.find((b: any) => b.currency === selectedCurrency)?.amount || 0;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -142,7 +132,7 @@ export default function ProfileScreen() {
       <ScrollView 
         contentContainerStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={Boolean(isRefetching)} onRefresh={onRefresh} />
         }
       >
         {/* Overdue Alert */}
@@ -307,16 +297,16 @@ export default function ProfileScreen() {
                            textSize={12}
                            labelsPosition='outward'
                        />
-                       <View style={styles.legendContainer}>
-                           {categoryData.map((item, index) => (
-                               <View key={index} style={styles.legendItem}>
-                                   <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-                                   <Text variant="bodySmall" numberOfLines={1} style={{ maxWidth: 120 }}>
-                                       {item.category}: {item.value.toFixed(0)}
-                                   </Text>
-                               </View>
-                           ))}
-                       </View>
+                        <View style={styles.legendContainer}>
+                            {categoryData.map((item: any, index: number) => (
+                                <View key={index} style={styles.legendItem}>
+                                    <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+                                    <Text variant="bodySmall" numberOfLines={1} style={{ maxWidth: 120 }}>
+                                        {item.category}: {item.value.toFixed(0)}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
                    </Card.Content>
                </Card>
            </View>

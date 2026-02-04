@@ -108,6 +108,9 @@ interface TaskFormProps {
     contactId?: string | null;
     bill?: number | null;
     billCurrency?: string | null;
+    comment?: string | null;
+    completed?: boolean;
+    completedAt?: string | null;
   };
   onSubmit: (data: CreateTaskInput | UpdateTaskInput) => Promise<void>;
   onCancel?: () => void;
@@ -128,6 +131,7 @@ export default function TaskForm({
   const [title, setTitle] = useState(initialValues?.title || '');
   const [description, setDescription] = useState(initialValues?.description || '');
   const [priority, setPriority] = useState<TaskPriority>(initialValues?.priority || 'medium');
+  const [completed, setCompleted] = useState(initialValues?.completed || false);
   const [dueDate, setDueDate] = useState<Date | undefined>(
     initialValues?.dueDate ? new Date(initialValues.dueDate) : undefined
   );
@@ -144,12 +148,14 @@ export default function TaskForm({
   const [enableBill, setEnableBill] = useState(!!initialValues?.bill);
   const [billAmount, setBillAmount] = useState(initialValues?.bill ? initialValues.bill.toString() : '');
   const [billCurrency, setBillCurrency] = useState<string>(initialValues?.billCurrency || 'USD');
+  const [comment, setComment] = useState(initialValues?.comment || '');
   const [currencyMenuVisible, setCurrencyMenuVisible] = useState(false);
   const [errors, setErrors] = useState<{ title?: string; bill?: string }>({});
 
   // Refs for focus management
   const titleInputRef = useRef<any>(null);
   const descriptionInputRef = useRef<any>(null);
+  const commentInputRef = useRef<any>(null);
 
   // Set calendar locale based on user's language
   useEffect(() => {
@@ -195,7 +201,7 @@ export default function TaskForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (markAsCompleted: boolean = false) => {
     if (!validate()) return;
 
     // Parse bill amount - replace comma with dot for parsing
@@ -205,14 +211,21 @@ export default function TaskForm({
       parsedBill = parseFloat(normalizedAmount);
     }
 
+    const currentDueDate = dueDate ? dueDate.toISOString() : undefined;
+
     const data: CreateTaskInput = {
       title: title.trim(),
       description: description.trim() || undefined,
+      comment: comment.trim() || undefined,
       priority,
-      ...(dueDate && { dueDate: dueDate.toISOString() }),
-      ...(dueDate && enableReminders && { reminderTimes }),
+      dueDate: currentDueDate,
+      ...(enableReminders && { reminderTimes }),
       ...(selectedContactId && { contactId: selectedContactId }),
       ...(parsedBill && { bill: parsedBill, billCurrency }),
+      completed: completed || markAsCompleted,
+      ...( (completed || markAsCompleted) && { 
+        completedAt: ((initialValues?.completed && completed) ? initialValues.completedAt : new Date().toISOString()) || new Date().toISOString()
+      }),
     };
 
     try {
@@ -220,6 +233,7 @@ export default function TaskForm({
       // Reset form after successful submission
       setTitle('');
       setDescription('');
+      setComment('');
       setPriority('medium');
       setDueDate(undefined);
       setEnableReminders(false);
@@ -256,6 +270,14 @@ export default function TaskForm({
         descriptionInputRef.current?.focus();
       }, 100);
     }
+  };
+
+  // Handle comment dictation - append
+  const handleCommentDictation = (dictatedText: string) => {
+     setComment((prevText: string) => {
+      const separator = prevText && !prevText.endsWith(' ') ? ' ' : '';
+      return prevText + separator + dictatedText;
+     });
   };
 
   const handleCalendarDayPress = (day: DateData) => {
@@ -301,6 +323,20 @@ export default function TaskForm({
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Status Toggle (Only for Edit Mode or explicit inclusion) */}
+        {/* Status Display (Only for Edit Mode) */}
+        {initialValues && (
+          <View style={styles.inputGroup}>
+             <View style={styles.reminderHeader}>
+               <Text variant="titleMedium" style={styles.label}>{t('tasks.status')}</Text>
+               <Text variant="bodyLarge" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
+                  {t('tasks.pending')}
+               </Text>
+             </View>
+          </View>
+        )}
+        <Divider style={styles.divider} />
+
         {/* Title Input */}
         <View style={styles.inputGroup}>
           <TextInput
@@ -350,6 +386,31 @@ export default function TaskForm({
             <DictationButton 
                 id="description-dictation"
                 onDictationComplete={handleDictationComplete}
+                disabled={loading}
+            />
+          </View>
+        </View>
+
+
+        {/* Comment Input */}
+        <View style={styles.inputGroup}>
+          <TextInput
+            ref={commentInputRef}
+            mode="outlined"
+            label={t('tasks.comment') || "Comment"}
+            placeholder={t('form.placeholders.comment') || "Enter a comment"}
+            value={comment}
+            onChangeText={setComment}
+            multiline
+            numberOfLines={2}
+            disabled={loading}
+            maxLength={1000}
+            right={<TextInput.Affix text={`${comment.length}/1000`} />}
+          />
+          <View style={styles.dictationButtonContainer}>
+            <DictationButton 
+                id="comment-dictation"
+                onDictationComplete={handleCommentDictation}
                 disabled={loading}
             />
           </View>
@@ -650,13 +711,25 @@ export default function TaskForm({
         <View style={styles.actions}>
           <Button 
             mode="contained" 
-            onPress={handleSubmit} 
+            onPress={() => handleSubmit(false)} 
             loading={loading}
             disabled={loading}
             style={styles.button}
             contentStyle={{ height: 48 }}
           >
             {buttonText}
+          </Button>
+
+          <Button 
+            mode="outlined" 
+            onPress={() => handleSubmit(true)} 
+            loading={loading}
+            disabled={loading}
+            style={styles.button}
+            contentStyle={{ height: 48 }}
+            icon="checkbox-marked-circle-outline"
+          >
+            {submitLabel ? `${submitLabel} & ${t('tasks.markComplete')}` : `${t('tasks.create')} & ${t('tasks.markComplete')}`}
           </Button>
 
           {onCancel && (

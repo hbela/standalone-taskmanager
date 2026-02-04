@@ -23,10 +23,12 @@
         "dueDate": "Határidő",
         "due": "Esedékes",
         "overdue": "Lejárt",
+        "status": "Állapot",
         "priority": "Prioritás",
         "description": "Leírás",
         "details": "Részletek",
         "category": "Kategória",
+        "comment": "Megjegyzés",
         "contact": "Kapcsolat",
         "created": "Létrehozva",
         "updated": "Frissítve",
@@ -167,7 +169,8 @@
         "confirm": "Megerősítés",
         "yes": "Igen",
         "no": "Nem",
-        "created": "Létrehozva"
+        "created": "Létrehozva",
+        "info": "Információ"
     },
     "form": {
         "title": "Cím",
@@ -178,12 +181,14 @@
         "reminderHint": "Válassza ki, mikor szeretne emlékeztetőt kapni:",
         "reminderWarning": "Válasszon legalább egy emlékeztető időpontot",
         "removeContact": "Kapcsolat eltávolítása",
-        "bill": "Számla összege",
-        "billOptional": "Számla összege (Opcionális)",
+        "bill": "Kiadások",
+        "billOptional": "Kiadások (Opcionális)",
         "currency": "Pénznem",
         "placeholders": {
-            "title": "Adja meg a feladat címét",
-            "description": "Adja meg a feladat leírását (opcionális)",
+            "title": "Feladat címe",
+            "description": "Részletek a feladatról",
+            "comment": "Írjon be egy megjegyzést",
+            "search": "Feladatok keresése...",
             "bill": "Adja meg a számla összegét"
         },
         "errors": {

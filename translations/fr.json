@@ -23,10 +23,12 @@
         "dueDate": "Date d'échéance",
         "due": "Échéance",
         "overdue": "En retard",
+        "status": "Statut",
         "priority": "Priorité",
         "description": "Description",
         "details": "Détails",
         "category": "Catégorie",
+        "comment": "Commentaire",
         "contact": "Contact",
         "created": "Créé",
         "updated": "Mis à jour",
@@ -167,7 +169,8 @@
         "confirm": "Confirmer",
         "yes": "Oui",
         "no": "Non",
-        "created": "Créé"
+        "created": "Créé",
+        "info": "Infos"
     },
     "form": {
         "title": "Titre",
@@ -178,12 +181,14 @@
         "reminderHint": "Sélectionnez quand vous souhaitez être rappelé:",
         "reminderWarning": "Sélectionnez au moins un rappel",
         "removeContact": "Supprimer le contact",
-        "bill": "Montant de la facture",
-        "billOptional": "Montant de la facture (Facultatif)",
+        "bill": "Dépenses",
+        "billOptional": "Dépenses (Optionnel)",
         "currency": "Devise",
         "placeholders": {
-            "title": "Entrez le titre de la tâche",
-            "description": "Entrez la description de la tâche (facultatif)",
+            "title": "Titre de la tâche",
+            "description": "Détails de la tâche",
+            "comment": "Entrer un commentaire",
+            "search": "Rechercher des tâches...",
             "bill": "Entrez le montant de la facture"
         },
         "errors": {

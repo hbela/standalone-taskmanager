@@ -42,6 +42,8 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
         longitude REAL,
         bill REAL,
         billCurrency TEXT,
+        comment TEXT,
+        completedAt TEXT,
         createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
         updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
       );
@@ -70,6 +72,30 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
       // Column might already exist, which is fine
       if (!error.message?.includes('duplicate column name')) {
         console.warn('Note: BillCurrency column migration:', error.message);
+      }
+    }
+
+    // Add comment column to existing tables (migration)
+    try {
+      await db.execAsync(`
+        ALTER TABLE tasks ADD COLUMN comment TEXT;
+      `);
+      console.log('✅ Comment column added to tasks table');
+    } catch (error: any) {
+      if (!error.message?.includes('duplicate column name')) {
+        console.warn('Note: Comment column migration:', error.message);
+      }
+    }
+
+    // Add completedAt column to existing tables (migration)
+    try {
+      await db.execAsync(`
+        ALTER TABLE tasks ADD COLUMN completedAt TEXT;
+      `);
+      console.log('✅ CompletedAt column added to tasks table');
+    } catch (error: any) {
+      if (!error.message?.includes('duplicate column name')) {
+        console.warn('Note: CompletedAt column migration:', error.message);
       }
     }
     

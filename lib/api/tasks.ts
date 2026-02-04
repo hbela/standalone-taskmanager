@@ -64,6 +64,13 @@ export const tasksApi = {
    */
   toggleComplete: async (id: number, completed: boolean): Promise<Task> => {
     return tasksDb.updateTask(id, { completed });
+  },
+
+  /**
+   * Get task statistics
+   */
+  getStats: async () => {
+    return tasksDb.getTaskStats();
   }
 };
 

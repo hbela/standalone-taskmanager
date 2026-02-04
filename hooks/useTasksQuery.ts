@@ -8,7 +8,10 @@ import {
     useQueryClient
 } from '@tanstack/react-query';
 
+import { dashboardKeys } from './useDashboardQuery';
+
 // Query keys
+
 export const taskKeys = {
   all: ['tasks'] as const,
   lists: () => [...taskKeys.all, 'list'] as const,
@@ -69,6 +72,8 @@ export function useCreateTask() {
     onSuccess: () => {
       // Invalidate all task lists to refetch
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // Invalidate dashboard stats
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.stats() });
     },
   });
 }
@@ -118,6 +123,8 @@ export function useUpdateTask() {
     onSuccess: (updatedTask) => {
       // Invalidate all task lists
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // Invalidate dashboard stats
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.stats() });
       // Update the specific task detail cache
       queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask);
     },
@@ -141,6 +148,8 @@ export function useDeleteTask() {
     onSuccess: (_, id) => {
       // Invalidate all task lists
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // Invalidate dashboard stats
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.stats() });
       // Remove the specific task detail from cache
       queryClient.removeQueries({ queryKey: taskKeys.detail(id) });
     },
@@ -159,9 +168,11 @@ export function useToggleTaskComplete() {
     onMutate: async ({ id, completed }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: taskKeys.detail(id) });
 
       // Snapshot the previous value
       const previousTasks = queryClient.getQueriesData({ queryKey: taskKeys.lists() });
+      const previousTask = queryClient.getQueryData(taskKeys.detail(id));
 
       // Optimistically update all task lists
       queryClient.setQueriesData({ queryKey: taskKeys.lists() }, (old: any) => {
@@ -170,14 +181,25 @@ export function useToggleTaskComplete() {
           ...old,
           tasks: old.tasks.map((task: Task) =>
             task.id === id
-              ? { ...task, completed, updatedAt: new Date().toISOString() }
+              ? { ...task, completed, updatedAt: new Date().toISOString(), completedAt: completed ? new Date().toISOString() : null }
               : task
           ),
         };
       });
 
+      // Optimistically update the specific task detail
+      queryClient.setQueryData(taskKeys.detail(id), (old: Task | undefined) => {
+        if (!old) return old;
+        return {
+          ...old,
+          completed,
+          updatedAt: new Date().toISOString(),
+          completedAt: completed ? new Date().toISOString() : null
+        };
+      });
+
       // Return context with previous data for rollback
-      return { previousTasks };
+      return { previousTasks, previousTask };
     },
     onError: (err, variables, context) => {
       // Rollback on error
@@ -186,10 +208,15 @@ export function useToggleTaskComplete() {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      if (context?.previousTask) {
+        queryClient.setQueryData(taskKeys.detail(variables.id), context.previousTask);
+      }
     },
-    onSettled: () => {
+    onSettled: (data, error, variables) => {
       // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.stats() });
     },
   });
 }

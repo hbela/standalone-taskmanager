@@ -25,6 +25,8 @@ function rowToTask(row: any): Task {
     longitude: row.longitude,
     bill: row.bill,
     billCurrency: row.billCurrency,
+    comment: row.comment,
+    completedAt: row.completedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -91,8 +93,8 @@ export async function createTask(data: CreateTaskInput): Promise<Task> {
     `INSERT INTO tasks (
       title, description, completed, priority, dueDate, 
       notificationId, reminderTimes, contactId, taskAddress, 
-      latitude, longitude, bill, billCurrency, createdAt, updatedAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+      latitude, longitude, bill, billCurrency, comment, completedAt, createdAt, updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.title,
       data.description || null,
@@ -107,6 +109,10 @@ export async function createTask(data: CreateTaskInput): Promise<Task> {
       data.longitude || null,
       data.bill || null,
       data.billCurrency || null,
+      data.comment || null,
+      data.completed && !data.completedAt ? new Date().toISOString() : (data.completedAt || null),
+      new Date().toISOString(), // createdAt
+      new Date().toISOString()  // updatedAt
     ]
   );
   
@@ -192,6 +198,16 @@ export async function updateTask(id: number, data: UpdateTaskInput): Promise<Tas
     values.push(data.billCurrency);
   }
   
+  if (data.comment !== undefined) {
+    updates.push('comment = ?');
+    values.push(data.comment);
+  }
+  
+  if (data.completedAt !== undefined) {
+    updates.push('completedAt = ?');
+    values.push(data.completedAt);
+  }
+  
   updates.push('updatedAt = datetime(\'now\')');
   values.push(id);
   
@@ -225,7 +241,11 @@ export async function toggleTaskComplete(id: number): Promise<Task> {
     throw new Error('Task not found');
   }
   
-  return updateTask(id, { completed: !task.completed });
+  const newCompleted = !task.completed;
+  return updateTask(id, { 
+    completed: newCompleted,
+    completedAt: newCompleted ? new Date().toISOString() : null
+  });
 }
 
 /**
@@ -254,27 +274,32 @@ export async function getTaskStats(): Promise<{
     'SELECT priority, COUNT(*) as count FROM tasks GROUP BY priority'
   );
   
-  // Billing stats
+  // Billing stats (Current Month Total for Completed Tasks)
+  const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
+  
   const totalBillingRows = await db.getAllAsync(
-    'SELECT billCurrency, SUM(bill) as total FROM tasks WHERE bill IS NOT NULL GROUP BY billCurrency'
+    `SELECT billCurrency, SUM(bill) as total 
+     FROM tasks 
+     WHERE bill IS NOT NULL AND completed = 1 AND substr(completedAt, 1, 7) = ?
+     GROUP BY billCurrency`,
+    [currentMonth]
   );
   
-  // Monthly billing (group by YYYY-MM of dueDate)
-  // Using substr(dueDate, 1, 7) is safer for ISO strings than strftime in some SQLite versions
+  // Monthly billing (group by YYYY-MM of completedAt) - ONLY COMPLETED TASKS
   const monthlyBillingRows = await db.getAllAsync(
-    `SELECT substr(dueDate, 1, 7) as month, billCurrency, SUM(bill) as total 
+    `SELECT substr(completedAt, 1, 7) as month, billCurrency, SUM(bill) as total 
      FROM tasks 
-     WHERE bill IS NOT NULL AND dueDate IS NOT NULL 
+     WHERE bill IS NOT NULL AND completed = 1 AND completedAt IS NOT NULL 
      GROUP BY month, billCurrency 
      ORDER BY month DESC 
      LIMIT 12`
   );
   
-  // Billing by Category (Title)
+  // Billing by Category (Title) - ONLY COMPLETED TASKS
   const billingByCategoryRows = await db.getAllAsync(
     `SELECT title as category, billCurrency, SUM(bill) as total 
      FROM tasks 
-     WHERE bill IS NOT NULL 
+     WHERE bill IS NOT NULL AND completed = 1
      GROUP BY title, billCurrency
      ORDER BY total DESC
      LIMIT 10`

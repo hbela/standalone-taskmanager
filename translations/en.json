@@ -23,10 +23,12 @@
         "dueDate": "Due Date",
         "due": "Due",
         "overdue": "Overdue",
+        "status": "Status",
         "priority": "Priority",
         "description": "Description",
         "details": "Details",
         "category": "Category",
+        "comment": "Comment",
         "contact": "Contact",
         "created": "Created",
         "updated": "Updated",
@@ -168,7 +170,8 @@
         "confirm": "Confirm",
         "yes": "Yes",
         "no": "No",
-        "created": "Created"
+        "created": "Created",
+        "info": "Info"
     },
     "form": {
         "title": "Title",
@@ -179,12 +182,14 @@
         "reminderHint": "Select when you'd like to be reminded:",
         "reminderWarning": "Select at least one reminder time",
         "removeContact": "Remove Contact",
-        "bill": "Bill Amount",
-        "billOptional": "Bill Amount (Optional)",
+        "bill": "Expenditure",
+        "billOptional": "Expenditure (Optional)",
         "currency": "Currency",
         "placeholders": {
-            "title": "Enter task title",
-            "description": "Enter task description (optional)",
+            "title": "Task title",
+            "description": "Details about the task",
+            "comment": "Enter a comment",
+            "search": "Search tasks...",
             "bill": "Enter bill amount"
         },
         "errors": {
