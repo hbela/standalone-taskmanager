@@ -12,14 +12,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Linking,
-    RefreshControl,
-    StyleSheet,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Linking,
+  RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Appbar, Button, Chip, Dialog, Paragraph, Portal, Searchbar, Text, useTheme } from 'react-native-paper';
 
@@ -113,7 +113,7 @@ export default function TasksScreen() {
   };
 
   const handleExport = () => {
-    if (filteredTasks.length === 0) {
+    if (sortedTasks.length === 0) {
       Alert.alert(t('export.title'), t('export.noTasks'));
       return;
     }
@@ -126,7 +126,7 @@ export default function TasksScreen() {
     try {
       // Generate Excel file
       console.log('📊 Generating Excel file...');
-      const fileUri = await exportTasksToExcel(filteredTasks);
+      const fileUri = await exportTasksToExcel(sortedTasks);
       const fileName = getFileNameFromUri(fileUri);
       
       // Upload to Google Drive
@@ -165,6 +165,116 @@ export default function TasksScreen() {
     // 'all' and 'completed' filters handled by backend
     return true;
   });
+
+  // Sort tasks by priority first, then by due date
+  const sortedTasks = React.useMemo(() => {
+    const getPriorityScore = (priority: string) => {
+      switch(priority.toLowerCase()) {
+        case 'urgent': return 3;
+        case 'high': return 2;
+        case 'medium': return 1;
+        case 'low': return 0;
+        default: return 0;
+      }
+    };
+
+    // For 'All' filter: create three separate lists and combine them
+    if (filter === 'all') {
+      const overdueTasks: Task[] = [];
+      const pendingTasks: Task[] = [];
+      const completedTasks: Task[] = [];
+
+      // Categorize tasks
+      filteredTasks.forEach(task => {
+        if (task.completed) {
+          completedTasks.push(task);
+        } else if (isTaskOverdue(task)) {
+          overdueTasks.push(task);
+        } else {
+          pendingTasks.push(task);
+        }
+      });
+
+      // Sort overdue tasks: priority first, then by due date ascending
+      overdueTasks.sort((a, b) => {
+        const priorityDiff = getPriorityScore(b.priority) - getPriorityScore(a.priority);
+        if (priorityDiff !== 0) return priorityDiff;
+        
+        const timeA = new Date(a.dueDate || 0).getTime();
+        const timeB = new Date(b.dueDate || 0).getTime();
+        return timeA - timeB;
+      });
+
+      // Sort pending tasks: priority first, then tasks with due dates come first
+      pendingTasks.sort((a, b) => {
+        const priorityDiff = getPriorityScore(b.priority) - getPriorityScore(a.priority);
+        if (priorityDiff !== 0) return priorityDiff;
+        
+        const hasDueDateA = !!a.dueDate;
+        const hasDueDateB = !!b.dueDate;
+        
+        if (hasDueDateA && !hasDueDateB) return -1;
+        if (!hasDueDateA && hasDueDateB) return 1;
+        
+        if (hasDueDateA && hasDueDateB) {
+          const timeA = new Date(a.dueDate!).getTime();
+          const timeB = new Date(b.dueDate!).getTime();
+          return timeA - timeB;
+        }
+        
+        return 0;
+      });
+
+      // Sort completed tasks: by completion date descending
+      completedTasks.sort((a, b) => {
+        const completedAtA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+        const completedAtB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+        return completedAtB - completedAtA;
+      });
+
+      // Combine: overdue first, then pending, then completed
+      return [...overdueTasks, ...pendingTasks, ...completedTasks];
+    }
+
+    // For other filters, use specific sorting logic
+    return [...filteredTasks].sort((a, b) => {
+      // For completed tasks: sort by completion date descending (most recent first)
+      if (filter === 'completed') {
+        const completedAtA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+        const completedAtB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+        return completedAtB - completedAtA; // Descending order
+      }
+
+      // For other filters: sort by priority first
+      const priorityDiff = getPriorityScore(b.priority) - getPriorityScore(a.priority);
+      if (priorityDiff !== 0) return priorityDiff;
+      
+      // If same priority, handle due dates
+      const hasDueDateA = !!a.dueDate;
+      const hasDueDateB = !!b.dueDate;
+      
+      // For pending tasks: tasks with due dates come first
+      if (filter === 'pending') {
+        if (hasDueDateA && !hasDueDateB) return -1; // A has due date, comes first
+        if (!hasDueDateA && hasDueDateB) return 1;  // B has due date, comes first
+        
+        // Both have due dates or both don't have due dates
+        if (hasDueDateA && hasDueDateB) {
+          // Sort by due date ascending (earlier dates first)
+          const timeA = new Date(a.dueDate!).getTime();
+          const timeB = new Date(b.dueDate!).getTime();
+          return timeA - timeB;
+        }
+        // Both don't have due dates - maintain current order
+        return 0;
+      }
+      
+      // For overdue filter: sort by due date ascending
+      const timeA = new Date(a.dueDate || 0).getTime();
+      const timeB = new Date(b.dueDate || 0).getTime();
+      return timeA - timeB;
+    });
+  }, [filteredTasks, filter]);
 
   const renderTask = ({ item }: { item: Task }) => (
     <TaskCard
@@ -268,7 +378,7 @@ export default function TasksScreen() {
         {/* Task List */}
         <FlatList
           key={`task-list-${_key}`}
-          data={filteredTasks}
+          data={sortedTasks}
           renderItem={renderTask}
           keyExtractor={(item) => `task-${item.id}-${_key}`}
           contentContainerStyle={styles.listContent}
@@ -300,9 +410,9 @@ export default function TasksScreen() {
           <Dialog.Title style={styles.dialogTitle}>{t('export.title')}</Dialog.Title>
           <Dialog.Content>
             <Paragraph>
-              {filteredTasks.length === 1 
+              {sortedTasks.length === 1 
                 ? t('export.confirmCompletedSingle')
-                : t('export.confirmCompleted', { count: filteredTasks.length })}
+                : t('export.confirmCompleted', { count: sortedTasks.length })}
             </Paragraph>
             <Paragraph style={{ marginTop: Spacing.sm, fontStyle: 'italic' }}>
               {t('export.backupNote')}

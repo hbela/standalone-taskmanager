@@ -213,7 +213,8 @@
     },
     "calendar": {
         "title": "Naptár",
-        "noTasks": "Nincs feladat ezen a napon"
+        "noTasks": "Nincs feladat ezen a napon",
+        "tasksDue": "Esedékes feladatok"
     },
     "export": {
         "title": "Exportálás Google Drive-ra",

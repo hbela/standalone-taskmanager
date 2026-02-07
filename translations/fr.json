@@ -213,7 +213,8 @@
     },
     "calendar": {
         "title": "Calendrier",
-        "noTasks": "Aucune tâche à cette date"
+        "noTasks": "Aucune tâche à cette date",
+        "tasksDue": "Tâches à faire"
     },
     "export": {
         "title": "Exporter vers Google Drive",

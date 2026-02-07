@@ -212,7 +212,8 @@
     },
     "calendar": {
         "title": "Kalender",
-        "noTasks": "Keine Aufgaben an diesem Datum"
+        "noTasks": "Keine Aufgaben an diesem Datum",
+        "tasksDue": "Fällige Aufgaben"
     },
     "export": {
         "title": "Nach Google Drive exportieren",

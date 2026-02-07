@@ -214,7 +214,8 @@
     },
     "calendar": {
         "title": "Calendar",
-        "noTasks": "No tasks on this date"
+        "noTasks": "No tasks on this date",
+        "tasksDue": "Tasks due"
     },
     "export": {
         "title": "Export to Google Drive",

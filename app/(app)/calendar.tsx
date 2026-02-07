@@ -1,3 +1,4 @@
+import TaskCard from '@/components/TaskCard';
 import { Spacing } from '@/constants/theme';
 import { useTasks } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -8,12 +9,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Calendar, DateData, LocaleConfig } from 'react-native-calendars';
 import {
-  ActivityIndicator,
-  Appbar,
-  Card,
-  Chip,
-  Text,
-  useTheme
+    ActivityIndicator,
+    Appbar,
+    Card,
+    Text,
+    useTheme
 } from 'react-native-paper';
 
 // Configure calendar localization
@@ -54,8 +54,15 @@ export default function CalendarScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { data, isLoading } = useTasks();
+  // Helper to get local date string YYYY-MM-DD
+  const toLocalISOString = (date: Date) => {
+    const offset = date.getTimezoneOffset() * 60000;
+    const localTime = new Date(date.getTime() - offset);
+    return localTime.toISOString().split('T')[0];
+  };
+
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split('T')[0]
+    toLocalISOString(new Date())
   );
 
   // Set calendar locale based on current language
@@ -67,13 +74,13 @@ export default function CalendarScreen() {
   // Extract tasks array from response
   const tasks: Task[] = data?.tasks || [];
 
-  // Group tasks by date
+  // Group tasks by date for calendar dots
   const tasksByDate = useMemo(() => {
     const grouped: { [date: string]: Task[] } = {};
     
     tasks.forEach(task => {
       if (task.dueDate) {
-        const dateKey = new Date(task.dueDate).toISOString().split('T')[0];
+        const dateKey = toLocalISOString(new Date(task.dueDate));
         if (!grouped[dateKey]) {
           grouped[dateKey] = [];
         }
@@ -84,8 +91,49 @@ export default function CalendarScreen() {
     return grouped;
   }, [tasks]);
 
-  // Get tasks for selected date
-  const selectedTasks = tasksByDate[selectedDate] || [];
+  // Calculate displayed tasks: Overdue + Due Today
+  const displayedTasks = useMemo(() => {
+    const overdue: Task[] = [];
+    const dueToday: Task[] = [];
+
+    const getPriorityScore = (p: string) => {
+      switch(p.toLowerCase()) {
+        case 'urgent': return 3;
+        case 'high': return 2;
+        case 'medium': return 1;
+        case 'low': return 0;
+        default: return 0;
+      }
+    };
+
+    const sortFn = (a: Task, b: Task) => {
+      // First, sort by priority (descending - higher priority first)
+      const priorityDiff = getPriorityScore(b.priority) - getPriorityScore(a.priority);
+      if (priorityDiff !== 0) return priorityDiff;
+      
+      // If same priority, sort by due date (ascending - older dates first)
+      const timeA = new Date(a.dueDate || 0).getTime();
+      const timeB = new Date(b.dueDate || 0).getTime();
+      return timeA - timeB;
+    };
+
+    tasks.forEach(task => {
+        if (task.completed || !task.dueDate) return; // Do not display completed tasks
+
+        const taskDateKey = toLocalISOString(new Date(task.dueDate));
+
+        if (taskDateKey === selectedDate) {
+            dueToday.push(task);
+        } else if (taskDateKey < selectedDate) {
+            overdue.push(task);
+        }
+    });
+
+    overdue.sort(sortFn);
+    dueToday.sort(sortFn);
+
+    return [...overdue, ...dueToday];
+  }, [tasks, selectedDate]);
 
   // Create marked dates for calendar
   const markedDates = useMemo(() => {
@@ -114,81 +162,13 @@ export default function CalendarScreen() {
     return marked;
   }, [tasksByDate, selectedDate, theme]);
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority.toLowerCase()) {
-      case 'urgent': return '#FF3B30';
-      case 'high': return '#FF9500';
-      case 'medium': return '#007AFF';
-      case 'low': return '#34C759';
-      default: return '#8E8E93';
-    }
-  };
 
   const renderTask = ({ item: task }: { item: Task }) => {
-    const isOverdue = !task.completed && new Date(task.dueDate!) < new Date();
-    
     return (
-      <Card
-        style={[
-            styles.taskCard,
-            task.completed && { opacity: 0.6, backgroundColor: theme.colors.surfaceDisabled },
-            isOverdue && { borderColor: theme.colors.error, borderWidth: 1 }
-        ]}
+      <TaskCard
+        task={task}
         onPress={() => router.push(`/task/${task.id}`)}
-        mode="elevated"
-      >
-        <Card.Content>
-            <View style={styles.taskHeader}>
-            <View style={styles.taskTitleRow}>
-                <Ionicons
-                name={task.completed ? 'checkmark-circle' : 'ellipse-outline'}
-                size={24}
-                color={
-                    task.completed
-                    ? theme.colors.primary
-                    : isOverdue
-                    ? theme.colors.error
-                    : theme.colors.primary
-                }
-                />
-                <Text
-                variant="titleMedium"
-                style={[
-                    styles.taskTitle,
-                    task.completed && styles.taskTitleCompleted,
-                ]}
-                numberOfLines={1}
-                >
-                {task.title}
-                </Text>
-            </View>
-            <Chip 
-                compact 
-                textStyle={{ color: getPriorityColor(task.priority), fontSize: 11, lineHeight: 11 }}
-                style={{ 
-                  backgroundColor: getPriorityColor(task.priority) + '20', 
-                  borderColor: getPriorityColor(task.priority),
-                  height: 28,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-            >
-                {task.priority.toUpperCase()}
-            </Chip>
-            </View>
-            {task.description && (
-            <Text variant="bodyMedium" style={styles.taskDescription} numberOfLines={2}>
-                {task.description}
-            </Text>
-            )}
-            {task.contact && (
-            <View style={styles.contactInfo}>
-                <Ionicons name="person-outline" size={14} color={theme.colors.onSurfaceVariant} />
-                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>{task.contact.fullName}</Text>
-            </View>
-            )}
-        </Card.Content>
-      </Card>
+      />
     );
   };
 
@@ -246,20 +226,25 @@ export default function CalendarScreen() {
           </Card>
           
           <View style={styles.tasksSection}>
-            <Text variant="titleMedium" style={styles.sectionTitle}>
-              {new Date(selectedDate).toLocaleDateString(t('common.locale'), {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </Text>
+            <View style={styles.tasksHeader}>
+              <Text variant="titleMedium" style={styles.tasksDueTitle}>
+                {t('calendar.tasksDue')}
+              </Text>
+              <Text variant="bodyMedium" style={styles.dateSubtitle}>
+                {new Date(selectedDate).toLocaleDateString(t('common.locale'), {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </Text>
+            </View>
             
             <View style={styles.tasksList}>
-                {selectedTasks.length === 0 ? (
+                {displayedTasks.length === 0 ? (
                     renderEmpty()
                 ) : (
-                    selectedTasks.map(task => (
+                    displayedTasks.map(task => (
                         <React.Fragment key={`task-${task.id}`}>
                             {renderTask({ item: task })}
                         </React.Fragment>
@@ -291,47 +276,19 @@ const styles = StyleSheet.create({
   },
   tasksSection: {
   },
-  sectionTitle: {
+  tasksHeader: {
     paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.md,
   },
+  tasksDueTitle: {
+    fontWeight: 'bold',
+    marginBottom: Spacing.xs,
+  },
+  dateSubtitle: {
+    color: '#666',
+  },
   tasksList: {
     paddingBottom: 120, // Keep for floating bottom navbar
-  },
-  taskCard: {
-    marginBottom: Spacing.md,
-    marginHorizontal: Spacing.lg,
-  },
-  taskHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
-  taskTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: Spacing.sm,
-  },
-  taskTitle: {
-    flex: 1,
-  },
-  taskTitleCompleted: {
-    textDecorationLine: 'line-through',
-    opacity: 0.6,
-  },
-  taskDescription: {
-    marginTop: Spacing.xs,
-    marginLeft: 32,
-    opacity: 0.7,
-  },
-  contactInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: Spacing.sm,
-    marginLeft: 32,
-    gap: Spacing.xs,
   },
   emptyState: {
     alignItems: 'center',
