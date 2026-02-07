@@ -1,7 +1,9 @@
 
+
 import { Spacing } from '@/constants/theme';
 import { useDashboardStats } from '@/hooks/useDashboardQuery';
 import { useTranslation } from '@/hooks/useTranslation';
+import { getCurrencyForRegion } from '@/utils/localization';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
@@ -46,7 +48,7 @@ interface TaskStats {
   billingByCategory: { category: string; currency: string; amount: number }[];
 }
 
-export default function ProfileScreen() {
+export default function DashboardScreen() {
   const theme = useTheme();
   const { t } = useTranslation();
   const screenWidth = Dimensions.get('window').width;
@@ -57,10 +59,13 @@ export default function ProfileScreen() {
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
   const [currencyMenuVisible, setCurrencyMenuVisible] = useState(false);
 
-  // Set default currency when data is loaded
+  // Set default currency based on locale when data is loaded
   React.useEffect(() => {
     if (stats?.totalBilling && stats.totalBilling.length > 0 && !selectedCurrency) {
-      setSelectedCurrency(stats.totalBilling[0].currency);
+      const localeCurrency = getCurrencyForRegion();
+      // Check if locale currency exists in the billing data, otherwise use the first available
+      const currencyExists = stats.totalBilling.some(item => item.currency === localeCurrency);
+      setSelectedCurrency(currencyExists ? localeCurrency : stats.totalBilling[0].currency);
     }
   }, [stats]);
 

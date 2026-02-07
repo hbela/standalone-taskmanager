@@ -3,6 +3,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { DEFAULT_REMINDER_OPTIONS, DEFAULT_REMINDERS, getReminderLabel } from '@/lib/notifications';
 import { CreateTaskInput, TaskPriority, UpdateTaskInput } from '@/types/task';
 import { formatDate, formatTime } from '@/utils/dateFormatter';
+import { getCurrencyForRegion } from '@/utils/localization';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Dimensions,
@@ -147,7 +148,7 @@ export default function TaskForm({
   );
   const [enableBill, setEnableBill] = useState(!!initialValues?.bill);
   const [billAmount, setBillAmount] = useState(initialValues?.bill ? initialValues.bill.toString() : '');
-  const [billCurrency, setBillCurrency] = useState<string>(initialValues?.billCurrency || 'USD');
+  const [billCurrency, setBillCurrency] = useState<string>(initialValues?.billCurrency || getCurrencyForRegion());
   const [comment, setComment] = useState(initialValues?.comment || '');
   const [currencyMenuVisible, setCurrencyMenuVisible] = useState(false);
   const [errors, setErrors] = useState<{ title?: string; bill?: string }>({});
@@ -241,7 +242,7 @@ export default function TaskForm({
       setSelectedContactId(null);
       setEnableBill(false);
       setBillAmount('');
-      setBillCurrency('USD');
+      setBillCurrency(getCurrencyForRegion());
       setErrors({});
     } catch (error) {
       // Error handling is done by parent component

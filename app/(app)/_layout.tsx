@@ -14,7 +14,7 @@ export default function AppLayout() {
     tasks: t('tasks.title'),
     calendar: t('calendar.title'),
     create: t('tasks.create'),
-    profile: t('dashboard.title'),
+    dashboard: t('dashboard.title'),
     settings: t('settings.title'),
   });
 
@@ -24,7 +24,7 @@ export default function AppLayout() {
       tasks: t('tasks.title'),
       calendar: t('calendar.title'),
       create: t('tasks.create'),
-      profile: t('dashboard.title'),
+      dashboard: t('dashboard.title'),
       settings: t('settings.title'),
     });
   }, [_key, t]);
@@ -53,12 +53,12 @@ export default function AppLayout() {
     ),
   }), [tabTitles.create]);
 
-  const profileOptions = useMemo(() => ({
-    title: tabTitles.profile,
+  const dashboardOptions = useMemo(() => ({
+    title: tabTitles.dashboard,
     tabBarIcon: ({ color, size }: any) => (
       <Ionicons name="stats-chart" size={size} color={color} />
     ),
-  }), [tabTitles.profile]);
+  }), [tabTitles.dashboard]);
 
   const settingsOptions = useMemo(() => ({
     title: tabTitles.settings,
@@ -142,7 +142,7 @@ export default function AppLayout() {
       <Tabs.Screen name="index" options={indexOptions} />
       <Tabs.Screen name="calendar" options={calendarOptions} />
       <Tabs.Screen name="create" options={createOptions} />
-      <Tabs.Screen name="profile" options={profileOptions} />
+      <Tabs.Screen name="dashboard" options={dashboardOptions} />
       <Tabs.Screen name="settings" options={settingsOptions} />
       <Tabs.Screen name="notification-qa" options={{ href: null }} />
       <Tabs.Screen name="contacts" options={{ href: null }} />

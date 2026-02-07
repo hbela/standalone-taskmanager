@@ -27,11 +27,13 @@ export default function SettingsScreen() {
   const loadWelcomePreference = async () => {
     try {
       const value = await AsyncStorage.getItem(WELCOME_SHOWN_KEY);
-      // If value is 'true', welcome has been shown, so we DON'T show it again (toggle is OFF)
-      // If value is null or 'false', we SHOULD show it (toggle is ON)
+      // If value is 'true', welcome has been disabled, so we DON'T show it (toggle is OFF)
+      // If value is null or 'false', we SHOULD show it (toggle is ON) - DEFAULT is ON
       setShowWelcomeScreen(value !== 'true');
     } catch (error) {
       console.error('Error loading welcome preference:', error);
+      // Default to showing welcome screen on error
+      setShowWelcomeScreen(true);
     }
   };
 
@@ -98,13 +100,6 @@ export default function SettingsScreen() {
             <List.Subheader>Developer</List.Subheader>
             <Card style={styles.card}>
                 <Card.Content style={styles.developerButtons}>
-                    <Button 
-                        mode="outlined" 
-                        icon="eye" 
-                        onPress={() => router.push('/splash-test')}
-                    >
-                        Preview Splash Screen
-                    </Button>
                     <Button 
                         mode="outlined" 
                         icon="hand-wave" 

@@ -262,6 +262,7 @@
         "feature6Title": "Google Drive Export",
         "feature6Description": "Export your tasks to Google Drive as Excel spreadsheets",
         "footerCreator": "This app is 100% free created by Bela Hajzer",
-        "footerCopyright": "Copyright © 2026. All rights reserved."
+        "footerCopyright": "Copyright © 2026. All rights reserved.",
+        "disableHint": "Disable this screen in the settings"
     }
 }

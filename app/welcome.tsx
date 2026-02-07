@@ -159,10 +159,10 @@ export default function WelcomeScreen() {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text variant="bodySmall" style={[styles.footerText, { color: theme.colors.onSurfaceVariant }]}>
-            {t('welcome.footerCreator')}
+          <Text variant="bodySmall" style={[styles.footerText, { color: theme.colors.onSurfaceVariant, fontStyle: 'italic' }]}>
+            {t('welcome.disableHint')}
           </Text>
-          <Text variant="bodySmall" style={[styles.footerText, { color: theme.colors.onSurfaceVariant }]}>
+          <Text variant="bodySmall" style={[styles.footerText, { color: theme.colors.onSurfaceVariant, marginTop: 8 }]}>
             {t('welcome.footerCopyright')}
           </Text>
         </View>

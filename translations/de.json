@@ -257,6 +257,7 @@
         "feature6Title": "Google Drive Export",
         "feature6Description": "Exportieren Sie Ihre Aufgaben als Excel-Tabellen nach Google Drive",
         "footerCreator": "Diese App ist 100% kostenlos erstellt von Bela Hajzer",
-        "footerCopyright": "Copyright © 2026. Alle Rechte vorbehalten."
+        "footerCopyright": "Copyright © 2026. Alle Rechte vorbehalten.",
+        "disableHint": "Deaktivieren Sie diesen Bildschirm in den Einstellungen"
     }
 }

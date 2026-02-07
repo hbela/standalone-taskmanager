@@ -77,6 +77,7 @@
         "language": "Nyelv",
         "profile": "Profil",
         "notifications": "Értesítések",
+        "appearance": "Megjelenés",
         "about": "Névjegy",
         "showWelcomeScreen": "Üdvözlő képernyő megjelenítése",
         "showWelcomeScreenDescription": "Üdvözlő képernyő megjelenítése az alkalmazás indításakor"
@@ -258,6 +259,7 @@
         "feature6Title": "Google Drive exportálás",
         "feature6Description": "Exportálja feladatait Google Drive-ra Excel táblázatokként",
         "footerCreator": "Ez az alkalmazás 100%-ban ingyenes, készítette: Hajzer Béla",
-        "footerCopyright": "Copyright © 2026. Minden jog fenntartva."
+        "footerCopyright": "Copyright © 2026. Minden jog fenntartva.",
+        "disableHint": "Kapcsolja ki ezt a képernyőt a beállításokban"
     }
 }
