@@ -112,3 +112,67 @@ export async function uploadToGoogleDrive(
     throw error;
   }
 }
+
+/**
+ * Upload image file to Google Drive
+ * @param fileUri - Local file URI (e.g., screenshot path)
+ * @param fileName - Name for the file in Google Drive
+ * @param mimeType - MIME type of the image (default: image/png)
+ * @returns Object with file ID and web view link
+ */
+export async function uploadImageToGoogleDrive(
+  fileUri: string,
+  fileName: string,
+  mimeType: string = 'image/png'
+): Promise<{ id: string; webViewLink?: string }> {
+  try {
+    console.log('📤 Starting image upload to Google Drive...');
+    
+    // 1. Get Access Token
+    const accessToken = await getAccessToken();
+
+    // 2. Prepare Metadata and File for Multipart Upload
+    const metadata = {
+      name: fileName,
+      mimeType: mimeType,
+    };
+
+    const formData = new FormData();
+    
+    // Part 1: Metadata
+    formData.append('metadata', {
+      string: JSON.stringify(metadata),
+      type: 'application/json',
+      name: 'metadata.json'
+    } as any);
+
+    // Part 2: The Image File
+    formData.append('file', {
+      uri: fileUri,
+      name: fileName,
+      type: mimeType,
+    } as any);
+
+    // 3. Upload to Google Drive
+    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error?.message || 'Drive upload failed');
+    }
+
+    console.log('✅ Image uploaded successfully to Google Drive');
+    return result; 
+
+  } catch (error) {
+    console.error('❌ Image upload to Google Drive Error:', error);
+    throw error;
+  }
+}

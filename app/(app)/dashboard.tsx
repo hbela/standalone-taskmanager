@@ -1,5 +1,6 @@
 
 
+import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import { Spacing } from '@/constants/theme';
 import { useDashboardStats } from '@/hooks/useDashboardQuery';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -132,6 +133,7 @@ export default function DashboardScreen() {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
         <Appbar.Content title={t('dashboard.title')} />
+        <ScreenshotCaptureButton screenName="dashboard" />
       </Appbar.Header>
 
       <ScrollView 

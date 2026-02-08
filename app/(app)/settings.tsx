@@ -1,13 +1,15 @@
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import { Spacing } from '@/constants/theme';
 import { LanguageContext } from '@/context/LanguageContext';
+import { DEVICE_DIMENSIONS, DeviceType, useScreenshot } from '@/context/ScreenshotContext';
 import { useAppTheme } from '@/context/ThemeContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Appbar, Avatar, Button, Card, IconButton, List, Switch, Text, useTheme } from 'react-native-paper';
+import { Appbar, Avatar, Button, Card, Chip, IconButton, List, Switch, Text, useTheme } from 'react-native-paper';
 
 const WELCOME_SHOWN_KEY = '@task_manager_welcome_shown';
 
@@ -18,6 +20,16 @@ export default function SettingsScreen() {
   const { isDark, toggleTheme } = useAppTheme();
   const router = useRouter();
   const [showWelcomeScreen, setShowWelcomeScreen] = useState(true);
+  
+  // Screenshot context
+  const {
+    selectedDevice,
+    setSelectedDevice,
+    capturedScreenshots,
+    isUploading,
+    uploadAllToGoogleDrive,
+    clearAllScreenshots,
+  } = useScreenshot();
 
   // Load welcome screen preference
   useEffect(() => {
@@ -53,6 +65,7 @@ export default function SettingsScreen() {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]} key={key}>
       <Appbar.Header elevated>
         <Appbar.Content title={t('settings.title')} />
+        <ScreenshotCaptureButton screenName="settings" />
       </Appbar.Header>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
@@ -95,6 +108,83 @@ export default function SettingsScreen() {
         </List.Section>
 
         <LanguageSwitcher />
+        
+        {/* Screenshot Settings Section */}
+        <List.Section>
+            <List.Subheader>📸 Screenshot Capture</List.Subheader>
+            <Card style={styles.card} mode="elevated">
+                <Card.Content>
+                    <Text variant="bodyMedium" style={{ marginBottom: Spacing.sm }}>
+                        Device Size for Screenshots:
+                    </Text>
+                    <View style={styles.deviceChips}>
+                        {(Object.keys(DEVICE_DIMENSIONS) as DeviceType[]).map((device) => (
+                            <Chip
+                                key={device}
+                                selected={selectedDevice === device}
+                                onPress={() => setSelectedDevice(device)}
+                                showSelectedCheck
+                                style={styles.deviceChip}
+                            >
+                                {DEVICE_DIMENSIONS[device].label}
+                            </Chip>
+                        ))}
+                    </View>
+                    
+                    <Text 
+                        variant="bodySmall" 
+                        style={{ marginTop: Spacing.md, color: theme.colors.outline }}
+                    >
+                        💡 Tap the camera icon in any screen header to capture a screenshot.
+                    </Text>
+                </Card.Content>
+            </Card>
+            
+            {/* Captured Screenshots List */}
+            {capturedScreenshots.length > 0 && (
+                <Card style={styles.card} mode="elevated">
+                    <Card.Content>
+                        <View style={styles.screenshotHeader}>
+                            <Text variant="titleMedium">
+                                Captured ({capturedScreenshots.length})
+                            </Text>
+                            <IconButton
+                                icon="trash-can-outline"
+                                size={20}
+                                iconColor={theme.colors.error}
+                                onPress={clearAllScreenshots}
+                            />
+                        </View>
+                        
+                        {capturedScreenshots.map((screenshot, index) => (
+                            <View key={index} style={styles.screenshotItem}>
+                                <List.Icon icon="image" />
+                                <View style={{ flex: 1 }}>
+                                    <Text variant="bodySmall" numberOfLines={1}>
+                                        {screenshot.name}
+                                    </Text>
+                                    <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
+                                        {DEVICE_DIMENSIONS[screenshot.deviceType].label}
+                                    </Text>
+                                </View>
+                            </View>
+                        ))}
+                        
+                        <Button
+                            mode="contained"
+                            icon="cloud-upload"
+                            onPress={uploadAllToGoogleDrive}
+                            loading={isUploading}
+                            disabled={isUploading}
+                            style={{ marginTop: Spacing.md }}
+                            buttonColor="#22c55e"
+                        >
+                            {isUploading ? 'Uploading...' : `Upload All to Drive (${capturedScreenshots.length})`}
+                        </Button>
+                    </Card.Content>
+                </Card>
+            )}
+        </List.Section>
         
         <List.Section>
             <List.Subheader>Developer</List.Subheader>
@@ -173,5 +263,26 @@ const styles = StyleSheet.create({
   },
   copyrightText: {
     marginTop: Spacing.xs,
+  },
+  deviceChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  deviceChip: {
+    marginBottom: Spacing.xs,
+  },
+  screenshotHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  screenshotItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
 });

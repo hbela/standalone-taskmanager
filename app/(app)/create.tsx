@@ -1,3 +1,4 @@
+import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import TaskForm from '@/components/TaskForm';
 import { useCreateTask } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -66,6 +67,7 @@ export default function CreateTaskScreen() {
       <Appbar.Header elevated>
         <Appbar.BackAction onPress={() => router.push('/(app)')} />
         <Appbar.Content title={t('tasks.create')} />
+        <ScreenshotCaptureButton screenName="create" />
       </Appbar.Header>
 
       <TaskForm

@@ -1,5 +1,6 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { LanguageProvider } from '@/context/LanguageContext';
+import { ScreenshotProvider } from '@/context/ScreenshotContext';
 import { ThemeProvider, useAppTheme } from '@/context/ThemeContext';
 import { initializeDatabase } from '@/lib/database';
 import { configureErrorHandling } from '@/utils/errorHandler';
@@ -107,9 +108,11 @@ function InnerRootLayout() {
     return (
         <PaperProvider theme={theme}>
             <LanguageProvider>
-                <QueryClientProvider client={queryClient}>
-                    <RootLayoutNav />
-                </QueryClientProvider>
+                <ScreenshotProvider>
+                    <QueryClientProvider client={queryClient}>
+                        <RootLayoutNav />
+                    </QueryClientProvider>
+                </ScreenshotProvider>
             </LanguageProvider>
         </PaperProvider>
     );

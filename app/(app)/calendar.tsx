@@ -1,3 +1,4 @@
+import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import TaskCard from '@/components/TaskCard';
 import { Spacing } from '@/constants/theme';
 import { useTasks } from '@/hooks/useTasksQuery';
@@ -9,11 +10,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Calendar, DateData, LocaleConfig } from 'react-native-calendars';
 import {
-    ActivityIndicator,
-    Appbar,
-    Card,
-    Text,
-    useTheme
+  ActivityIndicator,
+  Appbar,
+  Card,
+  Text,
+  useTheme
 } from 'react-native-paper';
 
 // Configure calendar localization
@@ -196,6 +197,7 @@ export default function CalendarScreen() {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
         <Appbar.Content title={t('calendar.title')} />
+        <ScreenshotCaptureButton screenName="calendar" />
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>

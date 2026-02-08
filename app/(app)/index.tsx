@@ -1,5 +1,6 @@
 import ErrorMessage from '@/components/ErrorMessage';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import TaskCard from '@/components/TaskCard';
 import { Spacing } from '@/constants/theme';
 import { useDeleteTask, useTasks } from '@/hooks/useTasksQuery';
@@ -347,6 +348,7 @@ export default function TasksScreen() {
           <Appbar.Header elevated>
             <Appbar.Content title={pageTitle} />
             <Appbar.Action icon="magnify" onPress={() => setIsSearchVisible(true)} />
+            <ScreenshotCaptureButton screenName="tasks" />
             {filter === 'completed' && (
               <Appbar.Action 
                  icon="cloud-upload"
