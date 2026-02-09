@@ -39,9 +39,10 @@ export default function SettingsScreen() {
   const loadWelcomePreference = async () => {
     try {
       const value = await AsyncStorage.getItem(WELCOME_SHOWN_KEY);
-      // If value is 'true', welcome has been disabled, so we DON'T show it (toggle is OFF)
-      // If value is null or 'false', we SHOULD show it (toggle is ON) - DEFAULT is ON
-      setShowWelcomeScreen(value !== 'true');
+      // If value is 'true', welcome has been enabled, so we show it (toggle is ON)
+      // If value is 'false', welcome has been disabled, so we DON'T show it (toggle is OFF)
+      // If value is null, default is ON (show it)
+      setShowWelcomeScreen(value !== 'false');
     } catch (error) {
       console.error('Error loading welcome preference:', error);
       // Default to showing welcome screen on error
@@ -53,9 +54,9 @@ export default function SettingsScreen() {
     try {
       const newValue = !showWelcomeScreen;
       setShowWelcomeScreen(newValue);
-      // If toggle is ON (true), we want to show welcome, so set storage to 'false'
-      // If toggle is OFF (false), we don't want to show welcome, so set storage to 'true'
-      await AsyncStorage.setItem(WELCOME_SHOWN_KEY, newValue ? 'false' : 'true');
+      // If toggle is ON (true), we want to show welcome, so set storage to 'true'
+      // If toggle is OFF (false), we don't want to show welcome, so set storage to 'false'
+      await AsyncStorage.setItem(WELCOME_SHOWN_KEY, newValue ? 'true' : 'false');
     } catch (error) {
       console.error('Error saving welcome preference:', error);
     }

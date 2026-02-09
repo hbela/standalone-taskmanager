@@ -15,7 +15,7 @@ export default function WelcomeScreen() {
 
   const handleDismiss = async () => {
     try {
-      await AsyncStorage.setItem(WELCOME_SHOWN_KEY, 'true');
+      await AsyncStorage.setItem(WELCOME_SHOWN_KEY, 'false');
       router.replace('/(app)');
     } catch (error) {
       console.error('Error saving welcome preference:', error);

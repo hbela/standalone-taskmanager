@@ -17,7 +17,8 @@ export default function Index() {
   const checkWelcomeStatus = async () => {
     try {
       const hasSeenWelcome = await AsyncStorage.getItem(WELCOME_SHOWN_KEY);
-      setShouldShowWelcome(hasSeenWelcome !== 'true');
+      // Logic: Show if 'true' or null (default). Hide if 'false' (disabled).
+      setShouldShowWelcome(hasSeenWelcome !== 'false');
     } catch (error) {
       console.error('Error checking welcome status:', error);
       setShouldShowWelcome(false);
