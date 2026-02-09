@@ -221,12 +221,13 @@
         "buttonShort": "Exportieren",
         "confirm": "%{count} Aufgaben nach Google Drive exportieren?",
         "confirmSingle": "1 Aufgabe nach Google Drive exportieren?",
+        "backupNote": "Dies erstellt eine Sicherungskopie Ihrer erledigten Aufgaben als CSV-Datei.",
         "success": "Aufgaben erfolgreich exportiert!",
         "successWithLink": "Datei auf Google Drive hochgeladen!",
         "error": "Fehler beim Exportieren der Aufgaben",
         "authError": "Google Drive-Authentifizierung fehlgeschlagen",
         "uploading": "Hochladen...",
-        "generating": "Excel-Datei wird erstellt...",
+        "generating": "CSV-Datei wird erstellt...",
         "processing": "Wird verarbeitet...",
         "noTasks": "Keine Aufgaben zum Exportieren",
         "viewInDrive": "In Drive anzeigen"
@@ -255,7 +256,7 @@
         "feature5Title": "Mehrsprachige Unterstützung",
         "feature5Description": "Verfügbar in Englisch, Ungarisch, Französisch und Deutsch",
         "feature6Title": "Google Drive Export",
-        "feature6Description": "Exportieren Sie Ihre Aufgaben als Excel-Tabellen nach Google Drive",
+        "feature6Description": "Exportieren Sie Ihre Aufgaben als CSV-Tabellen nach Google Drive",
         "footerCreator": "Diese App ist 100% kostenlos erstellt von Bela Hajzer",
         "footerCopyright": "Copyright © 2026. Alle Rechte vorbehalten.",
         "disableHint": "Deaktivieren Sie diesen Bildschirm in den Einstellungen"

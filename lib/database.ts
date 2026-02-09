@@ -3,6 +3,7 @@
  * Manages the local SQLite database for task storage
  */
 
+import { logError, logInfo } from '@/utils/errorHandler';
 import * as SQLite from 'expo-sqlite';
 
 const DB_NAME = 'tasks.db';
@@ -54,11 +55,11 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
       await db.execAsync(`
         ALTER TABLE tasks ADD COLUMN bill REAL;
       `);
-      console.log('✅ Bill column added to tasks table');
+      logInfo('Database', 'Bill column added to tasks table');
     } catch (error: any) {
       // Column might already exist, which is fine
       if (!error.message?.includes('duplicate column name')) {
-        console.warn('Note: Bill column migration:', error.message);
+        logInfo('Database', 'Bill column migration note:', error.message);
       }
     }
     
@@ -67,11 +68,11 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
       await db.execAsync(`
         ALTER TABLE tasks ADD COLUMN billCurrency TEXT;
       `);
-      console.log('✅ BillCurrency column added to tasks table');
+      logInfo('Database', 'BillCurrency column added to tasks table');
     } catch (error: any) {
       // Column might already exist, which is fine
       if (!error.message?.includes('duplicate column name')) {
-        console.warn('Note: BillCurrency column migration:', error.message);
+        logInfo('Database', 'BillCurrency column migration note:', error.message);
       }
     }
 
@@ -80,10 +81,10 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
       await db.execAsync(`
         ALTER TABLE tasks ADD COLUMN comment TEXT;
       `);
-      console.log('✅ Comment column added to tasks table');
+      logInfo('Database', 'Comment column added to tasks table');
     } catch (error: any) {
       if (!error.message?.includes('duplicate column name')) {
-        console.warn('Note: Comment column migration:', error.message);
+        logInfo('Database', 'Comment column migration note:', error.message);
       }
     }
 
@@ -92,10 +93,10 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
       await db.execAsync(`
         ALTER TABLE tasks ADD COLUMN completedAt TEXT;
       `);
-      console.log('✅ CompletedAt column added to tasks table');
+      logInfo('Database', 'CompletedAt column added to tasks table');
     } catch (error: any) {
       if (!error.message?.includes('duplicate column name')) {
-        console.warn('Note: CompletedAt column migration:', error.message);
+        logInfo('Database', 'CompletedAt column migration note:', error.message);
       }
     }
     
@@ -108,11 +109,11 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
     `);
     
     dbInstance = db;
-    console.log('✅ Database initialized successfully');
+    logInfo('Database', 'Database initialized successfully');
     
     return db;
   } catch (error) {
-    console.error('❌ Database initialization error:', error);
+    logError('Database', error);
     throw error;
   }
 }
@@ -135,7 +136,7 @@ export async function closeDatabase(): Promise<void> {
   if (dbInstance) {
     await dbInstance.closeAsync();
     dbInstance = null;
-    console.log('Database connection closed');
+    logInfo('Database', 'Database connection closed');
   }
 }
 
@@ -148,5 +149,5 @@ export async function resetDatabase(): Promise<void> {
   await db.execAsync('DROP TABLE IF EXISTS tasks;');
   dbInstance = null;
   await initializeDatabase();
-  console.log('Database reset complete');
+  logInfo('Database', 'Database reset complete');
 }

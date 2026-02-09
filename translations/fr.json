@@ -222,12 +222,13 @@
         "buttonShort": "Exporter",
         "confirm": "Exporter %{count} tâches vers Google Drive?",
         "confirmSingle": "Exporter 1 tâche vers Google Drive?",
+        "backupNote": "Cela créera une sauvegarde de vos tâches terminées sous forme de fichier CSV.",
         "success": "Tâches exportées avec succès!",
         "successWithLink": "Fichier téléchargé sur Google Drive!",
         "error": "Échec de l'exportation des tâches",
         "authError": "Échec de l'authentification Google Drive",
         "uploading": "Téléchargement...",
-        "generating": "Génération du fichier Excel...",
+        "generating": "Génération du fichier CSV...",
         "processing": "Traitement...",
         "noTasks": "Aucune tâche à exporter",
         "viewInDrive": "Voir dans Drive"
@@ -256,7 +257,7 @@
         "feature5Title": "Support multilingue",
         "feature5Description": "Disponible en anglais, hongrois, français et allemand",
         "feature6Title": "Export Google Drive",
-        "feature6Description": "Exportez vos tâches vers Google Drive sous forme de feuilles Excel",
+        "feature6Description": "Exportez vos tâches vers Google Drive sous forme de fichiers CSV",
         "footerCreator": "Cette application est 100% gratuite créée par Bela Hajzer",
         "footerCopyright": "Copyright © 2026. Tous droits réservés.",
         "disableHint": "Désactiver cet écran dans les paramètres"

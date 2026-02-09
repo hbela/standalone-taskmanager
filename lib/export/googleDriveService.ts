@@ -3,12 +3,13 @@
  * Handles Google Drive authentication and file upload
  */
 
+import { logError, logInfo } from '@/utils/errorHandler';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 // 1. Configure Google Sign-In ONLY ONCE
 // CRITICAL: Request the 'drive.file' scope to allow uploading files.
 GoogleSignin.configure({
-  webClientId: '13205155505-h8notg3rkd4bgr1151s4re3fn4s6u6f1.apps.googleusercontent.com', // From .env or app.json
+  webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID, // Use environment variable
   scopes: ['https://www.googleapis.com/auth/drive.file'], 
 });
 
@@ -60,15 +61,20 @@ export async function uploadToGoogleDrive(
   fileName: string
 ): Promise<{ id: string; webViewLink?: string }> {
   try {
-    console.log('📤 Starting upload to Google Drive...');
+    logInfo('GoogleDrive', 'Starting upload to Google Drive...');
     
     // 1. Get Access Token
     const accessToken = await getAccessToken();
 
     // 2. Prepare Metadata and File for Multipart Upload
+    // 2. Prepare Metadata and File for Multipart Upload
+    const mimeType = fileName.endsWith('.csv') 
+      ? 'text/csv' 
+      : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
     const metadata = {
       name: fileName,
-      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      mimeType: mimeType,
     };
 
     const formData = new FormData();
@@ -85,7 +91,7 @@ export async function uploadToGoogleDrive(
     formData.append('file', {
       uri: fileUri,
       name: fileName,
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      type: mimeType,
     } as any);
 
     // 3. Upload to Google Drive
@@ -104,11 +110,11 @@ export async function uploadToGoogleDrive(
       throw new Error(result.error?.message || 'Drive upload failed');
     }
 
-    console.log('✅ File uploaded successfully to Google Drive');
+    logInfo('GoogleDrive', 'File uploaded successfully to Google Drive');
     return result; 
 
   } catch (error) {
-    console.error('❌ Upload to Google Drive Error:', error);
+    logError('GoogleDrive', error);
     throw error;
   }
 }
@@ -126,7 +132,7 @@ export async function uploadImageToGoogleDrive(
   mimeType: string = 'image/png'
 ): Promise<{ id: string; webViewLink?: string }> {
   try {
-    console.log('📤 Starting image upload to Google Drive...');
+    logInfo('GoogleDrive', 'Starting image upload to Google Drive...');
     
     // 1. Get Access Token
     const accessToken = await getAccessToken();
@@ -168,11 +174,11 @@ export async function uploadImageToGoogleDrive(
       throw new Error(result.error?.message || 'Drive upload failed');
     }
 
-    console.log('✅ Image uploaded successfully to Google Drive');
+    logInfo('GoogleDrive', 'Image uploaded successfully to Google Drive');
     return result; 
 
   } catch (error) {
-    console.error('❌ Image upload to Google Drive Error:', error);
+    logError('GoogleDrive', error);
     throw error;
   }
 }

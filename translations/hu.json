@@ -223,12 +223,13 @@
         "buttonShort": "Exportálás",
         "confirm": "%{count} feladat exportálása Google Drive-ra?",
         "confirmSingle": "1 feladat exportálása Google Drive-ra?",
+        "backupNote": "Ez biztonsági mentést készít a befejezett feladatokról CSV fájlként.",
         "success": "Feladatok sikeresen exportálva!",
         "successWithLink": "Fájl feltöltve a Google Drive-ra!",
         "error": "Nem sikerült exportálni a feladatokat",
         "authError": "Google Drive hitelesítés sikertelen",
         "uploading": "Feltöltés...",
-        "generating": "Excel fájl generálása...",
+        "generating": "CSV fájl generálása...",
         "processing": "Feldolgozás...",
         "noTasks": "Nincs exportálandó feladat",
         "viewInDrive": "Megtekintés a Drive-ban"
@@ -257,7 +258,7 @@
         "feature5Title": "Többnyelvű támogatás",
         "feature5Description": "Elérhető angol, magyar, francia és német nyelven",
         "feature6Title": "Google Drive exportálás",
-        "feature6Description": "Exportálja feladatait Google Drive-ra Excel táblázatokként",
+        "feature6Description": "Exportálja feladatait Google Drive-ra CSV táblázatokként",
         "footerCreator": "Ez az alkalmazás 100%-ban ingyenes, készítette: Hajzer Béla",
         "footerCopyright": "Copyright © 2026. Minden jog fenntartva.",
         "disableHint": "Kapcsolja ki ezt a képernyőt a beállításokban"

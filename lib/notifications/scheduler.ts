@@ -1,3 +1,4 @@
+import { logError, logInfo } from '@/utils/errorHandler';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
@@ -21,7 +22,7 @@ export async function scheduleTaskReminders(task: Task): Promise<string[]> {
   
   // Don't schedule notifications for overdue tasks
   if (task.dueDate.getTime() <= Date.now()) {
-    console.log('[Scheduler] ⏭️  Task is already overdue, skipping all notifications:', {
+    logInfo('Scheduler', 'Task is already overdue, skipping notifications', {
       dueDate: task.dueDate.toISOString(),
       dueDateLocal: task.dueDate.toLocaleString(),
       now: now.toISOString(),
@@ -30,7 +31,7 @@ export async function scheduleTaskReminders(task: Task): Promise<string[]> {
     return [];
   }
   
-  console.log('[Scheduler] 📋 Scheduling reminders for task:', {
+  logInfo('Scheduler', 'Scheduling reminders for task', {
     id: task.id,
     title: task.title,
     dueDate: task.dueDate.toISOString(),
@@ -45,7 +46,7 @@ export async function scheduleTaskReminders(task: Task): Promise<string[]> {
   for (const minutesBefore of reminderTimes) {
     const triggerDate = new Date(task.dueDate.getTime() - minutesBefore * 60 * 1000);
     
-    console.log(`[Scheduler] ⏰ Checking reminder ${minutesBefore} minutes before:`, {
+    logInfo('Scheduler', `Checking reminder ${minutesBefore} minutes before`, {
       triggerDate: triggerDate.toISOString(),
       triggerDateLocal: triggerDate.toLocaleString(),
       now: now.toISOString(),
@@ -56,7 +57,7 @@ export async function scheduleTaskReminders(task: Task): Promise<string[]> {
 
     // Don't schedule if reminder is in the past
     if (triggerDate.getTime() <= Date.now()) {
-      console.log(`[Scheduler] ⏭️  Skipping reminder for ${minutesBefore} minutes before (in the past)`);
+      logInfo('Scheduler', `Skipping reminder for ${minutesBefore} minutes before (in the past)`);
       continue;
     }
 
@@ -89,17 +90,17 @@ export async function scheduleTaskReminders(task: Task): Promise<string[]> {
       });
 
       notificationIds.push(notificationId);
-      console.log(`[Scheduler] ✅ Scheduled reminder for ${minutesBefore} minutes before:`, {
+      logInfo('Scheduler', `Scheduled reminder for ${minutesBefore} minutes before`, {
         notificationId,
         triggerDate: triggerDate.toISOString(),
         title: getNotificationTitle(minutesBefore)
       });
     } catch (error) {
-      console.error(`[Scheduler] ❌ Failed to schedule reminder for ${minutesBefore} minutes:`, error);
+      logError('Scheduler', error);
     }
   }
 
-  console.log(`[Scheduler] 📊 Summary: Scheduled ${notificationIds.length} out of ${reminderTimes.length} reminders`);
+  logInfo('Scheduler', `Summary: Scheduled ${notificationIds.length} out of ${reminderTimes.length} reminders`);
   return notificationIds;
 }
 
@@ -138,10 +139,10 @@ export async function cancelTaskReminders(taskId: number) {
     
     for (const notif of taskNotifications) {
       await Notifications.cancelScheduledNotificationAsync(notif.identifier);
-      console.log(`Cancelled notification ${notif.identifier} for task ${taskId}`);
+      logInfo('Scheduler', `Cancelled notification ${notif.identifier} for task ${taskId}`);
     }
   } catch (error) {
-    console.error(`Failed to cancel reminders for task ${taskId}:`, error);
+    logError('Scheduler', error);
   }
 }
 
@@ -177,9 +178,9 @@ export async function scheduleDailySummary(hour: number = 9) {
       },
     });
 
-    console.log(`Scheduled daily summary at ${hour}:00`);
+    logInfo('Scheduler', `Scheduled daily summary at ${hour}:00`);
   } catch (error) {
-    console.error('Failed to schedule daily summary:', error);
+    logError('Scheduler', error);
   }
 }
 

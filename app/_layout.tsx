@@ -1,9 +1,10 @@
+import ErrorBoundary from '@/components/ErrorBoundary';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { ScreenshotProvider } from '@/context/ScreenshotContext';
 import { ThemeProvider, useAppTheme } from '@/context/ThemeContext';
 import { initializeDatabase } from '@/lib/database';
-import { configureErrorHandling } from '@/utils/errorHandler';
+import { configureErrorHandling, logError, logInfo } from '@/utils/errorHandler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -32,10 +33,10 @@ function RootLayoutNav() {
     const init = async () => {
       try {
         await initializeDatabase();
-        console.log('✅ Database initialized');
+        logInfo('Database', 'Database initialized');
         setIsInitialized(true);
       } catch (error) {
-        console.error('❌ Database initialization failed:', error);
+        logError('Database', error);
         // Still set initialized to true to allow app to load
         setIsInitialized(true);
       }
@@ -54,9 +55,9 @@ function RootLayoutNav() {
         // Schedule daily summary at 9 AM
         await notificationService.scheduleDailySummary(9);
         
-        console.log('✅ Notifications initialized successfully');
+        logInfo('Notifications', 'Notifications initialized successfully');
       } catch (error) {
-        console.error('❌ Failed to initialize notifications:', error);
+        logError('Notifications', error);
       }
     };
 
@@ -72,7 +73,7 @@ function RootLayoutNav() {
         const { notificationService } = await import('@/lib/notifications');
         
         const subscription = notificationService.setupNotificationListener((taskId) => {
-          console.log('Notification tapped for task:', taskId);
+          logInfo('Notifications', 'Notification tapped for task:', taskId);
           // Navigate to task detail or task list
           router.push('/(app)');
         });
@@ -81,7 +82,7 @@ function RootLayoutNav() {
           subscription.remove();
         };
       } catch (error) {
-        console.error('Failed to setup notification handler:', error);
+        logError('Notifications', error);
       }
     };
 
@@ -120,8 +121,10 @@ function InnerRootLayout() {
 
 export default function RootLayout() {
   return (
+    <ErrorBoundary>
       <ThemeProvider>
-          <InnerRootLayout />
+        <InnerRootLayout />
       </ThemeProvider>
+    </ErrorBoundary>
   );
 }

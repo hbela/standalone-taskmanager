@@ -1,3 +1,4 @@
+import { logError, logInfo } from '@/utils/errorHandler';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
@@ -22,7 +23,7 @@ import * as Notifications from 'expo-notifications';
 export async function registerForPushNotifications(): Promise<string | null> {
   // Push notifications only work on physical devices
   if (!Device.isDevice) {
-    console.log('[Push] Skipping: Push notifications only work on physical devices');
+    logInfo('Push', 'Skipping: Push notifications only work on physical devices');
     return null;
   }
 
@@ -30,14 +31,14 @@ export async function registerForPushNotifications(): Promise<string | null> {
     // Check if we have permission
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     if (existingStatus !== 'granted') {
-      console.log('Push notification permission not granted');
+      logInfo('Push', 'Push notification permission not granted');
       return null;
     }
 
     // Get the project ID from app.json
     const projectId = Constants?.expoConfig?.extra?.eas?.projectId;
     if (!projectId) {
-      console.warn('Project ID not found for push notifications. Add it to app.json under extra.eas.projectId');
+      logInfo('Push', 'Project ID not found for push notifications');
       return null;
     }
 
@@ -47,16 +48,15 @@ export async function registerForPushNotifications(): Promise<string | null> {
     });
     
     const token = tokenData.data;
-    console.log('Expo push token:', token);
+    logInfo('Push', 'Expo push token obtained');
 
     return token;
   } catch (error: any) {
     // Check if it's a Firebase error
     if (error?.message?.includes('FirebaseApp') || error?.message?.includes('Firebase')) {
-      console.log('[Push] ℹ️  Firebase not configured - Push notifications disabled (local notifications still work!)');
-      console.log('[Push] To enable push notifications, follow: https://docs.expo.dev/push-notifications/fcm-credentials/');
+      logInfo('Push', 'Firebase not configured - Push notifications disabled (local notifications still work!)');
     } else {
-      console.warn('[Push] Failed to register for push notifications:', error?.message || error);
+      logError('Push', error);
     }
     return null;
   }
@@ -72,10 +72,10 @@ export async function sendPushTokenToServer(
 ): Promise<boolean> {
   try {
     await apiClient.post('/users/push-token', { token });
-    console.log('Push token sent to server successfully');
+    logInfo('Push', 'Push token sent to server successfully');
     return true;
   } catch (error) {
-    console.error('Failed to send push token to server:', error);
+    logError('Push', error);
     return false;
   }
 }
@@ -88,10 +88,10 @@ export async function removePushTokenFromServer(
 ): Promise<boolean> {
   try {
     await apiClient.delete('/users/push-token');
-    console.log('Push token removed from server');
+    logInfo('Push', 'Push token removed from server');
     return true;
   } catch (error) {
-    console.error('Failed to remove push token from server:', error);
+    logError('Push', error);
     return false;
   }
 }
