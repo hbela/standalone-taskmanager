@@ -3,11 +3,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  PermissionsAndroid,
-  Platform,
-  StyleSheet,
-  View
+    Alert,
+    PermissionsAndroid,
+    Platform,
+    StyleSheet,
+    View
 } from 'react-native';
 import { ActivityIndicator, Text, TouchableRipple, useTheme } from 'react-native-paper';
 
@@ -290,6 +290,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
+  },
+  disabledContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    backgroundColor: '#F2F2F7',
+    borderColor: '#C7C7CC',
   },
   contentRow: {
       flexDirection: 'row',

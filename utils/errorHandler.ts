@@ -96,8 +96,6 @@ export function configureErrorHandling(): void {
     console.debug = () => {};
     
     // Disable yellow box warnings
-    if (typeof console.disableYellowBox !== 'undefined') {
-      console.disableYellowBox = true;
-    }
+    // console.disableYellowBox is deprecated and not available in newer types
   }
 }
