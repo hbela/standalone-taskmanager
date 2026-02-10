@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task List Screen - User Manual</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        h3 { color: #16a085; }
+        ul { list-style-type: disc; margin-left: 20px; }
+        code { background-color: #f8f9fa; padding: 2px 5px; border-radius: 3px; font-family: Consolas, monospace; }
+        .nav { margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 5px; }
+        .nav a { margin-right: 15px; text-decoration: none; color: #3498db; }
+        .nav a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="create-task.html">Create Task</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="settings.html">Settings</a>
+    </div>
+
+    <h1>Task List Screen</h1>
+
+    <h2>Overview</h2>
+    <p>The <strong>Task List Screen</strong> is the main hub of the application. It displays all your tasks, categorized by their status, and provides quick access to search and management tools.</p>
+
+    <h2>Accessing the Screen</h2>
+    <ul>
+        <li>Tap the <strong>"Tasks" (List)</strong> icon on the left side of the bottom navigation bar.</li>
+        <li>This is usually the default screen when you open the app.</li>
+    </ul>
+
+    <h2>Features</h2>
+
+    <h3>1. Filtering Tasks</h3>
+    <p>Use the chips (buttons) at the top of the list to filter tasks:</p>
+    <ul>
+        <li><strong>Pending</strong>: Shows tasks that are active and not yet overdue.</li>
+        <li><strong>Overdue</strong>: Critical tasks that have passed their due date.</li>
+        <li><strong>Completed</strong>: A history of all your finished tasks.</li>
+        <li><strong>All</strong>: Displays every task, categorized and sorted by urgency.</li>
+    </ul>
+
+    <h3>2. Search</h3>
+    <ul>
+        <li>Tap the <strong>Magnifying Glass</strong> icon in the top right header to open the search bar.</li>
+        <li>Type any part of a task's title or description to instantly filter the list.</li>
+    </ul>
+
+    <h3>3. Task Cards</h3>
+    <p>Each task is displayed as a card containing:</p>
+    <ul>
+        <li><strong>Status Icon</strong>: A checkbox icon indicates if the task is complete (green) or pending (square).</li>
+        <li><strong>Title & Description</strong>: The main details of the task. Completed tasks appear crossed out.</li>
+        <li><strong>Priority Label</strong>: A colored tag showing the urgency (Low, Medium, High, Urgent).</li>
+        <li><strong>Dates</strong>: display underneath the description.
+            <ul>
+                <li><strong>Creation Date</strong>: When the task was added.</li>
+                <li><strong>Due Date</strong>: The deadline, if set. Overdue dates appear in red with an alert icon.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>Actions</h2>
+
+    <h3>Viewing Task Details</h3>
+    <ul>
+        <li><strong>Tap any task card</strong> to open its detailed view, where you can edit, complete, or delete it.</li>
+    </ul>
+
+    <h3>Exporting Tasks</h3>
+    <p><em>(Only available in the "Completed" filter)</em></p>
+    <ul>
+        <li>Tap the <strong>Cloud Upload</strong> icon in the top right header.</li>
+        <li>This generates an Excel file of your completed tasks and uploads it to Google Drive.</li>
+        <li>You will receive a link to view the file upon success.</li>
+    </ul>
+
+    <h3>Screenshots</h3>
+    <ul>
+        <li>Tap the <strong>Camera Icon</strong> in the top header to save an image of your current task list.</li>
+    </ul>
+</body>
+</html>

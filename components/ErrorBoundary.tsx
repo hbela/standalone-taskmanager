@@ -5,6 +5,7 @@
  */
 
 import { isDevelopment, logError } from '@/utils/errorHandler';
+import * as Sentry from '@sentry/react-native';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -65,7 +66,7 @@ class ErrorBoundary extends Component<Props, State> {
     // - Sentry
     // - Firebase Crashlytics
     // - LogRocket
-    // Example: Sentry.captureException(error);
+    Sentry.captureException(error);
   }
 
   handleRetry = (): void => {

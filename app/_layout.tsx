@@ -5,10 +5,34 @@ import { ScreenshotProvider } from '@/context/ScreenshotContext';
 import { ThemeProvider, useAppTheme } from '@/context/ThemeContext';
 import { initializeDatabase } from '@/lib/database';
 import { configureErrorHandling, logError, logInfo } from '@/utils/errorHandler';
+import * as Sentry from '@sentry/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { PaperProvider } from 'react-native-paper';
+
+Sentry.init({
+  dsn: 'https://a9bcdf1ef87d8fbcfb1300ac085b5f34@o4507850050109440.ingest.de.sentry.io/4510862781710416',
+
+  // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+  // We recommend adjusting this value in production.
+  tracesSampleRate: 1.0,
+
+  // Adds more context data to events (IP address, cookies, user, etc.)
+  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+  sendDefaultPii: true,
+
+  // Enable Logs
+  enableLogs: true,
+
+  // Configure Session Replay
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1,
+  integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
 
 // Configure error handling (disables console logs in production)
 configureErrorHandling();
@@ -119,7 +143,7 @@ function InnerRootLayout() {
     );
 }
 
-export default function RootLayout() {
+export default Sentry.wrap(function RootLayout() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
@@ -127,4 +151,4 @@ export default function RootLayout() {
       </ThemeProvider>
     </ErrorBoundary>
   );
-}
+});

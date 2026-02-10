@@ -83,6 +83,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     'expo-build-properties',
+    [
+      '@sentry/react-native/expo',
+      {
+        url: 'https://sentry.io/',
+        project: 'taskmanager',
+        organization: 'elyscom',
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
