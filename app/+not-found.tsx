@@ -8,7 +8,7 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ title: 'Oops!' }} />
       <View style={styles.container}>
         <Ionicons name="alert-circle-outline" size={100} color="#8E8E93" />
-        <Text style={styles.title}>This screen doesn't exist.</Text>
+        <Text style={styles.title}>This screen doesn&apos;t exist.</Text>
         <Link href="/(app)" style={styles.link}>
           <Text style={styles.linkText}>Go to home screen!</Text>
         </Link>
