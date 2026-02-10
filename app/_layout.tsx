@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import { PaperProvider } from 'react-native-paper';
 
 Sentry.init({
-  dsn: 'https://a9bcdf1ef87d8fbcfb1300ac085b5f34@o4507850050109440.ingest.de.sentry.io/4510862781710416',
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
 
   // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
   // We recommend adjusting this value in production.

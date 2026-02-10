@@ -6,6 +6,7 @@ import { DEVICE_DIMENSIONS, DeviceType, useScreenshot } from '@/context/Screensh
 import { useAppTheme } from '@/context/ThemeContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Sentry from '@sentry/react-native';
 import { useRouter } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -197,6 +198,16 @@ export default function SettingsScreen() {
                         onPress={() => router.push('/welcome')}
                     >
                         Preview Welcome Screen
+                    </Button>
+                    <Button 
+                        mode="contained" 
+                        buttonColor="#EF4444"
+                        icon="alert" 
+                        onPress={() => {
+                            Sentry.captureException(new Error("Test error from Task Manager Settings"));
+                        }}
+                    >
+                        Trigger Sentry Error
                     </Button>
                 </Card.Content>
             </Card>
