@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TaskCard renders completed state correctly 1`] = `null`;
+
+exports[`TaskCard renders correctly 1`] = `null`;
