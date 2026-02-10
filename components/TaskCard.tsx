@@ -1,5 +1,4 @@
 import { Spacing } from '@/constants/theme';
-import { useTranslation } from '@/hooks/useTranslation';
 import { isTaskOverdue } from '@/lib/taskUtils';
 import { Task } from '@/types/task';
 import { formatDateTime } from '@/utils/dateFormatter';
@@ -32,7 +31,7 @@ export default function TaskCard({
   task,
   onPress
 }: TaskCardProps) {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   const theme = useTheme();
   const isOverdue = isTaskOverdue(task);
   const priorityColor = getPriorityColor(task.priority);

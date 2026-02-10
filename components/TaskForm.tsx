@@ -132,11 +132,11 @@ export default function TaskForm({
   const [title, setTitle] = useState(initialValues?.title || '');
   const [description, setDescription] = useState(initialValues?.description || '');
   const [priority, setPriority] = useState<TaskPriority>(initialValues?.priority || 'medium');
-  const [completed, setCompleted] = useState(initialValues?.completed || false);
+  const [completed] = useState(initialValues?.completed || false);
   const [dueDate, setDueDate] = useState<Date | undefined>(
     initialValues?.dueDate ? new Date(initialValues.dueDate) : undefined
   );
-  const [showDatePicker, setShowDatePicker] = useState(false); // Native picker fallback / Time picker
+  // const [showDatePicker, setShowDatePicker] = useState(false); // Native picker fallback / Time picker
   const [showCalendarModal, setShowCalendarModal] = useState(false); // Custom calendar modal
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [enableReminders, setEnableReminders] = useState(!!initialValues?.dueDate);

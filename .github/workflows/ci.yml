@@ -8,7 +8,7 @@ on:
 
 jobs:
   validate:
-    name: Lint & Type Check
+    name: Validate Code
     runs-on: ubuntu-latest
 
     steps:
@@ -29,3 +29,6 @@ jobs:
 
       - name: Type Check
         run: npx tsc --noEmit
+
+      - name: Run Tests
+        run: npm test

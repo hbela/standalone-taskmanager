@@ -27,11 +27,11 @@ export default function OpenMapButton({
       try {
         // Try geo: scheme first (works better on Android)
         await Linking.openURL(geoUrl);
-      } catch (geoError) {
+      } catch (_geoError) {
         // Fallback to HTTPS URL
         try {
           await Linking.openURL(httpsUrl);
-        } catch (httpsError) {
+        } catch (_httpsError) {
           Alert.alert('Error', 'Cannot open maps on this device.');
         }
       }
