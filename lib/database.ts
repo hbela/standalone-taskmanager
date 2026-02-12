@@ -99,7 +99,7 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
         logInfo('Database', 'CompletedAt column migration note:', error.message);
       }
     }
-    
+
     // Create indexes for better query performance
     await db.execAsync(`
       CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);

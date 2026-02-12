@@ -671,6 +671,15 @@ async function performSeeding(tasks: CreateTaskInput[], languageName: string) {
   const db = await getDatabase();
   
   try {
+    // Check if the database already has tasks
+    const result = await db.getAllAsync('SELECT COUNT(*) as count FROM tasks');
+    const count = (result[0] as any)?.count || 0;
+    
+    if (count > 0) {
+      console.log(`Database already has ${count} tasks. Skipping seeding.`);
+      return;
+    }
+
     for (const task of tasks) {
       await db.runAsync(
         `INSERT INTO tasks (

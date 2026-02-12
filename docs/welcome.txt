@@ -1,0 +1,47 @@
+Welcome Screen Overview
+=======================
+
+This screen is the first thing the user sees when launching the application for the first time, provided they haven't disabled it in the settings or if they explicitly request to see it again.
+
+Visual Elements
+---------------
+
+### Header Section
+- **App Icon**: Large central logo of the application.
+- **Title**: "Welcome to Task Manager" - Displayed in a large, bold font.
+- **Subtitle**: "Your personal productivity companion" - Displayed below the title in a smaller font.
+
+### Features List
+The screen showcases the main capabilities of the application using cards, each containing an icon and text.
+
+1.  **Organize Your Tasks**
+    *   **Icon**: Clipboard with checkmark
+    *   **Description**: Create, edit, and manage tasks with priorities, due dates, and reminders.
+
+2.  **Contact Integration**
+    *   **Icon**: User profile
+    *   **Description**: Link tasks to contacts and access their information directly.
+
+3.  **Voice Input**
+    *   **Icon**: Microphone
+    *   **Description**: Use speech-to-text to quickly create tasks hands-free.
+
+4.  **Calendar View**
+    *   **Icon**: Calendar
+    *   **Description**: Visualize your tasks in a beautiful calendar interface.
+
+5.  **Multi-Language Support**
+    *   **Icon**: Translate symbol
+    *   **Description**: Available in English, Hungarian, French, and German.
+
+6.  **Google Drive Export**
+    *   **Icon**: Google Drive logo
+    *   **Description**: Export your tasks to Google Drive as CSV spreadsheets.
+
+### Footer Section
+- **Hint**: "Disable this screen in the settings" - Text prompting users they can toggle this view later.
+- **Copyright**: "Copyright © 2026. All rights reserved."
+
+### Interaction
+- **"Get Started" Button**: A large, full-width button at the bottom. Tapping this dismisses the welcome screen and navigates the user to the main application.
+- **Screenshot Button**: A camera/capture icon located in the top-right corner to take a screenshot of the view.

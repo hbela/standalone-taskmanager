@@ -1,3 +1,22 @@
+Welcome to Task Manager, your personal productivity companion. The app is designed to help you organize your tasks and expenses efficiently with an intuitive interface and powerful features.Key features:
+-This mobile app is standalone and does not require an internet connection to function. 
+-It uses the device's local database to store all task data which means you can use it offline and your data is safe.
+Tasks can be pending, overdue or completed.
+Search for tasks using the search bar.
+Use the bottom navigation bar to switch between screens.
+Use the create task screen to create a new task.
+Use the settings screen to change the app's language and other settings such as light/dark mode.
+Use the task list screen to view and manage your tasks.
+Use the task details screen to view and manage a specific task.
+Use the task edit screen to edit a specific task.
+Use the calendar screen to view and manage your tasks.
+Use the dashboard screen to view a summary of your tasks and monthly expenses in a beautiful chart.
+Completed tasks can be exported to Google Drive as a CSV file.
+It is multilingual and supports English, Hungarian, French, and German.
+-It can use the device's contacts to link tasks to contacts. 
+-It can uses a calendar view to see due dates and overdue tasks. 
+-User fields can be enterred manually or using voice input from the device's microphone.
+
 # User Manual
 
 ## Table of Contents
@@ -15,21 +34,25 @@
 The **Create Task Screen** allows you to add new tasks to your list, ensuring you never miss an important deadline or activity.
 
 ### Accessing the Screen
-- Tap the **"+" (Plus)** icon located in the center of the bottom navigation bar from any main screen.
+- Tap the ** "+" Add new task** button located in the center of the bottom navigation bar from any main screen.
 
 ### Features & Fields
 
-#### 1. Task Details
+#### 1. Task Creation
 - **Title**: Enter a concise name for your task. This is a required field.
     - *Tip*: Use the **microphone icon** next to the input to dictate the title using your voice.
-- **Description**: Add detailed information about the task.
+- **Description** optional: Add detailed information about the task.
     - *Voice Input*: Use the microphone button below the field to dictate long descriptions.
-- **Comment**: Add any initial comments or notes relevant to the task.
+- **Comment** optional: Add any initial comments or notes relevant to the task.
+    - *Voice Input*: Use the microphone button below the field to dictate long descriptions.
 
-#### 2. Financials
+    Click and hold the microphone icon to start dictating. Release the microphone icon to stop dictating.You can combine voice input with typing.Use which ever method you prefer.
+
+#### 2. Financials, optional
 - **Bill Amount**: Toggle the switch if this task involves a payment or expense.
     - Enter the amount in the field provided.
-    - Tap the currency button (showing a symbol like $, €, Ft) to change the billing currency (USD, EUR, GBP, HUF).
+    - The currency is set to your default currency.
+    -  the currency dropdown button (showing a symbol like $, €, Ft) to change the billing currency (USD, EUR, GBP, HUF).
 
 #### 3. Priority
 - Select a priority level to categorize the urgency of the task. The selected priority is highlighted:
@@ -38,20 +61,21 @@ The **Create Task Screen** allows you to add new tasks to your list, ensuring yo
     - **High** (Orange)
     - **Urgent** (Red)
 
-#### 4. Contacts
+#### 4. Contacts, optional
 - **Link Contact**: Tap the **Search Button** to associate a person from your device's contacts with this task.
+Enter the name of the contact you want to link to the task. The app will search your device's contacts and display matching results. Select the desired contact to link them to the task.If the contact has an address, it will be displayed below the contact name. You can tap the address to open it in Google Maps.
 - **Remove Contact**: If a contact is selected, tap the **Remove** button to unlink them.
 
-#### 5. Scheduling
+#### 5. Scheduling, optional
 - **Due Date**: Tap the calendar input to open the calendar and set a deadline.
 - **Time**: Once a date is picked, a time field appears. Tap the clock input to set a specific time.
 - **Reminders**: Enable the "Reminders" switch to set notifications (requires a Due Date).
-    - Select one or more options (e.g., "at time of event", "10 minutes before", "1 hour before") to receive alerts.
+    - Select one or more options (e.g. "10 minutes before", "1 hour before", "1 day before") to receive alerts.
 
 ### Actions
 - **Save**: Tap the solid button at the bottom (e.g., "Create Task") to save the task to your list.
 - **Create & Mark Complete**: Tap the outlined button to create the task and immediately mark it as finished.
-- **Screenshot**: Tap the **Camera Icon** in the top right corner of the header to capture and save an image of the current screen.
+
 
 ---
 

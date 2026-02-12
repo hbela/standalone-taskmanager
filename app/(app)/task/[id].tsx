@@ -1,6 +1,7 @@
 import ContactDisplay from '@/components/ContactDisplay';
 import ErrorMessage from '@/components/ErrorMessage';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import { Spacing } from '@/constants/theme';
 import { useDeleteTask, useTask, useToggleTaskComplete } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -89,6 +90,7 @@ export default function TaskDetailScreen() {
       <Appbar.Header elevated>
         <Appbar.BackAction onPress={() => router.push('/(app)')} />
         <Appbar.Content title={t('tasks.taskDetails')} />
+        <ScreenshotCaptureButton screenName="task_detail" />
         <Appbar.Action icon="pencil" onPress={() => router.push(`/(app)/task/edit/${id}`)} />
       </Appbar.Header>
 

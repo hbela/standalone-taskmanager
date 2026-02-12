@@ -1,3 +1,4 @@
+import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import { useTranslation } from '@/hooks/useTranslation';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,6 +26,9 @@ export default function WelcomeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={styles.screenshotButtonContainer}>
+        <ScreenshotCaptureButton screenName="welcome" />
+      </View>
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -245,5 +249,11 @@ const styles = StyleSheet.create({
   },
   dismissButtonContent: {
     height: 48,
+  },
+  screenshotButtonContainer: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 10,
   },
 });

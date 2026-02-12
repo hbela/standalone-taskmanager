@@ -58,6 +58,16 @@ function RootLayoutNav() {
       try {
         await initializeDatabase();
         logInfo('Database', 'Database initialized');
+        
+        // Seed database if requested
+        try {
+          const { seedDatabaseEn } = await import('@/lib/seedTasks');
+          await seedDatabaseEn();
+          logInfo('Database', 'Seeding completed');
+        } catch (seedError) {
+          logError('Database', 'Seeding failed: ' + seedError);
+        }
+
         setIsInitialized(true);
       } catch (error) {
         logError('Database', error);
