@@ -1,5 +1,6 @@
 import ErrorMessage from '@/components/ErrorMessage';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import TaskForm from '@/components/TaskForm';
 import { useTask, useUpdateTask } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -83,6 +84,7 @@ export default function EditTaskScreen() {
       <Appbar.Header elevated>
           <Appbar.BackAction onPress={() => router.back()} />
           <Appbar.Content title={t('tasks.editTask')} />
+          <ScreenshotCaptureButton screenName="edit_task" />
       </Appbar.Header>
       
       <TaskForm
