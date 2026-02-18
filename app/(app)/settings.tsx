@@ -214,6 +214,21 @@ export default function SettingsScreen() {
         </List.Section>
         
         <List.Section>
+            <List.Subheader>{t('support.sectionTitle')}</List.Subheader>
+            <Card style={styles.card} mode="elevated">
+                <Card.Content style={{ padding: 0 }}>
+                    <List.Item
+                        title={t('support.settingsButton')}
+                        description={t('support.settingsDescription')}
+                        left={props => <List.Icon {...props} icon="coffee" />}
+                        right={props => <List.Icon {...props} icon="chevron-right" />}
+                        onPress={() => router.push('/support')}
+                    />
+                </Card.Content>
+            </Card>
+        </List.Section>
+
+        <List.Section>
             <List.Subheader>{t('settings.about')}</List.Subheader>
             <Card style={styles.card}>
                 <Card.Content>

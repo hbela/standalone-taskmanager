@@ -100,6 +100,17 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
       }
     }
 
+    // Create purchases table for in-app purchase records
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS purchases (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        productId TEXT NOT NULL UNIQUE,
+        transactionId TEXT NOT NULL,
+        purchaseDate TEXT,
+        createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     // Create indexes for better query performance
     await db.execAsync(`
       CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);

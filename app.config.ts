@@ -82,6 +82,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         iosUrlScheme: 'com.googleusercontent.apps.13205155505-h8notg3rkd4bgr1151s4re3fn4s6u6f1',
       },
     ],
+    'react-native-iap',
     'expo-build-properties',
     [
       '@sentry/react-native/expo',

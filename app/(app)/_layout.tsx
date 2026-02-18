@@ -16,6 +16,7 @@ export default function AppLayout() {
     create: t('tasks.create'),
     dashboard: t('dashboard.title'),
     settings: t('settings.title'),
+    support: t('support.title'),
   });
 
   // Update tab titles when language changes
@@ -26,6 +27,7 @@ export default function AppLayout() {
       create: t('tasks.create'),
       dashboard: t('dashboard.title'),
       settings: t('settings.title'),
+      support: t('support.title'),
     });
   }, [_key, t]);
 
@@ -144,6 +146,16 @@ export default function AppLayout() {
       <Tabs.Screen name="create" options={createOptions} />
       <Tabs.Screen name="dashboard" options={dashboardOptions} />
       <Tabs.Screen name="settings" options={settingsOptions} />
+      <Tabs.Screen
+        name="support"
+        options={{
+          href: null,
+          title: tabTitles.support,
+          tabBarIcon: ({ color, size }: any) => (
+            <Ionicons name="heart" size={size} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen name="notification-qa" options={{ href: null }} />
       <Tabs.Screen name="contacts" options={{ href: null }} />
       <Tabs.Screen name="task" options={{ href: null, title: '' }} />
