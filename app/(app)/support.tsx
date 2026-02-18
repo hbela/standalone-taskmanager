@@ -1,3 +1,4 @@
+import HeaderScreenshotButton from '@/components/ScreenshotCaptureButton';
 import { IAP_AVAILABLE, IAP_PRODUCTS_FALLBACK, type IAPProductId } from '@/constants/iap';
 import { Spacing } from '@/constants/theme';
 import { usePurchase } from '@/hooks/usePurchase';
@@ -97,6 +98,7 @@ export default function SupportScreen() {
       <Appbar.Header elevated>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title={t('support.title')} />
+        <HeaderScreenshotButton screenName="support" />
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.content}>

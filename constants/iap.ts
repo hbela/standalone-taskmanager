@@ -5,6 +5,16 @@
 
 import { Platform } from 'react-native';
 
+/** Check if the native IAP module is actually available (not in Expo Go) */
+function isNativeIAPModuleAvailable(): boolean {
+  try {
+    const { getProducts } = require('react-native-iap');
+    return typeof getProducts === 'function';
+  } catch {
+    return false;
+  }
+}
+
 export const IAP_PRODUCT_IDS = [
   'coffee_small',
   'coffee_medium',
@@ -32,5 +42,6 @@ export const IAP_PRODUCTS_FALLBACK: Record<
   },
 };
 
-/** Whether IAP is available on this platform */
-export const IAP_AVAILABLE = Platform.OS === 'android' || Platform.OS === 'ios';
+/** Whether IAP is available on this platform (and native module is linked) */
+export const IAP_AVAILABLE =
+  (Platform.OS === 'android' || Platform.OS === 'ios') && isNativeIAPModuleAvailable();
