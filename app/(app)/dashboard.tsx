@@ -5,6 +5,9 @@ import { Spacing } from '@/constants/theme';
 import { useDashboardStats } from '@/hooks/useDashboardQuery';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCurrencyForRegion } from '@/utils/localization';
+import { useMoneyFormatter } from '@/hooks/useMoneyFormatter';
+import { formatMoney } from '@/utils/moneyFormatter';
+import { CURRENCY_OPTIONS } from '@/constants/currencies';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
@@ -30,13 +33,6 @@ import {
     useTheme
 } from 'react-native-paper';
 
-// Currency options with symbols
-const CURRENCY_OPTIONS = [
-  { code: 'USD', symbol: '$', name: 'US Dollar' },
-  { code: 'EUR', symbol: '€', name: 'Euro' },
-  { code: 'GBP', symbol: '£', name: 'British Pound' },
-  { code: 'HUF', symbol: 'Ft', name: 'Hungarian Forint' },
-];
 
 interface TaskStats {
   total: number;
@@ -51,7 +47,7 @@ interface TaskStats {
 
 export default function DashboardScreen() {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const screenWidth = Dimensions.get('window').width;
   
   // Use React Query hook
@@ -59,6 +55,7 @@ export default function DashboardScreen() {
 
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
   const [currencyMenuVisible, setCurrencyMenuVisible] = useState(false);
+  const fmt = useMoneyFormatter(selectedCurrency ?? 'USD');
 
   // Set default currency based on locale when data is loaded
   React.useEffect(() => {
@@ -120,10 +117,10 @@ export default function DashboardScreen() {
 
   const categoryData = (stats?.billingByCategory || [])
     .filter((item: any) => item.currency === selectedCurrency)
-    .map((item: any, index: number) => ({ 
-        value: item.amount, 
+    .map((item: any, index: number) => ({
+        value: item.amount,
         color: pieColors[index % pieColors.length],
-        text: `${item.amount.toFixed(0)}`,
+        text: formatMoney(item.amount, locale, selectedCurrency ?? 'USD'),
         category: item.category
     }));
 
@@ -257,7 +254,7 @@ export default function DashboardScreen() {
                      <Card.Content>
                          <View style={{ alignItems: 'center', marginBottom: Spacing.lg }}>
                              <Text variant="displaySmall" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
-                                {currentTotalBilling.toFixed(2)} {selectedCurrency}
+                                {fmt(currentTotalBilling)}
                              </Text>
                              <Text variant="bodySmall">{t('dashboard.totalBilling')}</Text>
                          </View>
@@ -309,7 +306,7 @@ export default function DashboardScreen() {
                                 <View key={index} style={styles.legendItem}>
                                     <View style={[styles.legendColor, { backgroundColor: item.color }]} />
                                     <Text variant="bodySmall" numberOfLines={1} style={{ maxWidth: 120 }}>
-                                        {item.category}: {item.value.toFixed(0)}
+                                        {item.category}: {fmt(item.value)}
                                     </Text>
                                 </View>
                             ))}

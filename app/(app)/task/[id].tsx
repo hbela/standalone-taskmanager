@@ -5,6 +5,7 @@ import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import { Spacing } from '@/constants/theme';
 import { useDeleteTask, useTask, useToggleTaskComplete } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useFormattedAmount } from '@/hooks/useMoneyFormatter';
 import { getStatusColor, getStatusLabel, getTaskStatus } from '@/lib/taskUtils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
@@ -24,7 +25,9 @@ export default function TaskDetailScreen() {
   
   // Fetch task with TanStack Query
   const { data: task, isLoading, error, refetch } = useTask(Number(id));
-  
+
+  const formattedBill = useFormattedAmount(task?.bill ?? null, task?.billCurrency ?? 'USD');
+
   // Mutations
   const deleteTaskMutation = useDeleteTask();
   const toggleCompleteMutation = useToggleTaskComplete();
@@ -187,7 +190,7 @@ export default function TaskDetailScreen() {
              {task.bill && (
                <List.Item
                    title={t('form.bill')}
-                   description={`${task.bill.toFixed(2)} ${task.billCurrency || 'USD'}`}
+                   description={formattedBill}
                    left={props => <List.Icon {...props} icon="currency-usd" color={theme.colors.primary} />}
                    titleStyle={[styles.listItemTitle, { color: theme.colors.primary }]}
                    descriptionStyle={[styles.listItemDescription, { color: theme.colors.onSurface, fontWeight: '600' }]}

@@ -1,9 +1,11 @@
+import { CURRENCY_OPTIONS } from '@/constants/currencies';
 import { Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DEFAULT_REMINDER_OPTIONS, DEFAULT_REMINDERS, getReminderLabel } from '@/lib/notifications';
 import { CreateTaskInput, TaskPriority, UpdateTaskInput } from '@/types/task';
 import { formatDate, formatTime } from '@/utils/dateFormatter';
 import { getCurrencyForRegion } from '@/utils/localization';
+import AmountInput from './AmountInput';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Dimensions,
@@ -91,13 +93,6 @@ LocaleConfig.locales['de'] = {
 
 LocaleConfig.defaultLocale = 'en';
 
-// Currency options with symbols and decimal separators
-const CURRENCY_OPTIONS = [
-  { code: 'USD', symbol: '$', name: 'US Dollar', decimalSeparator: '.' },
-  { code: 'EUR', symbol: '€', name: 'Euro', decimalSeparator: ',' },
-  { code: 'GBP', symbol: '£', name: 'British Pound', decimalSeparator: '.' },
-  { code: 'HUF', symbol: 'Ft', name: 'Hungarian Forint', decimalSeparator: ',' },
-];
 
 interface TaskFormProps {
   initialValues?: {
@@ -147,7 +142,7 @@ export default function TaskForm({
     initialValues?.contactId || null
   );
   const [enableBill, setEnableBill] = useState(!!initialValues?.bill);
-  const [billAmount, setBillAmount] = useState(initialValues?.bill ? initialValues.bill.toString() : '');
+  const [billAmount, setBillAmount] = useState<number | null>(initialValues?.bill ?? null);
   const [billCurrency, setBillCurrency] = useState<string>(initialValues?.billCurrency || getCurrencyForRegion());
   const [comment, setComment] = useState(initialValues?.comment || '');
   const [currencyMenuVisible, setCurrencyMenuVisible] = useState(false);
@@ -186,16 +181,8 @@ export default function TaskForm({
       newErrors.title = t('form.errors.titleTooLong');
     }
 
-    // Validate bill amount if enabled
-    if (enableBill && billAmount.trim()) {
-      // Replace comma with dot for parsing (EU format)
-      const normalizedAmount = billAmount.replace(',', '.');
-      const billValue = parseFloat(normalizedAmount);
-      if (isNaN(billValue)) {
-        newErrors.bill = t('form.errors.billInvalid');
-      } else if (billValue < 0) {
-        newErrors.bill = t('form.errors.billNegative');
-      }
+    if (enableBill && billAmount !== null && billAmount < 0) {
+      newErrors.bill = t('form.errors.billNegative');
     }
 
     setErrors(newErrors);
@@ -205,12 +192,7 @@ export default function TaskForm({
   const handleSubmit = async (markAsCompleted: boolean = false) => {
     if (!validate()) return;
 
-    // Parse bill amount - replace comma with dot for parsing
-    let parsedBill: number | undefined;
-    if (enableBill && billAmount.trim()) {
-      const normalizedAmount = billAmount.replace(',', '.');
-      parsedBill = parseFloat(normalizedAmount);
-    }
+    const parsedBill = (enableBill && billAmount !== null) ? billAmount : undefined;
 
     const currentDueDate = dueDate ? dueDate.toISOString() : undefined;
 
@@ -241,7 +223,7 @@ export default function TaskForm({
       setReminderTimes(DEFAULT_REMINDERS);
       setSelectedContactId(null);
       setEnableBill(false);
-      setBillAmount('');
+      setBillAmount(null);
       setBillCurrency(getCurrencyForRegion());
       setErrors({});
     } catch (error) {
@@ -431,19 +413,16 @@ export default function TaskForm({
           {enableBill && (
             <View>
               <View style={styles.billInputRow}>
-                <TextInput
-                  mode="outlined"
+                <AmountInput
                   label={t('form.bill')}
-                  placeholder={t('form.placeholders.bill')}
                   value={billAmount}
-                  onChangeText={(text) => {
-                    setBillAmount(text);
+                  onChangeValue={(v) => {
+                    setBillAmount(v);
                     if (errors.bill) setErrors({ ...errors, bill: undefined });
                   }}
-                  keyboardType="decimal-pad"
-                  disabled={loading}
+                  currency={billCurrency}
                   error={!!errors.bill}
-                  style={{ flex: 1 }}
+                  disabled={loading}
                 />
                 
                 <Button
