@@ -46,7 +46,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
-        image: './assets/images/icons/splash-large.png',
+        image: './assets/images/icons/icon.png',
+        imageWidth: 200,
         resizeMode: 'contain',
         backgroundColor: '#1C1C1E',
         dark: {
@@ -70,6 +71,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         speechRecognitionPermission: 'Allow $(PRODUCT_NAME) to use speech recognition for voice dictation.',
       },
     ],
+    "expo-web-browser",
     'expo-localization',
     'expo-sqlite',
     'expo-font',
