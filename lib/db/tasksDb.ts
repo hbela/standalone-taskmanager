@@ -3,7 +3,22 @@
  * Provides CRUD operations for tasks using SQLite
  */
 
-import { CreateTaskInput, Task, UpdateTaskInput } from '@/types/task';
+import {
+  CreateTaskInput,
+  RecurrenceRuleInput,
+  RecurrenceScope,
+  RecurrenceSeries,
+  Task,
+  UpdateTaskInput
+} from '@/types/task';
+import {
+  calculateRecurrenceDates,
+  createOccurrenceInput,
+  getDueTime,
+  normalizeInterval,
+  recurrenceSeriesToRule,
+  RECURRENCE_GENERATION_DAYS
+} from '../recurrenceUtils';
 import { getDatabase } from '../database';
 
 /**
@@ -27,6 +42,43 @@ function rowToTask(row: any): Task {
     billCurrency: row.billCurrency,
     comment: row.comment,
     completedAt: row.completedAt,
+    recurrenceSeriesId: row.recurrenceSeriesId,
+    recurrenceOccurrenceDate: row.recurrenceOccurrenceDate,
+    recurrenceException: Boolean(row.recurrenceException),
+    generatedFromRuleVersion: row.generatedFromRuleVersion,
+    recurrenceFrequency: row.recurrenceFrequency || null,
+    recurrenceInterval: row.recurrenceInterval || null,
+    recurrenceWeekdays: row.recurrenceWeekdays ? JSON.parse(row.recurrenceWeekdays) : null,
+    recurrenceEndDate: row.recurrenceEndDate || null,
+    recurrenceOccurrenceCount: row.recurrenceOccurrenceCount || null,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+function rowToSeries(row: any): RecurrenceSeries {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    priority: row.priority || 'medium',
+    dueTime: row.dueTime,
+    reminderTimes: row.reminderTimes ? JSON.parse(row.reminderTimes) : null,
+    contactId: row.contactId,
+    taskAddress: row.taskAddress,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    bill: row.bill,
+    billCurrency: row.billCurrency,
+    comment: row.comment,
+    frequency: row.frequency,
+    interval: row.interval || 1,
+    weekdays: row.weekdays ? JSON.parse(row.weekdays) : null,
+    startDate: row.startDate,
+    endDate: row.endDate,
+    occurrenceCount: row.occurrenceCount,
+    active: Boolean(row.active),
+    ruleVersion: row.ruleVersion || 1,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -41,7 +93,16 @@ export async function getAllTasks(params?: {
 }): Promise<Task[]> {
   const db = await getDatabase();
   
-  let query = 'SELECT * FROM tasks';
+  let query = `
+    SELECT tasks.*,
+      recurrence_series.frequency as recurrenceFrequency,
+      recurrence_series.interval as recurrenceInterval,
+      recurrence_series.weekdays as recurrenceWeekdays,
+      recurrence_series.endDate as recurrenceEndDate,
+      recurrence_series.occurrenceCount as recurrenceOccurrenceCount
+    FROM tasks
+    LEFT JOIN recurrence_series ON tasks.recurrenceSeriesId = recurrence_series.id
+  `;
   const conditions: string[] = [];
   const values: any[] = [];
   
@@ -59,7 +120,7 @@ export async function getAllTasks(params?: {
     query += ' WHERE ' + conditions.join(' AND ');
   }
   
-  query += ' ORDER BY createdAt DESC';
+  query += ' ORDER BY tasks.createdAt DESC';
   
   const rows = await db.getAllAsync(query, values);
   return rows.map(rowToTask);
@@ -70,7 +131,17 @@ export async function getAllTasks(params?: {
  */
 export async function getTaskById(id: number): Promise<Task | null> {
   const db = await getDatabase();
-  const row = await db.getFirstAsync('SELECT * FROM tasks WHERE id = ?', [id]);
+  const row = await db.getFirstAsync(`
+    SELECT tasks.*,
+      recurrence_series.frequency as recurrenceFrequency,
+      recurrence_series.interval as recurrenceInterval,
+      recurrence_series.weekdays as recurrenceWeekdays,
+      recurrence_series.endDate as recurrenceEndDate,
+      recurrence_series.occurrenceCount as recurrenceOccurrenceCount
+    FROM tasks
+    LEFT JOIN recurrence_series ON tasks.recurrenceSeriesId = recurrence_series.id
+    WHERE tasks.id = ?
+  `, [id]);
   
   if (!row) {
     return null;
@@ -82,7 +153,7 @@ export async function getTaskById(id: number): Promise<Task | null> {
 /**
  * Create a new task
  */
-export async function createTask(data: CreateTaskInput): Promise<Task> {
+async function insertTask(data: CreateTaskInput): Promise<Task> {
   const db = await getDatabase();
   
   const reminderTimesJson = data.reminderTimes 
@@ -93,8 +164,10 @@ export async function createTask(data: CreateTaskInput): Promise<Task> {
     `INSERT INTO tasks (
       title, description, completed, priority, dueDate, 
       notificationId, reminderTimes, contactId, taskAddress, 
-      latitude, longitude, bill, billCurrency, comment, completedAt, createdAt, updatedAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      latitude, longitude, bill, billCurrency, comment, completedAt,
+      recurrenceSeriesId, recurrenceOccurrenceDate, recurrenceException, generatedFromRuleVersion,
+      createdAt, updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.title,
       data.description || null,
@@ -111,6 +184,10 @@ export async function createTask(data: CreateTaskInput): Promise<Task> {
       data.billCurrency || null,
       data.comment || null,
       data.completed && !data.completedAt ? new Date().toISOString() : (data.completedAt || null),
+      data.recurrenceSeriesId || null,
+      data.recurrenceOccurrenceDate || null,
+      data.recurrenceException ? 1 : 0,
+      data.generatedFromRuleVersion || null,
       new Date().toISOString(), // createdAt
       new Date().toISOString()  // updatedAt
     ]
@@ -124,11 +201,186 @@ export async function createTask(data: CreateTaskInput): Promise<Task> {
   return newTask;
 }
 
+export async function getRecurrenceSeriesById(id: number): Promise<RecurrenceSeries | null> {
+  const db = await getDatabase();
+  const row = await db.getFirstAsync('SELECT * FROM recurrence_series WHERE id = ?', [id]);
+  return row ? rowToSeries(row) : null;
+}
+
+async function createRecurrenceSeries(data: CreateTaskInput, recurrence: RecurrenceRuleInput): Promise<RecurrenceSeries> {
+  const db = await getDatabase();
+  const result = await db.runAsync(
+    `INSERT INTO recurrence_series (
+      title, description, priority, dueTime, reminderTimes, contactId, taskAddress,
+      latitude, longitude, bill, billCurrency, comment, frequency, interval, weekdays,
+      startDate, endDate, occurrenceCount, active, ruleVersion, createdAt, updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      data.title,
+      data.description || null,
+      data.priority || 'medium',
+      getDueTime(data.dueDate || recurrence.startDate),
+      data.reminderTimes ? JSON.stringify(data.reminderTimes) : JSON.stringify([60, 1440]),
+      data.contactId || null,
+      data.taskAddress || null,
+      data.latitude || null,
+      data.longitude || null,
+      data.bill || null,
+      data.billCurrency || null,
+      data.comment || null,
+      recurrence.frequency,
+      normalizeInterval(recurrence.interval),
+      recurrence.weekdays ? JSON.stringify(recurrence.weekdays) : null,
+      recurrence.startDate,
+      recurrence.endDate || null,
+      recurrence.occurrenceCount || null,
+      1,
+      1,
+      new Date().toISOString(),
+      new Date().toISOString(),
+    ]
+  );
+
+  const series = await getRecurrenceSeriesById(result.lastInsertRowId);
+  if (!series) {
+    throw new Error('Failed to create recurring task series');
+  }
+  return series;
+}
+
+export async function generateMissingOccurrences(series: RecurrenceSeries, fromDate?: string): Promise<Task[]> {
+  const db = await getDatabase();
+  if (!series.active) return [];
+
+  const windowEnd = new Date();
+  windowEnd.setDate(windowEnd.getDate() + RECURRENCE_GENERATION_DAYS);
+  const dates = calculateRecurrenceDates(recurrenceSeriesToRule(series), {
+    windowEnd,
+    fromDate: fromDate ? new Date(fromDate) : undefined,
+  });
+
+  const existingRows = await db.getAllAsync(
+    'SELECT recurrenceOccurrenceDate FROM tasks WHERE recurrenceSeriesId = ?',
+    [series.id]
+  );
+  const existing = new Set(
+    existingRows.map((row: any) => row.recurrenceOccurrenceDate).filter(Boolean)
+  );
+
+  const created: Task[] = [];
+  for (const occurrenceDate of dates) {
+    if (existing.has(occurrenceDate)) continue;
+    created.push(await insertTask(createOccurrenceInput(series, occurrenceDate)));
+  }
+
+  return created;
+}
+
+/**
+ * Create a new task or a recurring series with generated occurrences.
+ */
+export async function createTask(data: CreateTaskInput): Promise<Task> {
+  if (data.recurrence && data.dueDate) {
+    const series = await createRecurrenceSeries(data, {
+      ...data.recurrence,
+      startDate: data.recurrence.startDate || data.dueDate,
+    });
+    const occurrences = await generateMissingOccurrences(series);
+    if (occurrences.length === 0) {
+      throw new Error('Recurring task did not generate any occurrences');
+    }
+    return occurrences[0];
+  }
+
+  return insertTask(data);
+}
+
+function hasTemplateChanges(data: UpdateTaskInput): boolean {
+  const templateFields: (keyof UpdateTaskInput)[] = [
+    'title', 'description', 'priority', 'dueDate', 'reminderTimes', 'contactId',
+    'taskAddress', 'latitude', 'longitude', 'bill', 'billCurrency', 'comment'
+  ];
+  return templateFields.some((field) => data[field] !== undefined);
+}
+
+async function updateSeriesTemplate(series: RecurrenceSeries, data: UpdateTaskInput, startDate?: string) {
+  const db = await getDatabase();
+  const recurrence = data.recurrence;
+  await db.runAsync(
+    `UPDATE recurrence_series SET
+      title = ?, description = ?, priority = ?, dueTime = ?, reminderTimes = ?,
+      contactId = ?, taskAddress = ?, latitude = ?, longitude = ?, bill = ?,
+      billCurrency = ?, comment = ?, frequency = ?, interval = ?, weekdays = ?,
+      startDate = ?, endDate = ?, occurrenceCount = ?, ruleVersion = ruleVersion + 1,
+      updatedAt = datetime('now')
+    WHERE id = ?`,
+    [
+      data.title ?? series.title,
+      data.description ?? series.description,
+      data.priority ?? series.priority,
+      data.dueDate !== undefined ? getDueTime(data.dueDate) : series.dueTime,
+      data.reminderTimes !== undefined ? JSON.stringify(data.reminderTimes) : JSON.stringify(series.reminderTimes || [60, 1440]),
+      data.contactId ?? series.contactId,
+      data.taskAddress ?? series.taskAddress,
+      data.latitude ?? series.latitude,
+      data.longitude ?? series.longitude,
+      data.bill ?? series.bill,
+      data.billCurrency ?? series.billCurrency,
+      data.comment ?? series.comment,
+      recurrence?.frequency ?? series.frequency,
+      normalizeInterval(recurrence?.interval ?? series.interval),
+      recurrence?.weekdays !== undefined ? JSON.stringify(recurrence.weekdays) : (series.weekdays ? JSON.stringify(series.weekdays) : null),
+      startDate || recurrence?.startDate || series.startDate,
+      recurrence?.endDate !== undefined ? recurrence.endDate : series.endDate,
+      recurrence?.occurrenceCount !== undefined ? recurrence.occurrenceCount : series.occurrenceCount,
+      series.id,
+    ]
+  );
+}
+
 /**
  * Update an existing task
  */
-export async function updateTask(id: number, data: UpdateTaskInput): Promise<Task> {
+export async function updateTask(id: number, data: UpdateTaskInput, scope: RecurrenceScope = 'this'): Promise<Task> {
   const db = await getDatabase();
+  const currentTask = await getTaskById(id);
+  if (!currentTask) {
+    throw new Error('Task not found');
+  }
+
+  if (currentTask.recurrenceSeriesId && scope !== 'this') {
+    const series = await getRecurrenceSeriesById(currentTask.recurrenceSeriesId);
+    if (!series) {
+      throw new Error('Recurring task series not found');
+    }
+    const boundary = currentTask.recurrenceOccurrenceDate || currentTask.dueDate?.split('T')[0] || series.startDate;
+    await updateSeriesTemplate(series, data, scope === 'future' ? boundary : undefined);
+
+    if (scope === 'future') {
+      await db.runAsync(
+        `DELETE FROM tasks
+         WHERE recurrenceSeriesId = ?
+           AND recurrenceOccurrenceDate > ?
+           AND completed = 0
+           AND recurrenceException = 0`,
+        [series.id, boundary]
+      );
+    } else {
+      await db.runAsync(
+        `DELETE FROM tasks
+         WHERE recurrenceSeriesId = ?
+           AND completed = 0
+           AND recurrenceException = 0
+           AND id <> ?`,
+        [series.id, id]
+      );
+    }
+
+    const updatedSeries = await getRecurrenceSeriesById(series.id);
+    if (updatedSeries) {
+      await generateMissingOccurrences(updatedSeries, scope === 'future' ? boundary : undefined);
+    }
+  }
   
   const updates: string[] = [];
   const values: any[] = [];
@@ -207,6 +459,14 @@ export async function updateTask(id: number, data: UpdateTaskInput): Promise<Tas
     updates.push('completedAt = ?');
     values.push(data.completedAt);
   }
+
+  if (data.recurrenceException !== undefined) {
+    updates.push('recurrenceException = ?');
+    values.push(data.recurrenceException ? 1 : 0);
+  } else if (currentTask.recurrenceSeriesId && scope === 'this' && hasTemplateChanges(data)) {
+    updates.push('recurrenceException = ?');
+    values.push(1);
+  }
   
   updates.push('updatedAt = datetime(\'now\')');
   values.push(id);
@@ -230,6 +490,36 @@ export async function updateTask(id: number, data: UpdateTaskInput): Promise<Tas
 export async function deleteTask(id: number): Promise<void> {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM tasks WHERE id = ?', [id]);
+}
+
+export async function deleteTaskWithScope(id: number, scope: RecurrenceScope = 'this'): Promise<void> {
+  const db = await getDatabase();
+  const task = await getTaskById(id);
+  if (!task?.recurrenceSeriesId || scope === 'this') {
+    await deleteTask(id);
+    return;
+  }
+
+  const boundary = task.recurrenceOccurrenceDate || task.dueDate?.split('T')[0];
+  if (scope === 'future' && boundary) {
+    await db.runAsync(
+      `DELETE FROM tasks
+       WHERE recurrenceSeriesId = ?
+         AND recurrenceOccurrenceDate >= ?
+         AND completed = 0`,
+      [task.recurrenceSeriesId, boundary]
+    );
+    return;
+  }
+
+  await db.runAsync(
+    'UPDATE recurrence_series SET active = 0, updatedAt = datetime(\'now\') WHERE id = ?',
+    [task.recurrenceSeriesId]
+  );
+  await db.runAsync(
+    'DELETE FROM tasks WHERE recurrenceSeriesId = ? AND completed = 0',
+    [task.recurrenceSeriesId]
+  );
 }
 
 /**

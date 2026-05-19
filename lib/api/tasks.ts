@@ -1,4 +1,4 @@
-import { CreateTaskInput, Task, TasksResponse, UpdateTaskInput } from '@/types/task';
+import { CreateTaskInput, RecurrenceScope, Task, TasksResponse, UpdateTaskInput } from '@/types/task';
 import * as tasksDb from '../db/tasksDb';
 
 /**
@@ -48,22 +48,25 @@ export const tasksApi = {
   /**
    * Update an existing task
    */
-  update: async (id: number, data: UpdateTaskInput): Promise<Task> => {
-    return tasksDb.updateTask(id, data);
+  update: async (id: number, data: UpdateTaskInput, scope: RecurrenceScope = 'this'): Promise<Task> => {
+    return tasksDb.updateTask(id, data, scope);
   },
 
   /**
    * Delete a task
    */
-  delete: async (id: number): Promise<void> => {
-    await tasksDb.deleteTask(id);
+  delete: async (id: number, scope: RecurrenceScope = 'this'): Promise<void> => {
+    await tasksDb.deleteTaskWithScope(id, scope);
   },
 
   /**
    * Toggle task completion status
    */
   toggleComplete: async (id: number, completed: boolean): Promise<Task> => {
-    return tasksDb.updateTask(id, { completed });
+    return tasksDb.updateTask(id, {
+      completed,
+      completedAt: completed ? new Date().toISOString() : null,
+    });
   },
 
   /**

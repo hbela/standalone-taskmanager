@@ -1,7 +1,7 @@
 import { tasksApi } from '@/lib/api/tasks';
 import { notificationService } from '@/lib/notifications';
 import { PaginationParams } from '@/types/api';
-import { CreateTaskInput, Task, UpdateTaskInput } from '@/types/task';
+import { CreateTaskInput, RecurrenceScope, Task, UpdateTaskInput } from '@/types/task';
 import {
     useMutation,
     useQuery,
@@ -53,16 +53,24 @@ export function useCreateTask() {
       console.log('[useCreateTask] Creating task with data:', data);
       const newTask = await tasksApi.create(data);
       
-      // Schedule notifications if due date exists
-      if (newTask.dueDate) {
-        console.log('[useCreateTask] Task has due date, scheduling notifications...');
-        const dueDate = new Date(newTask.dueDate);
-        await notificationService.scheduleTaskReminder({
-          id: newTask.id,
-          title: newTask.title,
-          dueDate,
-          reminderTimes: data.reminderTimes,
-        });
+      const tasksToSchedule = newTask.recurrenceSeriesId
+        ? (await tasksApi.getAll()).tasks.filter(
+            task => task.recurrenceSeriesId === newTask.recurrenceSeriesId && !task.completed && task.dueDate
+          )
+        : [newTask];
+
+      if (tasksToSchedule.some(task => task.dueDate)) {
+        console.log('[useCreateTask] Scheduling notifications for task occurrences...');
+        for (const task of tasksToSchedule) {
+          if (!task.dueDate) continue;
+          const dueDate = new Date(task.dueDate);
+          await notificationService.scheduleTaskReminder({
+            id: task.id,
+            title: task.title,
+            dueDate,
+            reminderTimes: task.reminderTimes || data.reminderTimes,
+          });
+        }
       } else {
         console.log('[useCreateTask] Task has no due date, skipping notifications');
       }
@@ -85,9 +93,9 @@ export function useUpdateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: UpdateTaskInput }) => {
-      console.log('[useUpdateTask] Updating task:', { id, data });
-      const updatedTask = await tasksApi.update(id, data);
+    mutationFn: async ({ id, data, scope = 'this' }: { id: number; data: UpdateTaskInput; scope?: RecurrenceScope }) => {
+      console.log('[useUpdateTask] Updating task:', { id, data, scope });
+      const updatedTask = await tasksApi.update(id, data, scope);
       
       // Handle notifications if due date changed or removed
       if (data.dueDate !== undefined) {
@@ -117,6 +125,21 @@ export function useUpdateTask() {
           reminderTimes: data.reminderTimes,
         });
       }
+
+      if (updatedTask.recurrenceSeriesId && scope !== 'this') {
+        const allTasks = (await tasksApi.getAll()).tasks;
+        const seriesTasks = allTasks.filter(
+          task => task.recurrenceSeriesId === updatedTask.recurrenceSeriesId && !task.completed && task.dueDate
+        );
+        for (const task of seriesTasks) {
+          await notificationService.rescheduleTaskReminders({
+            id: task.id,
+            title: task.title,
+            dueDate: new Date(task.dueDate!),
+            reminderTimes: task.reminderTimes || undefined,
+          });
+        }
+      }
       
       return updatedTask;
     },
@@ -138,14 +161,29 @@ export function useDeleteTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
-      console.log('[useDeleteTask] Deleting task:', id);
-      // Cancel notifications first
-      await notificationService.cancelTaskReminders(id);
+    mutationFn: async (variables: { id: number; scope?: RecurrenceScope } | number) => {
+      const taskId = typeof variables === 'number' ? variables : variables.id;
+      const deleteScope = typeof variables === 'number' ? 'this' : variables.scope || 'this';
+      console.log('[useDeleteTask] Deleting task:', taskId, deleteScope);
+      const task = await tasksApi.getById(taskId);
+      const tasksToCancel = task.recurrenceSeriesId && deleteScope !== 'this'
+        ? (await tasksApi.getAll()).tasks.filter(candidate => {
+            if (candidate.recurrenceSeriesId !== task.recurrenceSeriesId) return false;
+            if (deleteScope === 'series') return !candidate.completed;
+            return !candidate.completed &&
+              !!task.recurrenceOccurrenceDate &&
+              !!candidate.recurrenceOccurrenceDate &&
+              candidate.recurrenceOccurrenceDate >= task.recurrenceOccurrenceDate;
+          })
+        : [task];
+      for (const candidate of tasksToCancel) {
+        await notificationService.cancelTaskReminders(candidate.id);
+      }
       // Then delete the task
-      return tasksApi.delete(id);
+      return tasksApi.delete(taskId, deleteScope);
     },
-    onSuccess: (_, id) => {
+    onSuccess: (_, variables) => {
+      const id = typeof variables === 'number' ? variables : variables.id;
       // Invalidate all task lists
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       // Invalidate dashboard stats

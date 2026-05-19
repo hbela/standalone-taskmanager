@@ -1,4 +1,41 @@
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
+export type RecurrenceScope = 'this' | 'future' | 'series';
+
+export interface RecurrenceRuleInput {
+  frequency: RecurrenceFrequency;
+  interval?: number;
+  weekdays?: number[];
+  startDate: string;
+  endDate?: string | null;
+  occurrenceCount?: number | null;
+}
+
+export interface RecurrenceSeries {
+  id: number;
+  title: string;
+  description: string | null;
+  priority: TaskPriority;
+  dueTime: string | null;
+  reminderTimes: number[] | null;
+  contactId: string | null;
+  taskAddress: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  bill: number | null;
+  billCurrency: string | null;
+  comment: string | null;
+  frequency: RecurrenceFrequency;
+  interval: number;
+  weekdays: number[] | null;
+  startDate: string;
+  endDate: string | null;
+  occurrenceCount: number | null;
+  active: boolean;
+  ruleVersion: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface Task {
   id: number;
@@ -24,6 +61,15 @@ export interface Task {
   billCurrency: string | null;
   comment: string | null; // User comment
   completedAt: string | null; // ISO date string when task was completed
+  recurrenceSeriesId: number | null;
+  recurrenceOccurrenceDate: string | null;
+  recurrenceException: boolean;
+  generatedFromRuleVersion: number | null;
+  recurrenceFrequency?: RecurrenceFrequency | null;
+  recurrenceInterval?: number | null;
+  recurrenceWeekdays?: number[] | null;
+  recurrenceEndDate?: string | null;
+  recurrenceOccurrenceCount?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -44,6 +90,11 @@ export interface CreateTaskInput {
   billCurrency?: string;
   comment?: string | null;
   completedAt?: string | null;
+  recurrence?: RecurrenceRuleInput | null;
+  recurrenceSeriesId?: number | null;
+  recurrenceOccurrenceDate?: string | null;
+  recurrenceException?: boolean;
+  generatedFromRuleVersion?: number | null;
 }
 
 export interface UpdateTaskInput extends Partial<CreateTaskInput> {

@@ -2,7 +2,7 @@ import { CURRENCY_OPTIONS } from '@/constants/currencies';
 import { Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DEFAULT_REMINDER_OPTIONS, DEFAULT_REMINDERS, getReminderLabel } from '@/lib/notifications';
-import { CreateTaskInput, TaskPriority, UpdateTaskInput } from '@/types/task';
+import { CreateTaskInput, RecurrenceFrequency, TaskPriority, UpdateTaskInput } from '@/types/task';
 import { formatDate, formatTime } from '@/utils/dateFormatter';
 import { getCurrencyForRegion } from '@/utils/localization';
 import AmountInput from './AmountInput';
@@ -107,6 +107,14 @@ interface TaskFormProps {
     comment?: string | null;
     completed?: boolean;
     completedAt?: string | null;
+    recurrence?: {
+      frequency: RecurrenceFrequency;
+      interval?: number;
+      weekdays?: number[];
+      startDate: string;
+      endDate?: string | null;
+      occurrenceCount?: number | null;
+    } | null;
   };
   onSubmit: (data: CreateTaskInput | UpdateTaskInput) => Promise<void>;
   onCancel?: () => void;
@@ -146,7 +154,19 @@ export default function TaskForm({
   const [billCurrency, setBillCurrency] = useState<string>(initialValues?.billCurrency || getCurrencyForRegion());
   const [comment, setComment] = useState(initialValues?.comment || '');
   const [currencyMenuVisible, setCurrencyMenuVisible] = useState(false);
-  const [errors, setErrors] = useState<{ title?: string; bill?: string }>({});
+  const [enableRecurrence, setEnableRecurrence] = useState(!!initialValues?.recurrence);
+  const [recurrenceFrequency, setRecurrenceFrequency] = useState<RecurrenceFrequency>(
+    initialValues?.recurrence?.frequency || 'weekly'
+  );
+  const [recurrenceInterval, setRecurrenceInterval] = useState(String(initialValues?.recurrence?.interval || 1));
+  const [recurrenceWeekdays, setRecurrenceWeekdays] = useState<number[]>(
+    initialValues?.recurrence?.weekdays || []
+  );
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState(initialValues?.recurrence?.endDate?.split('T')[0] || '');
+  const [recurrenceCount, setRecurrenceCount] = useState(
+    initialValues?.recurrence?.occurrenceCount ? String(initialValues.recurrence.occurrenceCount) : ''
+  );
+  const [errors, setErrors] = useState<{ title?: string; bill?: string; recurrence?: string }>({});
 
   // Refs for focus management
   const titleInputRef = useRef<any>(null);
@@ -160,6 +180,8 @@ export default function TaskForm({
   }, [t]);
 
   const priorities: TaskPriority[] = ['low', 'medium', 'high', 'urgent'];
+  const recurrenceFrequencies: RecurrenceFrequency[] = ['daily', 'weekly', 'monthly', 'yearly'];
+  const weekdayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
   const getPriorityColor = (p: TaskPriority) => {
     switch (p) {
@@ -171,7 +193,7 @@ export default function TaskForm({
   };
 
   const validate = (): boolean => {
-    const newErrors: { title?: string; bill?: string } = {};
+    const newErrors: { title?: string; bill?: string; recurrence?: string } = {};
 
     if (!title.trim()) {
       newErrors.title = t('form.errors.titleRequired');
@@ -183,6 +205,18 @@ export default function TaskForm({
 
     if (enableBill && billAmount !== null && billAmount < 0) {
       newErrors.bill = t('form.errors.billNegative');
+    }
+
+    if (enableRecurrence) {
+      if (!dueDate) {
+        newErrors.recurrence = t('form.errors.recurrenceNeedsDueDate', { defaultValue: 'Recurring tasks need a due date.' });
+      } else if (!Number.isFinite(Number(recurrenceInterval)) || Number(recurrenceInterval) < 1) {
+        newErrors.recurrence = t('form.errors.recurrenceIntervalInvalid', { defaultValue: 'Repeat interval must be at least 1.' });
+      } else if (recurrenceCount && (!Number.isFinite(Number(recurrenceCount)) || Number(recurrenceCount) < 1)) {
+        newErrors.recurrence = t('form.errors.recurrenceCountInvalid', { defaultValue: 'Occurrence count must be at least 1.' });
+      } else if (recurrenceEndDate && Number.isNaN(new Date(`${recurrenceEndDate}T00:00:00`).getTime())) {
+        newErrors.recurrence = t('form.errors.recurrenceEndDateInvalid', { defaultValue: 'End date must use YYYY-MM-DD.' });
+      }
     }
 
     setErrors(newErrors);
@@ -209,6 +243,18 @@ export default function TaskForm({
       ...( (completed || markAsCompleted) && { 
         completedAt: ((initialValues?.completed && completed) ? initialValues.completedAt : new Date().toISOString()) || new Date().toISOString()
       }),
+      ...(enableRecurrence && dueDate && {
+        recurrence: {
+          frequency: recurrenceFrequency,
+          interval: Number(recurrenceInterval) || 1,
+          weekdays: recurrenceFrequency === 'weekly'
+            ? (recurrenceWeekdays.length ? recurrenceWeekdays : [dueDate.getDay()])
+            : undefined,
+          startDate: dueDate.toISOString(),
+          endDate: recurrenceEndDate ? new Date(`${recurrenceEndDate}T23:59:59`).toISOString() : null,
+          occurrenceCount: recurrenceCount ? Number(recurrenceCount) : null,
+        }
+      }),
     };
 
     try {
@@ -225,6 +271,12 @@ export default function TaskForm({
       setEnableBill(false);
       setBillAmount(null);
       setBillCurrency(getCurrencyForRegion());
+      setEnableRecurrence(false);
+      setRecurrenceFrequency('weekly');
+      setRecurrenceInterval('1');
+      setRecurrenceWeekdays([]);
+      setRecurrenceEndDate('');
+      setRecurrenceCount('');
       setErrors({});
     } catch (error) {
       // Error handling is done by parent component
@@ -687,6 +739,101 @@ export default function TaskForm({
           </View>
         )}
 
+        <Divider style={styles.divider} />
+
+        {/* Recurrence Selector */}
+        <View style={styles.inputGroup}>
+          <View style={styles.reminderHeader}>
+            <Text variant="bodyLarge">{t('form.repeat', { defaultValue: 'Repeat' })}</Text>
+            <Switch
+              value={enableRecurrence}
+              onValueChange={setEnableRecurrence}
+              disabled={loading}
+            />
+          </View>
+
+          {enableRecurrence && (
+            <View style={styles.recurrencePanel}>
+              <Text variant="titleSmall" style={styles.label}>
+                {t('form.repeatEvery', { defaultValue: 'Repeat every' })}
+              </Text>
+              <View style={styles.recurrenceRow}>
+                <TextInput
+                  mode="outlined"
+                  label={t('form.interval', { defaultValue: 'Interval' })}
+                  value={recurrenceInterval}
+                  onChangeText={setRecurrenceInterval}
+                  keyboardType="number-pad"
+                  disabled={loading}
+                  style={styles.intervalInput}
+                />
+                <View style={styles.frequencyOptions}>
+                  {recurrenceFrequencies.map((frequency) => (
+                    <Chip
+                      key={frequency}
+                      selected={recurrenceFrequency === frequency}
+                      mode={recurrenceFrequency === frequency ? 'flat' : 'outlined'}
+                      onPress={() => setRecurrenceFrequency(frequency)}
+                      disabled={loading}
+                      style={styles.frequencyChip}
+                    >
+                      {t(`form.recurrence.${frequency}`, { defaultValue: frequency })}
+                    </Chip>
+                  ))}
+                </View>
+              </View>
+
+              {recurrenceFrequency === 'weekly' && (
+                <View style={styles.weekdayRow}>
+                  {weekdayLabels.map((label, day) => {
+                    const selected = recurrenceWeekdays.includes(day);
+                    return (
+                      <Chip
+                        key={`${label}-${day}`}
+                        selected={selected}
+                        mode={selected ? 'flat' : 'outlined'}
+                        onPress={() => {
+                          setRecurrenceWeekdays(prev => (
+                            selected ? prev.filter(value => value !== day) : [...prev, day].sort()
+                          ));
+                        }}
+                        disabled={loading}
+                        style={styles.weekdayChip}
+                      >
+                        {label}
+                      </Chip>
+                    );
+                  })}
+                </View>
+              )}
+
+              <View style={styles.recurrenceEndRow}>
+                <TextInput
+                  mode="outlined"
+                  label={t('form.endDateOptional', { defaultValue: 'End date (YYYY-MM-DD)' })}
+                  value={recurrenceEndDate}
+                  onChangeText={setRecurrenceEndDate}
+                  disabled={loading}
+                  style={{ flex: 1 }}
+                />
+                <TextInput
+                  mode="outlined"
+                  label={t('form.occurrencesOptional', { defaultValue: 'Count' })}
+                  value={recurrenceCount}
+                  onChangeText={setRecurrenceCount}
+                  keyboardType="number-pad"
+                  disabled={loading}
+                  style={styles.countInput}
+                />
+              </View>
+
+              <HelperText type="error" visible={!!errors.recurrence}>
+                {errors.recurrence}
+              </HelperText>
+            </View>
+          )}
+        </View>
+
         {/* Action Buttons */}
         <View style={styles.actions}>
           <Button 
@@ -792,6 +939,41 @@ const styles = StyleSheet.create({
   reminderChip: {
       width: '48%', // Approx 2 col
       marginBottom: Spacing.sm,
+  },
+  recurrencePanel: {
+    gap: Spacing.sm,
+  },
+  recurrenceRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+  },
+  intervalInput: {
+    width: 96,
+  },
+  frequencyOptions: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  frequencyChip: {
+    marginBottom: Spacing.xs,
+  },
+  weekdayRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.xs,
+  },
+  weekdayChip: {
+    minWidth: 44,
+  },
+  recurrenceEndRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  countInput: {
+    width: 96,
   },
   actions: {
     marginTop: Spacing.lg,

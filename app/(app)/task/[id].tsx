@@ -6,7 +6,9 @@ import { Spacing } from '@/constants/theme';
 import { useDeleteTask, useTask, useToggleTaskComplete } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedAmount } from '@/hooks/useMoneyFormatter';
+import { getRecurrenceSummary } from '@/lib/recurrenceUtils';
 import { getStatusColor, getStatusLabel, getTaskStatus } from '@/lib/taskUtils';
+import { RecurrenceScope } from '@/types/task';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -39,12 +41,12 @@ export default function TaskDetailScreen() {
     setDeleteDialogVisible(true);
   };
   
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (scope: RecurrenceScope = 'this') => {
     setDeleteDialogVisible(false);
     try {
-      await deleteTaskMutation.mutateAsync(Number(id));
+      await deleteTaskMutation.mutateAsync({ id: Number(id), scope });
       router.push('/(app)');
-    } catch (err) {
+    } catch {
       Alert.alert(t('common.error'), t('tasks.deleteError'));
     }
   };
@@ -58,7 +60,7 @@ export default function TaskDetailScreen() {
       });
       // Redirect to task list after toggling - Removed to allow seeing completion date
       // router.push('/(app)');
-    } catch (err) {
+    } catch {
       Alert.alert(t('common.error'), t('tasks.updateError'));
     }
   };
@@ -79,6 +81,7 @@ export default function TaskDetailScreen() {
   const taskStatus = getTaskStatus(task);
   const statusColor = getStatusColor(taskStatus);
   const statusLabel = getStatusLabel(taskStatus, t);
+  const recurrenceSummary = getRecurrenceSummary(task.recurrenceFrequency, task.recurrenceInterval || 1);
 
   const priorityColors = {
       urgent: '#FF3B30',
@@ -207,6 +210,16 @@ export default function TaskDetailScreen() {
                  descriptionStyle={[styles.listItemDescription, { color: theme.colors.onSurface }]}
              />
 
+             {recurrenceSummary && (
+               <List.Item
+                   title={t('tasks.recurrence', { defaultValue: 'Recurrence' })}
+                   description={recurrenceSummary}
+                   left={props => <List.Icon {...props} icon="repeat" color={theme.colors.primary} />}
+                   titleStyle={[styles.listItemTitle, { color: theme.colors.primary }]}
+                   descriptionStyle={[styles.listItemDescription, { color: theme.colors.onSurface }]}
+               />
+             )}
+
              <List.Item
                  title={t('tasks.created')}
                  description={new Date(task.createdAt).toLocaleString(t('common.locale'), {
@@ -287,11 +300,29 @@ export default function TaskDetailScreen() {
         <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
           <Dialog.Title>{t('tasks.deleteConfirmTitle')}</Dialog.Title>
           <Dialog.Content>
-            <Paragraph>{t('tasks.deleteConfirmMessage')}</Paragraph>
+            <Paragraph>
+              {task.recurrenceSeriesId
+                ? t('tasks.recurringDeleteMessage', { defaultValue: 'Delete this task only, this and future tasks, or the entire recurring series?' })
+                : t('tasks.deleteConfirmMessage')}
+            </Paragraph>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setDeleteDialogVisible(false)}>{t('common.cancel')}</Button>
-            <Button onPress={handleConfirmDelete} textColor={theme.colors.error}>{t('tasks.delete')}</Button>
+            {task.recurrenceSeriesId ? (
+              <>
+                <Button onPress={() => handleConfirmDelete('this')} textColor={theme.colors.error}>
+                  {t('tasks.thisTaskOnly', { defaultValue: 'This task only' })}
+                </Button>
+                <Button onPress={() => handleConfirmDelete('future')} textColor={theme.colors.error}>
+                  {t('tasks.thisAndFuture', { defaultValue: 'This and future' })}
+                </Button>
+                <Button onPress={() => handleConfirmDelete('series')} textColor={theme.colors.error}>
+                  {t('tasks.entireSeries', { defaultValue: 'Entire series' })}
+                </Button>
+              </>
+            ) : (
+              <Button onPress={() => handleConfirmDelete('this')} textColor={theme.colors.error}>{t('tasks.delete')}</Button>
+            )}
           </Dialog.Actions>
         </Dialog>
       </Portal>

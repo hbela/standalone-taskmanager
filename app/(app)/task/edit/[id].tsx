@@ -4,10 +4,10 @@ import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import TaskForm from '@/components/TaskForm';
 import { useTask, useUpdateTask } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
-import { UpdateTaskInput } from '@/types/task';
+import { RecurrenceScope, UpdateTaskInput } from '@/types/task';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { Appbar, Button, Dialog, Paragraph, Portal, useTheme } from 'react-native-paper';
 
 export default function EditTaskScreen() {
@@ -35,11 +35,12 @@ export default function EditTaskScreen() {
   // Update mutation
   const updateTaskMutation = useUpdateTask();
 
-  const handleSubmit = async (data: UpdateTaskInput) => {
+  const performUpdate = async (data: UpdateTaskInput, scope: RecurrenceScope = 'this') => {
     try {
       await updateTaskMutation.mutateAsync({
         id: Number(id),
         data,
+        scope,
       });
       
       setDialogTitle(t('common.success'));
@@ -53,6 +54,24 @@ export default function EditTaskScreen() {
       setDialogType('error');
       setDialogVisible(true);
     }
+  };
+
+  const handleSubmit = async (data: UpdateTaskInput) => {
+    if (!task?.recurrenceSeriesId) {
+      await performUpdate(data);
+      return;
+    }
+
+    Alert.alert(
+      t('tasks.recurringEditTitle', { defaultValue: 'Edit recurring task' }),
+      t('tasks.recurringEditMessage', { defaultValue: 'Apply these changes to this task only, this and future tasks, or the entire series?' }),
+      [
+        { text: t('tasks.thisTaskOnly', { defaultValue: 'This task only' }), onPress: () => performUpdate(data, 'this') },
+        { text: t('tasks.thisAndFuture', { defaultValue: 'This and future' }), onPress: () => performUpdate(data, 'future') },
+        { text: t('tasks.entireSeries', { defaultValue: 'Entire series' }), onPress: () => performUpdate(data, 'series') },
+        { text: t('common.cancel'), style: 'cancel' },
+      ]
+    );
   };
 
   const handleDialogDismiss = () => {
@@ -101,6 +120,14 @@ export default function EditTaskScreen() {
           comment: task.comment || undefined,
           completed: task.completed,
           completedAt: task.completedAt,
+          recurrence: task.recurrenceSeriesId && task.recurrenceFrequency ? {
+            frequency: task.recurrenceFrequency,
+            interval: task.recurrenceInterval || 1,
+            weekdays: task.recurrenceWeekdays || undefined,
+            startDate: task.dueDate || new Date().toISOString(),
+            endDate: task.recurrenceEndDate || null,
+            occurrenceCount: task.recurrenceOccurrenceCount || null,
+          } : null,
         }}
         onSubmit={handleSubmit}
         onCancel={handleCancel}

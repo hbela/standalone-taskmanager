@@ -45,6 +45,38 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
         billCurrency TEXT,
         comment TEXT,
         completedAt TEXT,
+        recurrenceSeriesId INTEGER,
+        recurrenceOccurrenceDate TEXT,
+        recurrenceException INTEGER DEFAULT 0,
+        generatedFromRuleVersion INTEGER,
+        createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS recurrence_series (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        priority TEXT DEFAULT 'medium',
+        dueTime TEXT,
+        reminderTimes TEXT,
+        contactId TEXT,
+        taskAddress TEXT,
+        latitude REAL,
+        longitude REAL,
+        bill REAL,
+        billCurrency TEXT,
+        comment TEXT,
+        frequency TEXT NOT NULL,
+        interval INTEGER DEFAULT 1,
+        weekdays TEXT,
+        startDate TEXT NOT NULL,
+        endDate TEXT,
+        occurrenceCount INTEGER,
+        active INTEGER DEFAULT 1,
+        ruleVersion INTEGER DEFAULT 1,
         createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
         updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
       );
@@ -100,6 +132,23 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
       }
     }
 
+    const taskMigrations = [
+      'ALTER TABLE tasks ADD COLUMN recurrenceSeriesId INTEGER;',
+      'ALTER TABLE tasks ADD COLUMN recurrenceOccurrenceDate TEXT;',
+      'ALTER TABLE tasks ADD COLUMN recurrenceException INTEGER DEFAULT 0;',
+      'ALTER TABLE tasks ADD COLUMN generatedFromRuleVersion INTEGER;',
+    ];
+
+    for (const migration of taskMigrations) {
+      try {
+        await db.execAsync(migration);
+      } catch (error: any) {
+        if (!error.message?.includes('duplicate column name')) {
+          logInfo('Database', 'Recurrence migration note:', error.message);
+        }
+      }
+    }
+
     // Create purchases table for in-app purchase records
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS purchases (
@@ -117,6 +166,9 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
       CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
       CREATE INDEX IF NOT EXISTS idx_tasks_dueDate ON tasks(dueDate);
       CREATE INDEX IF NOT EXISTS idx_tasks_contactId ON tasks(contactId);
+      CREATE INDEX IF NOT EXISTS idx_tasks_recurrenceSeriesId ON tasks(recurrenceSeriesId);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_recurrence_occurrence ON tasks(recurrenceSeriesId, recurrenceOccurrenceDate);
+      CREATE INDEX IF NOT EXISTS idx_recurrence_series_active ON recurrence_series(active);
     `);
     
     dbInstance = db;

@@ -1,4 +1,5 @@
 import { Spacing } from '@/constants/theme';
+import { getRecurrenceSummary } from '@/lib/recurrenceUtils';
 import { isTaskOverdue } from '@/lib/taskUtils';
 import { Task } from '@/types/task';
 import { formatDateTime } from '@/utils/dateFormatter';
@@ -35,6 +36,7 @@ export default function TaskCard({
   const theme = useTheme();
   const isOverdue = isTaskOverdue(task);
   const priorityColor = getPriorityColor(task.priority);
+  const recurrenceSummary = getRecurrenceSummary(task.recurrenceFrequency, task.recurrenceInterval || 1);
 
   return (
     <Card
@@ -112,6 +114,15 @@ export default function TaskCard({
                   ]}
                 >
                   {formatDateTime(task.dueDate)}
+                </Text>
+              </View>
+            )}
+
+            {recurrenceSummary && (
+              <View style={styles.dateRow}>
+                <Ionicons name="repeat-outline" size={14} color={theme.colors.outline} />
+                <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
+                  {recurrenceSummary}
                 </Text>
               </View>
             )}

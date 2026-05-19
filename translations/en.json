@@ -51,6 +51,13 @@
         "noPendingTasks": "No pending tasks",
         "noOverdueTasks": "No overdue tasks",
         "deleteConfirm": "Are you sure you want to delete \"%{title}\"?",
+        "recurrence": "Recurrence",
+        "recurringEditTitle": "Edit recurring task",
+        "recurringEditMessage": "Apply these changes to this task only, this and future tasks, or the entire series?",
+        "recurringDeleteMessage": "Delete this task only, this and future tasks, or the entire recurring series?",
+        "thisTaskOnly": "This task only",
+        "thisAndFuture": "This and future",
+        "entireSeries": "Entire series",
         "priorities": {
             "low": "Low",
             "medium": "Medium",
@@ -185,6 +192,17 @@
         "bill": "Expenditure",
         "billOptional": "Expenditure (Optional)",
         "currency": "Currency",
+        "repeat": "Repeat",
+        "repeatEvery": "Repeat every",
+        "interval": "Interval",
+        "endDateOptional": "End date (YYYY-MM-DD)",
+        "occurrencesOptional": "Count",
+        "recurrence": {
+            "daily": "Daily",
+            "weekly": "Weekly",
+            "monthly": "Monthly",
+            "yearly": "Yearly"
+        },
         "placeholders": {
             "title": "Task title",
             "description": "Details about the task",
@@ -197,7 +215,11 @@
             "titleTooShort": "Title must be at least 3 characters",
             "titleTooLong": "Title must be less than 255 characters",
             "billInvalid": "Bill amount must be a valid number",
-            "billNegative": "Bill amount cannot be negative"
+            "billNegative": "Bill amount cannot be negative",
+            "recurrenceNeedsDueDate": "Recurring tasks need a due date.",
+            "recurrenceIntervalInvalid": "Repeat interval must be at least 1.",
+            "recurrenceCountInvalid": "Occurrence count must be at least 1.",
+            "recurrenceEndDateInvalid": "End date must use YYYY-MM-DD."
         }
     },
     "success": "Success",
