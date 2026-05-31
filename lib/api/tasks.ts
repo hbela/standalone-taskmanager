@@ -55,8 +55,8 @@ export const tasksApi = {
   /**
    * Delete a task
    */
-  delete: async (id: number, scope: RecurrenceScope = 'this'): Promise<void> => {
-    await tasksDb.deleteTaskWithScope(id, scope);
+  delete: async (id: number): Promise<void> => {
+    await tasksDb.deleteTask(id);
   },
 
   /**

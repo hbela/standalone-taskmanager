@@ -2,6 +2,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Localization from 'expo-localization';
 import { I18n } from 'i18n-js';
+import { Platform } from 'react-native';
 
 import de from './translations/de.json';
 import en from './translations/en.json';
@@ -20,6 +21,11 @@ i18n.enableFallback = true;
 // Function to load the saved locale (or use device default)
 export const loadSavedLocale = async () => {
   try {
+    if (Platform.OS === 'web' && typeof window === 'undefined') {
+      i18n.locale = 'en';
+      return;
+    }
+
     const savedLocale = await AsyncStorage.getItem(LOCALE_KEY);
     if (savedLocale !== null && translations[savedLocale as keyof typeof translations]) {
       i18n.locale = savedLocale;

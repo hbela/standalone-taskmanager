@@ -9,6 +9,13 @@ export function normalizeInterval(interval?: number | null): number {
   return Math.floor(interval);
 }
 
+function normalizeOccurrenceCount(count?: number | null): number | null {
+  if (!count || count < 1 || !Number.isFinite(count)) {
+    return null;
+  }
+  return Math.floor(count);
+}
+
 function startOfDay(date: Date): Date {
   const next = new Date(date);
   next.setHours(0, 0, 0, 0);
@@ -81,14 +88,14 @@ export function calculateRecurrenceDates(
   const interval = normalizeInterval(rule.interval);
   const start = parseRuleDate(rule.startDate);
   const defaultWindowEnd = addDays(start, RECURRENCE_GENERATION_DAYS);
-  const windowEnd = startOfDay(options?.windowEnd || defaultWindowEnd);
+  const maxCount = normalizeOccurrenceCount(rule.occurrenceCount);
+  const windowEnd = maxCount ? null : startOfDay(options?.windowEnd || defaultWindowEnd);
   const fromDate = startOfDay(options?.fromDate || start);
   const endDate = rule.endDate ? parseRuleDate(rule.endDate) : null;
-  const maxCount = rule.occurrenceCount || null;
   const dates: string[] = [];
 
   const canInclude = (candidate: Date, generatedCount: number) => {
-    if (candidate > windowEnd) return false;
+    if (windowEnd && candidate > windowEnd) return false;
     if (endDate && candidate > endDate) return false;
     if (maxCount && generatedCount >= maxCount) return false;
     return true;

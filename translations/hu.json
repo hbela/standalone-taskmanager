@@ -197,7 +197,9 @@
             "titleTooShort": "A címnek legalább 3 karakterből kell állnia",
             "titleTooLong": "A cím nem lehet hosszabb 255 karakternél",
             "billInvalid": "A számla összegének érvényes számnak kell lennie",
-            "billNegative": "A számla összege nem lehet negatív"
+            "billNegative": "A számla összege nem lehet negatív",
+            "dueDateInPast": "Az esedékesség dátumának és időpontjának a jövőben kell lennie.",
+            "recurrenceStartInPast": "Az ismétlődő feladatoknak a jövőben kell kezdődniük."
         }
     },
     "success": "Siker",

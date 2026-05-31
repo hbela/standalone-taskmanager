@@ -280,6 +280,13 @@ export async function generateMissingOccurrences(series: RecurrenceSeries, fromD
  * Create a new task or a recurring series with generated occurrences.
  */
 export async function createTask(data: CreateTaskInput): Promise<Task> {
+  if (data.dueDate && new Date(data.dueDate).getTime() <= Date.now()) {
+    throw new Error(data.recurrence
+      ? 'Recurring tasks must start in the future.'
+      : 'Due date and time must be in the future.'
+    );
+  }
+
   if (data.recurrence && data.dueDate) {
     const series = await createRecurrenceSeries(data, {
       ...data.recurrence,
@@ -490,36 +497,6 @@ export async function updateTask(id: number, data: UpdateTaskInput, scope: Recur
 export async function deleteTask(id: number): Promise<void> {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM tasks WHERE id = ?', [id]);
-}
-
-export async function deleteTaskWithScope(id: number, scope: RecurrenceScope = 'this'): Promise<void> {
-  const db = await getDatabase();
-  const task = await getTaskById(id);
-  if (!task?.recurrenceSeriesId || scope === 'this') {
-    await deleteTask(id);
-    return;
-  }
-
-  const boundary = task.recurrenceOccurrenceDate || task.dueDate?.split('T')[0];
-  if (scope === 'future' && boundary) {
-    await db.runAsync(
-      `DELETE FROM tasks
-       WHERE recurrenceSeriesId = ?
-         AND recurrenceOccurrenceDate >= ?
-         AND completed = 0`,
-      [task.recurrenceSeriesId, boundary]
-    );
-    return;
-  }
-
-  await db.runAsync(
-    'UPDATE recurrence_series SET active = 0, updatedAt = datetime(\'now\') WHERE id = ?',
-    [task.recurrenceSeriesId]
-  );
-  await db.runAsync(
-    'DELETE FROM tasks WHERE recurrenceSeriesId = ? AND completed = 0',
-    [task.recurrenceSeriesId]
-  );
 }
 
 /**

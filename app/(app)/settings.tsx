@@ -5,14 +5,15 @@ import { LanguageContext } from '@/context/LanguageContext';
 import { DEVICE_DIMENSIONS, DeviceType, useScreenshot } from '@/context/ScreenshotContext';
 import { useAppTheme } from '@/context/ThemeContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import * as Sentry from '@/lib/sentry';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Sentry from '@sentry/react-native';
 import { useRouter } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Appbar, Avatar, Button, Card, Chip, IconButton, List, Switch, Text, useTheme } from 'react-native-paper';
 
 const WELCOME_SHOWN_KEY = '@task_manager_welcome_shown';
+const SHOW_SENTRY_ERROR_TRIGGER = false;
 
 export default function SettingsScreen() {
   const { key } = useContext(LanguageContext);
@@ -61,6 +62,10 @@ export default function SettingsScreen() {
     } catch (error) {
       console.error('Error saving welcome preference:', error);
     }
+  };
+
+  const handleTriggerSentryError = () => {
+    Sentry.captureException(new Error("Test error from Task Manager Settings"));
   };
 
   return (
@@ -199,16 +204,16 @@ export default function SettingsScreen() {
                     >
                         Preview Welcome Screen
                     </Button>
-                    <Button 
-                        mode="contained" 
-                        buttonColor="#EF4444"
-                        icon="alert" 
-                        onPress={() => {
-                            Sentry.captureException(new Error("Test error from Task Manager Settings"));
-                        }}
-                    >
-                        Trigger Sentry Error
-                    </Button>
+                    {SHOW_SENTRY_ERROR_TRIGGER && (
+                        <Button 
+                            mode="contained" 
+                            buttonColor="#EF4444"
+                            icon="alert" 
+                            onPress={handleTriggerSentryError}
+                        >
+                            Trigger Sentry Error
+                        </Button>
+                    )}
                 </Card.Content>
             </Card>
         </List.Section>

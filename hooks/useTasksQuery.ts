@@ -161,29 +161,12 @@ export function useDeleteTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (variables: { id: number; scope?: RecurrenceScope } | number) => {
-      const taskId = typeof variables === 'number' ? variables : variables.id;
-      const deleteScope = typeof variables === 'number' ? 'this' : variables.scope || 'this';
-      console.log('[useDeleteTask] Deleting task:', taskId, deleteScope);
-      const task = await tasksApi.getById(taskId);
-      const tasksToCancel = task.recurrenceSeriesId && deleteScope !== 'this'
-        ? (await tasksApi.getAll()).tasks.filter(candidate => {
-            if (candidate.recurrenceSeriesId !== task.recurrenceSeriesId) return false;
-            if (deleteScope === 'series') return !candidate.completed;
-            return !candidate.completed &&
-              !!task.recurrenceOccurrenceDate &&
-              !!candidate.recurrenceOccurrenceDate &&
-              candidate.recurrenceOccurrenceDate >= task.recurrenceOccurrenceDate;
-          })
-        : [task];
-      for (const candidate of tasksToCancel) {
-        await notificationService.cancelTaskReminders(candidate.id);
-      }
-      // Then delete the task
-      return tasksApi.delete(taskId, deleteScope);
+    mutationFn: async (taskId: number) => {
+      console.log('[useDeleteTask] Deleting task:', taskId);
+      await notificationService.cancelTaskReminders(taskId);
+      return tasksApi.delete(taskId);
     },
-    onSuccess: (_, variables) => {
-      const id = typeof variables === 'number' ? variables : variables.id;
+    onSuccess: (_, id) => {
       // Invalidate all task lists
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       // Invalidate dashboard stats

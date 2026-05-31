@@ -75,6 +75,7 @@ export default function CreateTaskScreen() {
         onSubmit={handleSubmit}
         submitLabel={submitLabel}
         loading={createTaskMutation.isPending}
+        disallowPastDueDate
       />
 
       <Portal>

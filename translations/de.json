@@ -195,7 +195,9 @@
             "titleTooShort": "Titel muss mindestens 3 Zeichen lang sein",
             "titleTooLong": "Titel muss weniger als 255 Zeichen lang sein",
             "billInvalid": "Rechnungsbetrag muss eine gültige Zahl sein",
-            "billNegative": "Rechnungsbetrag kann nicht negativ sein"
+            "billNegative": "Rechnungsbetrag kann nicht negativ sein",
+            "dueDateInPast": "Fälligkeitsdatum und Uhrzeit müssen in der Zukunft liegen.",
+            "recurrenceStartInPast": "Wiederkehrende Aufgaben müssen in der Zukunft beginnen."
         }
     },
     "success": "Erfolg",

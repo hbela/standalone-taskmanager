@@ -216,6 +216,8 @@
             "titleTooLong": "Title must be less than 255 characters",
             "billInvalid": "Bill amount must be a valid number",
             "billNegative": "Bill amount cannot be negative",
+            "dueDateInPast": "Due date and time must be in the future.",
+            "recurrenceStartInPast": "Recurring tasks must start in the future.",
             "recurrenceNeedsDueDate": "Recurring tasks need a due date.",
             "recurrenceIntervalInvalid": "Repeat interval must be at least 1.",
             "recurrenceCountInvalid": "Occurrence count must be at least 1.",

@@ -196,7 +196,9 @@
             "titleTooShort": "Le titre doit contenir au moins 3 caractères",
             "titleTooLong": "Le titre doit contenir moins de 255 caractères",
             "billInvalid": "Le montant de la facture doit être un nombre valide",
-            "billNegative": "Le montant de la facture ne peut pas être négatif"
+            "billNegative": "Le montant de la facture ne peut pas être négatif",
+            "dueDateInPast": "La date et l'heure d'échéance doivent être dans le futur.",
+            "recurrenceStartInPast": "Les tâches récurrentes doivent commencer dans le futur."
         }
     },
     "success": "Succès",

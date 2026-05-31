@@ -5,7 +5,7 @@
  */
 
 import { isDevelopment, logError } from '@/utils/errorHandler';
-import * as Sentry from '@sentry/react-native';
+import * as Sentry from '@/lib/sentry';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
