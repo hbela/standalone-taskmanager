@@ -4,6 +4,7 @@ import { TextInput, useTheme } from 'react-native-paper';
 import { useTranslation } from '../hooks/useTranslation';
 import {
   decimalsFor,
+  formatMoneyInputValue,
   getInputFormat,
   parseMoneyInput,
   sanitizeMoneyInput,
@@ -19,15 +20,6 @@ interface AmountInputProps {
   style?: object;
 }
 
-function valueToInputText(value: number | null, separator: string, precision: number): string {
-  if (value === null) {
-    return '';
-  }
-
-  const normalized = precision === 0 ? Math.trunc(value) : value;
-  return String(normalized).replace('.', separator);
-}
-
 export default function AmountInput({
   value,
   onChangeValue,
@@ -41,7 +33,7 @@ export default function AmountInput({
   const theme = useTheme();
   const { separator } = getInputFormat(locale, currency);
   const precision = decimalsFor(currency);
-  const [text, setText] = React.useState(valueToInputText(value, separator, precision));
+  const [text, setText] = React.useState(formatMoneyInputValue(value, locale, currency));
 
   React.useEffect(() => {
     if (precision === 0 && value !== null && !Number.isInteger(value)) {
@@ -53,7 +45,7 @@ export default function AmountInput({
       return;
     }
 
-    setText(valueToInputText(value, separator, precision));
+    setText(formatMoneyInputValue(value, locale, currency));
   }, [currency, locale, onChangeValue, precision, separator, text, value]);
 
   const handleChangeText = React.useCallback((nextText: string) => {

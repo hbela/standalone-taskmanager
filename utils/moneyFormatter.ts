@@ -3,10 +3,10 @@ import { formatCurrency } from 'react-native-format-currency';
 const ZERO_DECIMAL_CURRENCIES = new Set(['HUF', 'JPY', 'KRW', 'VND', 'IDR', 'CLP', 'ISK', 'UGX']);
 
 const CURRENCY_INPUT_FORMAT_MAP: Record<string, { delimiter: string; separator: string }> = {
-  USD: { delimiter: '', separator: '.' },
-  GBP: { delimiter: '', separator: '.' },
-  EUR: { delimiter: '', separator: ',' },
-  HUF: { delimiter: '', separator: '' },
+  USD: { delimiter: ' ', separator: '.' },
+  GBP: { delimiter: ' ', separator: '.' },
+  EUR: { delimiter: ' ', separator: ',' },
+  HUF: { delimiter: ' ', separator: '' },
 };
 
 const LOCALE_FORMAT_MAP: Record<string, { delimiter: string; separator: string }> = {
@@ -47,22 +47,62 @@ function stripThousandsSeparators(formatted: string, decimalSeparator: string): 
 }
 
 function trimZeroDecimalCurrency(formatted: string): string {
-  return formatted.replace(/([.,])\d{2}(?=\D*$)/, '');
+  return formatted.replace(/([.,])\d{2}(?=\s*\D*$)/, '');
+}
+
+function groupIntegerPart(integerPart: string, delimiter: string): string {
+  if (!delimiter) {
+    return integerPart;
+  }
+
+  return integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, delimiter);
+}
+
+export function formatMoneyInputValue(value: number | null, lang: string, currency: string): string {
+  if (value === null) {
+    return '';
+  }
+
+  const decimals = decimalsFor(currency);
+  const { delimiter, separator } = getInputFormat(lang, currency);
+  if (decimals === 0) {
+    return groupIntegerPart(String(Math.trunc(value)), delimiter);
+  }
+
+  const normalized = value.toFixed(decimals).replace('.', separator);
+  const [integerPart, decimalPart] = normalized.split(separator);
+  const groupedInteger = groupIntegerPart(integerPart, delimiter);
+
+  if (decimals === 0 || decimalPart === undefined) {
+    return groupedInteger;
+  }
+
+  return `${groupedInteger}${separator}${decimalPart.slice(0, decimals)}`;
 }
 
 export function formatMoney(amount: number, _lang: string, currency: string): string {
   const upper = currency.toUpperCase();
   const decimals = decimalsFor(upper);
-  const { separator } = getInputFormat('', upper);
+  const { delimiter, separator } = getInputFormat('', upper);
   const amountToFormat = decimals === 0 ? Math.round(amount) : amount;
   const [formatted] = formatCurrency({ amount: amountToFormat, code: upper });
   const withoutDecimals = decimals === 0 ? trimZeroDecimalCurrency(formatted) : formatted;
+  const withoutPackageThousands = stripThousandsSeparators(withoutDecimals, separator);
+  const numberPattern = decimals === 0 ? /\d+/ : new RegExp(`\\d+(?:\\${separator}\\d+)?`);
 
-  return stripThousandsSeparators(withoutDecimals, separator);
+  return withoutPackageThousands.replace(numberPattern, (value) => {
+    if (decimals === 0) {
+      return groupIntegerPart(value, delimiter);
+    }
+
+    const [integerPart, decimalPart] = value.split(separator);
+    const groupedInteger = groupIntegerPart(integerPart, delimiter);
+    return decimalPart === undefined ? groupedInteger : `${groupedInteger}${separator}${decimalPart}`;
+  });
 }
 
 export function sanitizeMoneyInput(text: string, lang: string, currency: string): string {
-  const { separator } = getInputFormat(lang, currency);
+  const { delimiter, separator } = getInputFormat(lang, currency);
   const decimals = decimalsFor(currency);
   let sanitized = '';
   let hasSeparator = false;
@@ -70,6 +110,10 @@ export function sanitizeMoneyInput(text: string, lang: string, currency: string)
   for (const char of text) {
     if (/\d/.test(char)) {
       sanitized += char;
+      continue;
+    }
+
+    if (char === delimiter || char === '\u00a0') {
       continue;
     }
 
@@ -84,26 +128,28 @@ export function sanitizeMoneyInput(text: string, lang: string, currency: string)
   }
 
   if (decimals === 0) {
-    return sanitized;
+    return groupIntegerPart(sanitized, delimiter);
   }
 
   const [integerPart, decimalPart] = sanitized.split(separator);
+  const groupedInteger = groupIntegerPart(integerPart, delimiter);
   if (decimalPart === undefined) {
-    return integerPart;
+    return groupedInteger;
   }
 
-  return `${integerPart}${separator}${decimalPart.slice(0, decimals)}`;
+  return `${groupedInteger}${separator}${decimalPart.slice(0, decimals)}`;
 }
 
 export function parseMoneyInput(text: string, lang: string, currency: string): number | null {
   const sanitized = sanitizeMoneyInput(text, lang, currency);
-  const { separator } = getInputFormat(lang, currency);
+  const { delimiter, separator } = getInputFormat(lang, currency);
 
   if (!sanitized || sanitized === separator) {
     return null;
   }
 
-  const normalized = separator ? sanitized.replace(separator, '.') : sanitized;
+  const withoutDelimiters = delimiter ? sanitized.replace(new RegExp(`[${delimiter}\\u00a0\\s]`, 'g'), '') : sanitized;
+  const normalized = separator ? withoutDelimiters.replace(separator, '.') : withoutDelimiters;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
 }

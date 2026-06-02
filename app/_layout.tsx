@@ -9,6 +9,7 @@ import { configureErrorHandling, logError, logInfo } from '@/utils/errorHandler'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 
 Sentry.init({
@@ -59,13 +60,15 @@ function RootLayoutNav() {
         await initializeDatabase();
         logInfo('Database', 'Database initialized');
         
-        // Seed database if requested
-        try {
-          const { seedDatabaseEn } = await import('@/lib/seedTasks');
-          await seedDatabaseEn();
-          logInfo('Database', 'Seeding completed');
-        } catch (seedError) {
-          logError('Database', 'Seeding failed: ' + seedError);
+        // SQL seed scripts depend on native SQLite and should not run on web.
+        if (Platform.OS !== 'web') {
+          try {
+            const { seedDatabaseEn } = await import('@/lib/seedTasks');
+            await seedDatabaseEn();
+            logInfo('Database', 'Seeding completed');
+          } catch (seedError) {
+            logError('Database', 'Seeding failed: ' + seedError);
+          }
         }
 
         setIsInitialized(true);

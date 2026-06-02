@@ -3,7 +3,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import TaskCard from '@/components/TaskCard';
 import { Spacing } from '@/constants/theme';
-import { useDeleteTask, useTasks } from '@/hooks/useTasksQuery';
+import { useTasks } from '@/hooks/useTasksQuery';
 import { useTranslation } from '@/hooks/useTranslation';
 import { exportTasksToExcel, getFileNameFromUri } from '@/lib/export/excelExporter';
 import { uploadToGoogleDrive } from '@/lib/export/googleDriveService';
@@ -30,41 +30,15 @@ export default function TasksScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'overdue' | 'completed'>('pending');
-  const [forceRender, setForceRender] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
-
-  
-  // State for translated text to force updates
-  const [pageTitle, setPageTitle] = useState(t('tasks.title'));
-  const [searchPlaceholder, setSearchPlaceholder] = useState(t('tasks.searchPlaceholder'));
-
-  // Force re-render when language changes
-  React.useEffect(() => {
-    setForceRender(prev => prev + 1);
-    // Update text state to force React Native to recognize the change
-    setPageTitle(t('tasks.title'));
-    setSearchPlaceholder(t('tasks.searchPlaceholder'));
-    console.log('[TasksScreen] Updated text state:', {
-      title: t('tasks.title'),
-      placeholder: t('tasks.searchPlaceholder'),
-    });
-  }, [_key, t]);
-
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [exportDialogVisible, setExportDialogVisible] = useState(false);
   const [successDialogVisible, setSuccessDialogVisible] = useState(false);
   const [errorDialogVisible, setErrorDialogVisible] = useState(false);
   const [exportResult, setExportResult] = useState<{ webViewLink?: string } | null>(null);
   const [exportError, setExportError] = useState('');
-
-  // Debug logging
-  console.log('[TasksScreen] Rendering with key:', _key, 'forceRender:', forceRender);
-  console.log('[TasksScreen] Current translations:', {
-    title: t('tasks.title'),
-    searchPlaceholder: t('tasks.searchPlaceholder'),
-    filterPending: t('tasks.filterPending'),
-  });
-  console.log('[TasksScreen] State values:', { pageTitle, searchPlaceholder });
+  const pageTitle = t('tasks.title');
+  const searchPlaceholder = t('tasks.searchPlaceholder');
 
   // Check for overdue tasks on mount to set default filter
   React.useEffect(() => {
@@ -87,31 +61,7 @@ export default function TasksScreen() {
     status: filter === 'all' || filter === 'overdue' ? undefined : filter,
   });
 
-  // Mutations
-  const deleteTaskMutation = useDeleteTask();
-
   const tasks = data?.tasks || [];
-
-  const handleDelete = (task: Task) => {
-    Alert.alert(
-      t('tasks.delete'),
-      t('tasks.deleteConfirm', { title: task.title }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteTaskMutation.mutateAsync(task.id);
-            } catch (err) {
-              Alert.alert(t('common.error'), t('errors.deleteTask'));
-            }
-          }
-        }
-      ]
-    );
-  };
 
   const handleExport = () => {
     if (sortedTasks.length === 0) {
@@ -385,7 +335,7 @@ export default function TasksScreen() {
           keyExtractor={(item) => `task-${item.id}-${_key}`}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={renderEmpty}
-          extraData={`${_key}-${forceRender}`}
+          extraData={_key}
           refreshControl={
             <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />
           }

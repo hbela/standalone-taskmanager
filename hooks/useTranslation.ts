@@ -1,5 +1,5 @@
 // hooks/useTranslation.ts
-import { useContext } from 'react';
+import { useCallback, useContext } from 'react';
 import { LanguageContext } from '../context/LanguageContext';
 import i18n from '../i18n';
 
@@ -9,9 +9,12 @@ import i18n from '../i18n';
  */
 export function useTranslation() {
   const { key } = useContext(LanguageContext);
+  const t = useCallback((scope: string, options?: Record<string, unknown>) => {
+    return i18n.t(scope, options);
+  }, []);
   
   return {
-    t: i18n.t.bind(i18n),
+    t,
     locale: i18n.locale,
     // Include the key to ensure components using this hook re-render on language change
     _key: key,
