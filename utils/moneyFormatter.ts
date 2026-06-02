@@ -1,17 +1,18 @@
+import { formatCurrency } from 'react-native-format-currency';
+
 const ZERO_DECIMAL_CURRENCIES = new Set(['HUF', 'JPY', 'KRW', 'VND', 'IDR', 'CLP', 'ISK', 'UGX']);
 
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: '$', EUR: '€', GBP: '£', HUF: 'Ft', JPY: '¥', KRW: '₩',
-  SEK: 'kr', NOK: 'kr', DKK: 'kr', PLN: 'zł', CZK: 'Kč',
-  RON: 'lei', BGN: 'лв', CHF: 'CHF', CAD: 'CA$', AUD: 'A$', INR: '₹', CNY: '¥',
+const CURRENCY_INPUT_FORMAT_MAP: Record<string, { delimiter: string; separator: string }> = {
+  USD: { delimiter: '', separator: '.' },
+  GBP: { delimiter: '', separator: '.' },
+  EUR: { delimiter: '', separator: ',' },
+  HUF: { delimiter: '', separator: '' },
 };
-
-const SUFFIX_CURRENCIES = new Set(['HUF', 'SEK', 'NOK', 'DKK', 'PLN', 'CZK', 'RON', 'BGN']);
 
 const LOCALE_FORMAT_MAP: Record<string, { delimiter: string; separator: string }> = {
   en: { delimiter: ',', separator: '.' },
-  hu: { delimiter: ' ', separator: ',' },
-  fr: { delimiter: ' ', separator: ',' },
+  hu: { delimiter: '\u00a0', separator: ',' },
+  fr: { delimiter: '\u00a0', separator: ',' },
   de: { delimiter: '.', separator: ',' },
 };
 
@@ -21,36 +22,95 @@ export function decimalsFor(currency: string): number {
   return ZERO_DECIMAL_CURRENCIES.has(currency.toUpperCase()) ? 0 : 2;
 }
 
-export function getInputFormat(lang: string): { delimiter: string; separator: string } {
+export function getInputFormat(lang: string, currency?: string): { delimiter: string; separator: string } {
+  if (currency) {
+    const currencyFormat = CURRENCY_INPUT_FORMAT_MAP[currency.toUpperCase()];
+    if (currencyFormat) {
+      return currencyFormat;
+    }
+  }
+
   const code = lang.slice(0, 2).toLowerCase();
   return LOCALE_FORMAT_MAP[code] ?? DEFAULT_FORMAT;
 }
 
-function getCurrencySymbol(currency: string): string {
-  return CURRENCY_SYMBOLS[currency.toUpperCase()] ?? currency.toUpperCase();
+function stripThousandsSeparators(formatted: string, decimalSeparator: string): string {
+  if (decimalSeparator === ',') {
+    return formatted.replace(/\./g, '');
+  }
+
+  if (decimalSeparator === '.') {
+    return formatted.replace(/,/g, '');
+  }
+
+  return formatted.replace(/[.,]/g, '');
 }
 
-export function formatMoney(amount: number, lang: string, currency: string): string {
+function trimZeroDecimalCurrency(formatted: string): string {
+  return formatted.replace(/([.,])\d{2}(?=\D*$)/, '');
+}
+
+export function formatMoney(amount: number, _lang: string, currency: string): string {
   const upper = currency.toUpperCase();
-  const { delimiter, separator } = getInputFormat(lang);
   const decimals = decimalsFor(upper);
-  const sign = amount < 0 ? '-' : '';
+  const { separator } = getInputFormat('', upper);
+  const amountToFormat = decimals === 0 ? Math.round(amount) : amount;
+  const [formatted] = formatCurrency({ amount: amountToFormat, code: upper });
+  const withoutDecimals = decimals === 0 ? trimZeroDecimalCurrency(formatted) : formatted;
 
-  const fixed = Math.abs(amount).toFixed(decimals);
-  const [intPart, fracPart] = fixed.split('.');
-  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, delimiter);
-  const numStr = decimals > 0 ? `${grouped}${separator}${fracPart}` : grouped;
-  const symbol = getCurrencySymbol(upper);
+  return stripThousandsSeparators(withoutDecimals, separator);
+}
 
-  if (SUFFIX_CURRENCIES.has(upper)) {
-    return `${sign}${numStr} ${symbol}`;
+export function sanitizeMoneyInput(text: string, lang: string, currency: string): string {
+  const { separator } = getInputFormat(lang, currency);
+  const decimals = decimalsFor(currency);
+  let sanitized = '';
+  let hasSeparator = false;
+
+  for (const char of text) {
+    if (/\d/.test(char)) {
+      sanitized += char;
+      continue;
+    }
+
+    if (decimals === 0 && (char === '.' || char === ',')) {
+      break;
+    }
+
+    if (decimals > 0 && !hasSeparator && (char === separator || (separator === ',' && char === '.'))) {
+      sanitized += separator;
+      hasSeparator = true;
+    }
   }
-  return `${sign}${symbol}${numStr}`;
+
+  if (decimals === 0) {
+    return sanitized;
+  }
+
+  const [integerPart, decimalPart] = sanitized.split(separator);
+  if (decimalPart === undefined) {
+    return integerPart;
+  }
+
+  return `${integerPart}${separator}${decimalPart.slice(0, decimals)}`;
+}
+
+export function parseMoneyInput(text: string, lang: string, currency: string): number | null {
+  const sanitized = sanitizeMoneyInput(text, lang, currency);
+  const { separator } = getInputFormat(lang, currency);
+
+  if (!sanitized || sanitized === separator) {
+    return null;
+  }
+
+  const normalized = separator ? sanitized.replace(separator, '.') : sanitized;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export function parseLocaleNumber(text: string, lang: string): number {
   const { delimiter, separator } = getInputFormat(lang);
-  const escapedDelimiter = delimiter === '.' ? '\\.' : delimiter === ' ' ? '\\s' : delimiter;
+  const escapedDelimiter = delimiter === '.' ? '\\.' : delimiter === '\u00a0' ? '\\s' : delimiter;
   const normalized = text
     .replace(new RegExp(escapedDelimiter, 'g'), '')
     .replace(separator, '.');
