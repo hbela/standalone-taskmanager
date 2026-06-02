@@ -102,6 +102,8 @@
         "storage": "Storage",
         "madeWithLove": "Made with ❤️ for productivity",
         "totalBilling": "Total Billing",
+        "currentTotalMonthlyExpenses": "Current total monthly expenses:",
+        "noMonthlyExpenses": "No expenses recorded this month",
         "monthlyBilling": "Monthly Billing",
         "billingByCategory": "Billing by Category",
         "overdueTasks": "Overdue Tasks"
@@ -171,6 +173,7 @@
         "edit": "Edit",
         "done": "Done",
         "loading": "Loading...",
+        "and": "and",
         "saving": "Saving...",
         "error": "Error",
         "success": "Success",

@@ -95,6 +95,8 @@
         "storage": "Tárhely",
         "madeWithLove": "Szeretettel készült a produktivitásért ❤️",
         "totalBilling": "Számlák Összege",
+        "currentTotalMonthlyExpenses": "Aktuális havi összes kiadás:",
+        "noMonthlyExpenses": "Ebben a hónapban nincs rögzített kiadás",
         "monthlyBilling": "Havi Számlázás",
         "billingByCategory": "Számlázás Kategóriánként",
         "overdueTasks": "Lejárt Feladatok"
@@ -164,6 +166,7 @@
         "edit": "Szerkesztés",
         "done": "Kész",
         "loading": "Betöltés...",
+        "and": "és",
         "saving": "Mentés...",
         "error": "Hiba",
         "success": "Siker",

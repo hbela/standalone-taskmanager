@@ -93,6 +93,8 @@
         "storage": "Speicher",
         "madeWithLove": "Mit ❤️ für Produktivität gemacht",
         "totalBilling": "Gesamtrechnung",
+        "currentTotalMonthlyExpenses": "Aktuelle monatliche Gesamtausgaben:",
+        "noMonthlyExpenses": "Keine Ausgaben in diesem Monat erfasst",
         "monthlyBilling": "Monatliche Abrechnung",
         "billingByCategory": "Abrechnung nach Kategorie",
         "overdueTasks": "Überfällige Aufgaben"
@@ -162,6 +164,7 @@
         "edit": "Bearbeiten",
         "done": "Fertig",
         "loading": "Wird geladen...",
+        "and": "und",
         "saving": "Wird gespeichert...",
         "error": "Fehler",
         "success": "Erfolg",

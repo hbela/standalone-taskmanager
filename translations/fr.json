@@ -94,6 +94,8 @@
         "storage": "Stockage",
         "madeWithLove": "Fait avec ❤️ pour la productivité",
         "totalBilling": "Facturation Totale",
+        "currentTotalMonthlyExpenses": "Dépenses mensuelles totales actuelles :",
+        "noMonthlyExpenses": "Aucune dépense enregistrée ce mois-ci",
         "monthlyBilling": "Facturation Mensuelle",
         "billingByCategory": "Facturation par Catégorie",
         "overdueTasks": "Tâches en Retard"
@@ -163,6 +165,7 @@
         "edit": "Modifier",
         "done": "Terminé",
         "loading": "Chargement...",
+        "and": "et",
         "saving": "Enregistrement...",
         "error": "Erreur",
         "success": "Succès",

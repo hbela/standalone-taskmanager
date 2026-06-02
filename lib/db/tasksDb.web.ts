@@ -186,7 +186,6 @@ export async function getTaskStats(): Promise<{
   const tasks = readTasks();
   const now = nowIso();
   const currentMonth = now.slice(0, 7);
-  const completedTasks = tasks.filter((task) => task.completed);
   const byPriority: Record<string, number> = {};
 
   for (const task of tasks) {
@@ -197,18 +196,21 @@ export async function getTaskStats(): Promise<{
   const monthlyBilling = new Map<string, { month: string; currency: string; amount: number }>();
   const billingByCategory = new Map<string, { category: string; currency: string; amount: number }>();
 
-  for (const task of completedTasks) {
+  for (const task of tasks) {
     if (task.bill == null) continue;
     const currency = task.billCurrency || 'USD';
-    const completedMonth = task.completedAt?.slice(0, 7);
+    const expenditureDate = task.completed && task.completedAt
+      ? task.completedAt
+      : task.dueDate || task.createdAt;
+    const expenditureMonth = expenditureDate?.slice(0, 7);
 
-    if (completedMonth === currentMonth) {
+    if (expenditureMonth === currentMonth) {
       billingByCurrency.set(currency, (billingByCurrency.get(currency) || 0) + task.bill);
     }
 
-    if (completedMonth) {
-      const monthlyKey = `${completedMonth}:${currency}`;
-      const monthly = monthlyBilling.get(monthlyKey) || { month: completedMonth, currency, amount: 0 };
+    if (expenditureMonth) {
+      const monthlyKey = `${expenditureMonth}:${currency}`;
+      const monthly = monthlyBilling.get(monthlyKey) || { month: expenditureMonth, currency, amount: 0 };
       monthly.amount += task.bill;
       monthlyBilling.set(monthlyKey, monthly);
     }
@@ -221,8 +223,8 @@ export async function getTaskStats(): Promise<{
 
   return {
     total: tasks.length,
-    completed: completedTasks.length,
-    pending: tasks.length - completedTasks.length,
+    completed: tasks.filter((task) => task.completed).length,
+    pending: tasks.filter((task) => !task.completed).length,
     overdue: tasks.filter((task) => !task.completed && task.dueDate && task.dueDate < now).length,
     byPriority,
     totalBilling: Array.from(billingByCurrency, ([currency, amount]) => ({ currency, amount })),

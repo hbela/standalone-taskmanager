@@ -33,18 +33,6 @@ import {
     useTheme
 } from 'react-native-paper';
 
-
-interface TaskStats {
-  total: number;
-  completed: number;
-  pending: number;
-  overdue: number;
-  byPriority: Record<string, number>;
-  totalBilling: { currency: string; amount: number }[];
-  monthlyBilling: { month: string; currency: string; amount: number }[];
-  billingByCategory: { category: string; currency: string; amount: number }[];
-}
-
 export default function DashboardScreen() {
   const theme = useTheme();
   const { t, locale } = useTranslation();
@@ -65,7 +53,7 @@ export default function DashboardScreen() {
       const currencyExists = stats.totalBilling.some(item => item.currency === localeCurrency);
       setSelectedCurrency(currencyExists ? localeCurrency : stats.totalBilling[0].currency);
     }
-  }, [stats]);
+  }, [stats, selectedCurrency]);
 
   const onRefresh = React.useCallback(() => {
     refetch();
@@ -125,6 +113,12 @@ export default function DashboardScreen() {
     }));
 
   const currentTotalBilling = stats?.totalBilling.find((b: any) => b.currency === selectedCurrency)?.amount || 0;
+  const hasCurrentMonthlyExpenses = stats.totalBilling.length > 0;
+  const currentTotalMonthlyExpenses = hasCurrentMonthlyExpenses
+    ? stats.totalBilling
+      .map((item) => formatMoney(item.amount, locale, item.currency))
+      .join(` ${t('common.and', { defaultValue: 'and' })} `)
+    : t('dashboard.noMonthlyExpenses');
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -191,65 +185,79 @@ export default function DashboardScreen() {
         </View>
 
         {/* Billing Section */}
-        {stats.totalBilling.length > 0 && (
-          <View style={styles.section}>
+        <View style={styles.section}>
              <Text variant="titleMedium" style={styles.sectionTitle}>
                 {t('dashboard.monthlyBilling')}
              </Text>
+
+             <Card mode="contained" style={styles.monthlyExpensesCard}>
+                <Card.Content>
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                    {t('dashboard.currentTotalMonthlyExpenses')}
+                  </Text>
+                  <Text variant="titleMedium" style={{ color: theme.colors.primary, fontWeight: '700', marginTop: Spacing.xs }}>
+                    {currentTotalMonthlyExpenses}
+                  </Text>
+                </Card.Content>
+             </Card>
              
              {/* Currency Selector */}
-             <View style={styles.currencySelectorContainer}>
-               <Button
-                  mode="outlined"
-                  onPress={() => setCurrencyMenuVisible(true)}
-                  style={styles.currencySelectorButton}
-                  icon="chevron-down"
-                  contentStyle={{ flexDirection: 'row-reverse' }}
-               >
-                  {selectedCurrency ? (
-                    CURRENCY_OPTIONS.find(c => c.code === selectedCurrency)?.name || selectedCurrency
-                  ) : t('common.select')}
-               </Button>
-             </View>
+             {hasCurrentMonthlyExpenses && (
+               <>
+                 <View style={styles.currencySelectorContainer}>
+                   <Button
+                      mode="outlined"
+                      onPress={() => setCurrencyMenuVisible(true)}
+                      style={styles.currencySelectorButton}
+                      icon="chevron-down"
+                      contentStyle={{ flexDirection: 'row-reverse' }}
+                   >
+                      {selectedCurrency ? (
+                        CURRENCY_OPTIONS.find(c => c.code === selectedCurrency)?.name || selectedCurrency
+                      ) : t('common.select')}
+                   </Button>
+                 </View>
 
-             <Portal>
-                <Modal 
-                  visible={currencyMenuVisible} 
-                  onDismiss={() => setCurrencyMenuVisible(false)}
-                  contentContainerStyle={styles.currencyModalContent}
-                >
-                  <Card>
-                    <Card.Title title={t('form.currency')} />
-                    <Card.Content>
-                      {CURRENCY_OPTIONS.map((currency) => {
-                        const hasData = stats.totalBilling.some(item => item.currency === currency.code);
-                        return (
-                          <Button
-                            key={currency.code}
-                            mode={selectedCurrency === currency.code ? 'contained' : 'outlined'}
-                            onPress={() => {
-                              setSelectedCurrency(currency.code);
-                              setCurrencyMenuVisible(false);
-                            }}
-                            style={{ marginBottom: 8 }}
-                            icon={selectedCurrency === currency.code ? 'check' : undefined}
-                            textColor={!hasData && selectedCurrency !== currency.code ? theme.colors.outline : undefined}
-                          >
-                            {currency.symbol} {currency.name}
+                 <Portal>
+                    <Modal
+                      visible={currencyMenuVisible}
+                      onDismiss={() => setCurrencyMenuVisible(false)}
+                      contentContainerStyle={styles.currencyModalContent}
+                    >
+                      <Card>
+                        <Card.Title title={t('form.currency')} />
+                        <Card.Content>
+                          {CURRENCY_OPTIONS.map((currency) => {
+                            const hasData = stats.totalBilling.some(item => item.currency === currency.code);
+                            return (
+                              <Button
+                                key={currency.code}
+                                mode={selectedCurrency === currency.code ? 'contained' : 'outlined'}
+                                onPress={() => {
+                                  setSelectedCurrency(currency.code);
+                                  setCurrencyMenuVisible(false);
+                                }}
+                                style={{ marginBottom: 8 }}
+                                icon={selectedCurrency === currency.code ? 'check' : undefined}
+                                textColor={!hasData && selectedCurrency !== currency.code ? theme.colors.outline : undefined}
+                              >
+                                {currency.symbol} {currency.name}
+                              </Button>
+                            );
+                          })}
+                        </Card.Content>
+                        <Card.Actions>
+                          <Button onPress={() => setCurrencyMenuVisible(false)}>
+                            {t('common.cancel')}
                           </Button>
-                        );
-                      })}
-                    </Card.Content>
-                    <Card.Actions>
-                      <Button onPress={() => setCurrencyMenuVisible(false)}>
-                        {t('common.cancel')}
-                      </Button>
-                    </Card.Actions>
-                  </Card>
-                </Modal>
-             </Portal>
+                        </Card.Actions>
+                      </Card>
+                    </Modal>
+                 </Portal>
+               </>
+             )}
 
-             {selectedCurrency && (
+             {hasCurrentMonthlyExpenses && selectedCurrency && (
                  <Card mode="elevated" style={styles.chartCard} contentStyle={{ backgroundColor: theme.colors.surface }}>
                      <Card.Content>
                          <View style={{ alignItems: 'center', marginBottom: Spacing.lg }}>
@@ -280,8 +288,7 @@ export default function DashboardScreen() {
                      </Card.Content>
                  </Card>
              )}
-          </View>
-        )}
+        </View>
 
         {/* Category Pie Chart */}
         {selectedCurrency && categoryData.length > 0 && (
@@ -433,6 +440,9 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       marginBottom: Spacing.md,
       alignItems: 'center',
+  },
+  monthlyExpensesCard: {
+      marginBottom: Spacing.md,
   },
   currencySelectorButton: {
       flexDirection: 'row',

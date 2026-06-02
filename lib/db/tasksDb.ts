@@ -541,32 +541,36 @@ export async function getTaskStats(): Promise<{
     'SELECT priority, COUNT(*) as count FROM tasks GROUP BY priority'
   );
   
-  // Billing stats (Current Month Total for Completed Tasks)
+  // Expenditure stats use the task's relevant date, not only completion date.
   const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
   
   const totalBillingRows = await db.getAllAsync(
     `SELECT billCurrency, SUM(bill) as total 
      FROM tasks 
-     WHERE bill IS NOT NULL AND completed = 1 AND substr(completedAt, 1, 7) = ?
+     WHERE bill IS NOT NULL
+       AND substr(COALESCE(CASE WHEN completed = 1 THEN completedAt END, dueDate, createdAt), 1, 7) = ?
      GROUP BY billCurrency`,
     [currentMonth]
   );
   
-  // Monthly billing (group by YYYY-MM of completedAt) - ONLY COMPLETED TASKS
+  // Monthly billing grouped by the expenditure task date.
   const monthlyBillingRows = await db.getAllAsync(
-    `SELECT substr(completedAt, 1, 7) as month, billCurrency, SUM(bill) as total 
+    `SELECT substr(COALESCE(CASE WHEN completed = 1 THEN completedAt END, dueDate, createdAt), 1, 7) as month,
+            billCurrency,
+            SUM(bill) as total 
      FROM tasks 
-     WHERE bill IS NOT NULL AND completed = 1 AND completedAt IS NOT NULL 
+     WHERE bill IS NOT NULL
+       AND COALESCE(CASE WHEN completed = 1 THEN completedAt END, dueDate, createdAt) IS NOT NULL
      GROUP BY month, billCurrency 
      ORDER BY month DESC 
      LIMIT 12`
   );
   
-  // Billing by Category (Title) - ONLY COMPLETED TASKS
+  // Billing by Category (Title)
   const billingByCategoryRows = await db.getAllAsync(
     `SELECT title as category, billCurrency, SUM(bill) as total 
      FROM tasks 
-     WHERE bill IS NOT NULL AND completed = 1
+     WHERE bill IS NOT NULL
      GROUP BY title, billCurrency
      ORDER BY total DESC
      LIMIT 10`
