@@ -1,7 +1,7 @@
 import ErrorBoundary from '@/components/ErrorBoundary';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { LanguageProvider } from '@/context/LanguageContext';
-import { ScreenshotProvider } from '@/context/ScreenshotContext';
+// import { ScreenshotProvider } from '@/context/ScreenshotContext';
 import { ThemeProvider, useAppTheme } from '@/context/ThemeContext';
 import { initializeDatabase } from '@/lib/database';
 import * as Sentry from '@/lib/sentry';
@@ -146,11 +146,11 @@ function InnerRootLayout() {
     return (
         <PaperProvider theme={theme}>
             <LanguageProvider>
-                <ScreenshotProvider>
-                    <QueryClientProvider client={queryClient}>
-                        <RootLayoutNav />
-                    </QueryClientProvider>
-                </ScreenshotProvider>
+                {/* <ScreenshotProvider> */}
+                <QueryClientProvider client={queryClient}>
+                    <RootLayoutNav />
+                </QueryClientProvider>
+                {/* </ScreenshotProvider> */}
             </LanguageProvider>
         </PaperProvider>
     );

@@ -2,7 +2,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ScreenshotCaptureButton from '@/components/ScreenshotCaptureButton';
 import { Spacing } from '@/constants/theme';
 import { LanguageContext } from '@/context/LanguageContext';
-import { DEVICE_DIMENSIONS, DeviceType, useScreenshot } from '@/context/ScreenshotContext';
+// import { DEVICE_DIMENSIONS, DeviceType, useScreenshot } from '@/context/ScreenshotContext';
 import { useAppTheme } from '@/context/ThemeContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import * as Sentry from '@/lib/sentry';
@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Appbar, Avatar, Button, Card, Chip, IconButton, List, Switch, Text, useTheme } from 'react-native-paper';
+import { Appbar, Avatar, Button, Card, IconButton, List, Switch, Text, useTheme } from 'react-native-paper';
 
 const WELCOME_SHOWN_KEY = '@task_manager_welcome_shown';
 const SHOW_SENTRY_ERROR_TRIGGER = false;
@@ -24,14 +24,14 @@ export default function SettingsScreen() {
   const [showWelcomeScreen, setShowWelcomeScreen] = useState(true);
   
   // Screenshot context
-  const {
-    selectedDevice,
-    setSelectedDevice,
-    capturedScreenshots,
-    isUploading,
-    uploadAllToGoogleDrive,
-    clearAllScreenshots,
-  } = useScreenshot();
+  // const {
+  //   selectedDevice,
+  //   setSelectedDevice,
+  //   capturedScreenshots,
+  //   isUploading,
+  //   uploadAllToGoogleDrive,
+  //   clearAllScreenshots,
+  // } = useScreenshot();
 
   // Load welcome screen preference
   useEffect(() => {
@@ -116,7 +116,8 @@ export default function SettingsScreen() {
 
         <LanguageSwitcher />
         
-        {/* Screenshot Settings Section */}
+        {/*
+        Screenshot Settings Section
         <List.Section>
             <List.Subheader>📸 Screenshot Capture</List.Subheader>
             <Card style={styles.card} mode="elevated">
@@ -147,7 +148,7 @@ export default function SettingsScreen() {
                 </Card.Content>
             </Card>
             
-            {/* Captured Screenshots List */}
+            Captured Screenshots List
             {capturedScreenshots.length > 0 && (
                 <Card style={styles.card} mode="elevated">
                     <Card.Content>
@@ -192,6 +193,7 @@ export default function SettingsScreen() {
                 </Card>
             )}
         </List.Section>
+        */}
         
         <List.Section>
             <List.Subheader>Developer</List.Subheader>
